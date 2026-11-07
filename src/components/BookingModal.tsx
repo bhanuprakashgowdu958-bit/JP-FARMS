@@ -7,16 +7,15 @@ import {
   CheckCircle2, 
   MessageCircle, 
   Phone, 
-  Truck, 
   MapPin, 
-  ShieldCheck, 
   Calendar,
   Sparkles,
-  CreditCard
+  Award,
+  Clock
 } from 'lucide-react';
 import { Rooster } from '@/types/rooster';
 import { FARM_INFO } from '@/lib/data';
-import { formatPrice, generateWhatsAppLink } from '@/lib/utils';
+import { generateWhatsAppLink } from '@/lib/utils';
 import { useInquiries } from '@/lib/roosterStore';
 
 interface BookingModalProps {
@@ -32,10 +31,11 @@ export const BookingModal: React.FC<BookingModalProps> = ({
 }) => {
   const { addInquiry } = useInquiries();
 
-  const [bookingType, setBookingType] = useState<'token' | 'full' | 'visit'>('token');
+  const [inquiryType, setInquiryType] = useState<'farm_visit' | 'breed_info' | 'general'>('farm_visit');
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [city, setCity] = useState('');
+  const [preferredDate, setPreferredDate] = useState('');
   const [message, setMessage] = useState('');
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -59,15 +59,15 @@ export const BookingModal: React.FC<BookingModalProps> = ({
         customerName: name,
         phoneNumber: phone,
         cityState: city,
-        message: `${bookingType.toUpperCase()} BOOKING: ${message || 'Interested in booking this bird with safe live transit.'}`,
-        inquiryType: bookingType === 'token' ? 'booking_token' : bookingType === 'visit' ? 'farm_visit' : 'whatsapp',
+        message: `${inquiryType.toUpperCase()}: Date: ${preferredDate || 'Flexible'}. ${message || 'Interested in visiting JP Farms to witness this rooster.'}`,
+        inquiryType: inquiryType === 'farm_visit' ? 'farm_visit' : 'breed_info',
         status: 'new',
       });
 
-      // Fire celebratory confetti!
+      // Celebratory confetti
       confetti({
-        particleCount: 100,
-        spread: 70,
+        particleCount: 90,
+        spread: 60,
         origin: { y: 0.6 },
       });
 
@@ -82,11 +82,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
 
   const whatsAppFinalUrl = generateWhatsAppLink({
     phone: FARM_INFO.whatsapp,
-    tagId: rooster.tagId,
-    roosterName: rooster.name,
-    breed: rooster.breed,
-    price: rooster.price,
-    customMessage: `Hello JP Farms! 🐓\n\nI have booked Rooster #${rooster.tagId} (${rooster.name}) on your website.\n- My Name: ${name}\n- Phone: ${phone}\n- Delivery City: ${city}\n- Option: ${bookingType.toUpperCase()}\n\nPlease verify availability and share UPI / payment details to lock this booking. Thank you!`,
+    customMessage: `Hello JP Farms! 🐓\n\nI would like to schedule a farm visit / breed inquiry for Rooster #${rooster.tagId} (${rooster.name}, ${rooster.breed}).\n- My Name: ${name}\n- Phone: ${phone}\n- City: ${city}\n- Preferred Date: ${preferredDate || 'Flexible'}\n- Message: ${message || 'Looking forward to meeting you and seeing the roosters.'}`,
   });
 
   return (
@@ -99,10 +95,10 @@ export const BookingModal: React.FC<BookingModalProps> = ({
           <div>
             <h2 className="text-base sm:text-lg font-bold flex items-center space-x-2">
               <Sparkles className="w-4 h-4 text-amber-400" />
-              <span>{isSubmitted ? 'Booking Confirmed!' : 'Book Your Rooster'}</span>
+              <span>{isSubmitted ? 'Visit Request Received!' : 'Schedule Farm Visit & Inquire'}</span>
             </h2>
             <p className="text-xs text-stone-400">
-              JP Farms Heritage Desi & Aseel Registry
+              JP Farms Heritage Desi & Aseel Conservation Estate
             </p>
           </div>
           <button
@@ -122,16 +118,16 @@ export const BookingModal: React.FC<BookingModalProps> = ({
 
             <div className="space-y-1">
               <h3 className="text-xl font-extrabold text-stone-900">
-                Booking Request Received!
+                Thank You, {name}!
               </h3>
               <p className="text-xs text-stone-600 max-w-xs mx-auto">
-                Your request for <strong>{rooster.name}</strong> (Tag: <span className="font-mono text-amber-800 font-bold">{rooster.tagId}</span>) has been logged in our farm registry.
+                Your visit request to witness <strong>{rooster.name}</strong> (Tag: <span className="font-mono text-amber-800 font-bold">{rooster.tagId}</span>) has been scheduled.
               </p>
             </div>
 
             <div className="bg-stone-50 border border-stone-200 rounded-2xl p-4 text-left text-xs space-y-2">
               <div className="flex justify-between border-b border-stone-200 pb-2">
-                <span className="text-stone-500">Customer:</span>
+                <span className="text-stone-500">Visitor:</span>
                 <span className="font-bold text-stone-900">{name}</span>
               </div>
               <div className="flex justify-between border-b border-stone-200 pb-2">
@@ -139,54 +135,12 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                 <span className="font-bold text-stone-900">{phone}</span>
               </div>
               <div className="flex justify-between border-b border-stone-200 pb-2">
-                <span className="text-stone-500">Transit Destination:</span>
+                <span className="text-stone-500">City / Location:</span>
                 <span className="font-bold text-stone-900">{city}</span>
               </div>
-              <div className="flex justify-between text-sm font-extrabold pt-1">
-                <span className="text-stone-800">Total Bird Price:</span>
-                <span className="text-amber-700">{formatPrice(rooster.price)}</span>
-              </div>
-            </div>
-
-            {/* Instant UPI Payment Card */}
-            <div className="bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-300/80 rounded-2xl p-4 text-center space-y-3">
-              <div className="flex items-center justify-between text-xs border-b border-amber-200 pb-2">
-                <span className="font-bold text-amber-950 flex items-center">
-                  <CreditCard className="w-4 h-4 mr-1 text-amber-700" />
-                  Instant UPI Lock Token (PhonePe / GPay)
-                </span>
-                <span className="font-mono font-bold bg-amber-200/80 text-amber-950 px-2 py-0.5 rounded text-xs">
-                  {bookingType === 'token' ? '₹500.00' : formatPrice(rooster.price)}
-                </span>
-              </div>
-
-              {/* Dynamic QR Code */}
-              <div className="flex flex-col items-center justify-center pt-1">
-                <div className="bg-white p-2.5 rounded-2xl border-2 border-dashed border-amber-400 shadow-md">
-                  <img
-                    src={`https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${encodeURIComponent(
-                      `upi://pay?pa=9876543210@upi&pn=JP%20Farms&am=${bookingType === 'token' ? 500 : rooster.price}&tn=${encodeURIComponent(`Token for Rooster ${rooster.tagId}`)}&cu=INR`
-                    )}`}
-                    alt="UPI Payment QR Code"
-                    className="w-36 h-36 rounded-lg"
-                  />
-                </div>
-                <p className="text-[11px] text-stone-600 mt-2 font-medium">
-                  Scan using <strong>PhonePe, Google Pay, Paytm, or BHIM</strong>
-                </p>
-                <p className="text-[10px] font-mono text-stone-500">
-                  UPI ID: <strong className="text-stone-800 font-bold select-all">9876543210@upi</strong>
-                </p>
-              </div>
-
-              <div className="pt-1">
-                <a
-                  href={`upi://pay?pa=9876543210@upi&pn=JP%20Farms&am=${bookingType === 'token' ? 500 : rooster.price}&tn=${encodeURIComponent(`Token for Rooster ${rooster.tagId}`)}&cu=INR`}
-                  className="sm:hidden w-full inline-flex items-center justify-center space-x-1.5 bg-amber-600 hover:bg-amber-500 text-white font-bold py-2 px-3 rounded-xl text-xs transition"
-                >
-                  <CreditCard className="w-3.5 h-3.5" />
-                  <span>Open in PhonePe / GPay App</span>
-                </a>
+              <div className="flex justify-between pt-1">
+                <span className="text-stone-500">Visiting Hours:</span>
+                <span className="font-bold text-emerald-700">7:00 AM - 7:00 PM Daily</span>
               </div>
             </div>
 
@@ -198,14 +152,14 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                 className="w-full flex items-center justify-center space-x-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3.5 px-4 rounded-xl shadow-lg transition active:scale-95 text-sm"
               >
                 <MessageCircle className="w-5 h-5" />
-                <span>Confirm on WhatsApp to Lock Booking</span>
+                <span>Notify Farm on WhatsApp</span>
               </a>
 
               <button
                 onClick={onClose}
                 className="w-full text-xs text-stone-500 hover:text-stone-800 py-2"
               >
-                Close and return to catalog
+                Close and return to showcase
               </button>
             </div>
           </div>
@@ -223,67 +177,53 @@ export const BookingModal: React.FC<BookingModalProps> = ({
               <div className="flex-1 min-w-0">
                 <div className="flex items-center space-x-1.5">
                   <span className="font-mono text-[10px] font-bold bg-amber-500/20 text-amber-800 px-1.5 py-0.5 rounded">
-                    {rooster.tagId}
+                    TAG: {rooster.tagId}
                   </span>
                   <span className="text-[11px] text-stone-500 truncate">{rooster.breed}</span>
                 </div>
                 <h4 className="font-bold text-sm text-stone-900 truncate">{rooster.name}</h4>
-                <p className="text-xs font-black text-amber-700">{formatPrice(rooster.price)}</p>
+                <p className="text-xs font-semibold text-amber-700">{rooster.badge} • {rooster.weight}</p>
               </div>
             </div>
 
-            {/* Booking Options */}
+            {/* Inquiry Type Selector */}
             <div className="space-y-2">
               <label className="block text-xs font-bold text-stone-700 uppercase tracking-wide">
-                Select Booking Method:
+                Purpose of Contact:
               </label>
               
-              <div className="grid grid-cols-3 gap-2">
+              <div className="grid grid-cols-2 gap-2">
                 <button
                   type="button"
-                  onClick={() => setBookingType('token')}
+                  onClick={() => setInquiryType('farm_visit')}
                   className={`p-2.5 rounded-xl border text-center transition flex flex-col items-center justify-center ${
-                    bookingType === 'token'
-                      ? 'border-amber-600 bg-amber-50 text-amber-950 font-bold shadow-sm'
-                      : 'border-stone-200 hover:border-stone-300 text-stone-600'
-                  }`}
-                >
-                  <CreditCard className="w-4 h-4 mb-1 text-amber-600" />
-                  <span className="text-xs">Hold Token</span>
-                  <span className="text-[10px] text-stone-500">₹500 / 48 hrs</span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => setBookingType('full')}
-                  className={`p-2.5 rounded-xl border text-center transition flex flex-col items-center justify-center ${
-                    bookingType === 'full'
-                      ? 'border-amber-600 bg-amber-50 text-amber-950 font-bold shadow-sm'
-                      : 'border-stone-200 hover:border-stone-300 text-stone-600'
-                  }`}
-                >
-                  <Truck className="w-4 h-4 mb-1 text-emerald-600" />
-                  <span className="text-xs">Full Purchase</span>
-                  <span className="text-[10px] text-stone-500">Immediate dispatch</span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => setBookingType('visit')}
-                  className={`p-2.5 rounded-xl border text-center transition flex flex-col items-center justify-center ${
-                    bookingType === 'visit'
+                    inquiryType === 'farm_visit'
                       ? 'border-amber-600 bg-amber-50 text-amber-950 font-bold shadow-sm'
                       : 'border-stone-200 hover:border-stone-300 text-stone-600'
                   }`}
                 >
                   <Calendar className="w-4 h-4 mb-1 text-amber-700" />
-                  <span className="text-xs">Farm Visit</span>
-                  <span className="text-[10px] text-stone-500">Self Pickup</span>
+                  <span className="text-xs">Schedule Farm Visit</span>
+                  <span className="text-[10px] text-stone-500">Witness roosters in person</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setInquiryType('breed_info')}
+                  className={`p-2.5 rounded-xl border text-center transition flex flex-col items-center justify-center ${
+                    inquiryType === 'breed_info'
+                      ? 'border-amber-600 bg-amber-50 text-amber-950 font-bold shadow-sm'
+                      : 'border-stone-200 hover:border-stone-300 text-stone-600'
+                  }`}
+                >
+                  <Award className="w-4 h-4 mb-1 text-amber-700" />
+                  <span className="text-xs">Breed & Lineage Info</span>
+                  <span className="text-[10px] text-stone-500">Ask genetics questions</span>
                 </button>
               </div>
             </div>
 
-            {/* Customer Contact Details */}
+            {/* Visitor Details */}
             <div className="space-y-3">
               <div>
                 <label className="block text-xs font-semibold text-stone-700 mb-1">
@@ -292,71 +232,93 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                 <input
                   type="text"
                   required
-                  placeholder="e.g. Rajesh Kumar"
+                  placeholder="e.g. Ramesh Kumar"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-stone-300 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 text-xs focus:ring-2 focus:ring-amber-500 focus:outline-none"
                 />
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-semibold text-stone-700 mb-1">
-                    WhatsApp / Phone Number *
+                    Phone / WhatsApp Number *
                   </label>
                   <input
                     type="tel"
                     required
-                    placeholder="e.g. 9876543210"
+                    placeholder="+91 98765 43210"
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-stone-300 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 text-xs focus:ring-2 focus:ring-amber-500 focus:outline-none"
                   />
                 </div>
 
                 <div>
                   <label className="block text-xs font-semibold text-stone-700 mb-1">
-                    Delivery City & State *
+                    City / Location *
                   </label>
                   <input
                     type="text"
                     required
-                    placeholder="e.g. Hyderabad / Chennai"
+                    placeholder="e.g. Hyderabad, Vijayawada, Bangalore"
                     value={city}
                     onChange={(e) => setCity(e.target.value)}
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-stone-300 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 text-xs focus:ring-2 focus:ring-amber-500 focus:outline-none"
                   />
                 </div>
               </div>
 
               <div>
                 <label className="block text-xs font-semibold text-stone-700 mb-1">
-                  Special Notes or Transit Questions (Optional)
+                  Preferred Visit Date (Optional)
+                </label>
+                <input
+                  type="date"
+                  value={preferredDate}
+                  onChange={(e) => setPreferredDate(e.target.value)}
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 text-xs focus:ring-2 focus:ring-amber-500 focus:outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-stone-700 mb-1">
+                  Questions or Note for the Breeder
                 </label>
                 <textarea
                   rows={2}
-                  placeholder="e.g. Please share video of feet spurs, prefer express train transit on Saturday..."
+                  placeholder="Tell us what you would like to know or discuss during your visit..."
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
-                  className="w-full px-3.5 py-2 rounded-xl border border-stone-300 text-xs focus:outline-none focus:ring-2 focus:ring-amber-500"
-                ></textarea>
+                  className="w-full px-3.5 py-2 rounded-xl border border-stone-200 text-xs focus:ring-2 focus:ring-amber-500 focus:outline-none"
+                />
               </div>
             </div>
 
-            {/* Trust Assurance */}
-            <div className="flex items-center space-x-2 text-[11px] text-stone-500 bg-stone-50 p-2.5 rounded-xl">
-              <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" />
-              <span>We never share your contact details. Live health warranty applies to every delivery.</span>
+            {/* Farm Visiting Hours Info */}
+            <div className="bg-stone-50 border border-stone-200 rounded-xl p-3 flex items-center space-x-2.5 text-xs text-stone-600">
+              <Clock className="w-4 h-4 text-emerald-600 shrink-0" />
+              <span>Farm is open for visitors 7:00 AM to 7:00 PM daily. Visitors are requested to schedule in advance.</span>
             </div>
 
-            {/* Submit Button */}
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-stone-950 font-bold py-3.5 rounded-xl text-sm shadow-lg shadow-amber-950/20 transition active:scale-95"
-            >
-              {isSubmitting ? 'Processing...' : 'Submit Booking & Connect with Farm'}
-            </button>
+            {/* Action Buttons */}
+            <div className="flex items-center space-x-3 pt-2">
+              <button
+                type="button"
+                onClick={onClose}
+                className="w-1/3 py-3 rounded-xl border border-stone-200 text-stone-700 text-xs font-bold hover:bg-stone-100 transition"
+              >
+                Cancel
+              </button>
+
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className="w-2/3 py-3 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-stone-950 text-xs font-extrabold shadow-lg transition active:scale-95 disabled:opacity-50"
+              >
+                {isSubmitting ? 'Submitting...' : 'Submit Visit Request'}
+              </button>
+            </div>
 
           </form>
         )}
@@ -367,3 +329,4 @@ export const BookingModal: React.FC<BookingModalProps> = ({
   );
 };
 
+export const FarmVisitModal = BookingModal;

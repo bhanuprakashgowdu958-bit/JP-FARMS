@@ -14,9 +14,7 @@
     "diet": "Sprouted Bajra, Crushed Almonds, Boiled Desi Eggs, Organic Greens",
     "vaccinationStatus": "Fully Vaccinated",
     "vaccines": ["Ranikhet ND-Lasota (Boosted)", "Fowl Pox Vaccine", "IBD / Gumboro", "Dewormed Every 45 Days"],
-    "price": 8500,
-    "originalPrice": 10000,
-    "status": "available",
+    "badge": "Champion Line",
     "images": [
       "https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?auto=format&fit=crop&w=1200&q=80",
       "https://images.unsplash.com/photo-1612170153139-6f881ff067e0?auto=format&fit=crop&w=1200&q=80",
@@ -25,8 +23,8 @@
     "videoUrl": "https://assets.mixkit.co/videos/preview/mixkit-rooster-crowing-in-the-morning-42544-large.mp4",
     "featured": true,
     "lineage": "Direct Bloodline of 2023 National Champion 'Garuda'. High bone density and muscular thighs.",
-    "healthWarranty": "100% Disease-Free Certificate & 48-Hour Live Health Transit Guarantee.",
-    "description": "Sikandar is a masterpiece specimen of the traditional Peela Aseel heritage line. Standing proud at 26 inches with thick yellow-white legs, compact pea comb, and broad muscular chest. Ideal for serious preservationists and breeding programs.",
+    "healthWarranty": "100% Certified Disease-Free & Verified Heritage Bloodline.",
+    "description": "Sikandar is a masterpiece specimen of the traditional Peela Aseel heritage line. Standing proud at 26 inches with thick yellow-white legs, compact pea comb, and broad muscular chest. Raised freely in open sunlight.",
     "createdAt": "2026-11-01",
     "views": 428
   },
@@ -45,9 +43,7 @@
     "diet": "Free-range foraging, Sprouted Grains, Neem leaves, Ragi mash",
     "vaccinationStatus": "Fully Vaccinated",
     "vaccines": ["Ranikhet Lasota", "Fowl Pox", "Mareks Disease", "Internal Deworming Cert"],
-    "price": 3200,
-    "originalPrice": 3800,
-    "status": "available",
+    "badge": "Heritage Pure",
     "images": [
       "https://images.unsplash.com/photo-1589332278453-611a91e5e04d?auto=format&fit=crop&w=1200&q=80",
       "https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?auto=format&fit=crop&w=1200&q=80"
@@ -63,7 +59,7 @@
   {
     "id": "jp-305",
     "tagId": "JP-KG-305",
-    "name": "Toofan - Aseel Kagar Fighter",
+    "name": "Toofan - Aseel Kagar Stud",
     "breed": "Aseel Kagar (Black & Green Sheen)",
     "category": "aseel-kagar",
     "age": "15 Months",
@@ -75,9 +71,7 @@
     "diet": "Soaked Wheat, Mutton broth protein pellets, Flaxseeds & Garlic greens",
     "vaccinationStatus": "Fully Vaccinated",
     "vaccines": ["Ranikhet R2B Strain", "Fowl Pox", "Fowl Cholera", "Full Deworming Protocol"],
-    "price": 11500,
-    "originalPrice": 13000,
-    "status": "available",
+    "badge": "Farm Stud",
     "images": [
       "https://images.unsplash.com/photo-1612170153139-6f881ff067e0?auto=format&fit=crop&w=1200&q=80",
       "https://images.unsplash.com/photo-1598439210625-5067c578f3f6?auto=format&fit=crop&w=1200&q=80"
@@ -85,8 +79,8 @@
     "videoUrl": "https://assets.mixkit.co/videos/preview/mixkit-rooster-crowing-in-the-morning-42544-large.mp4",
     "featured": true,
     "lineage": "Direct son of legendary 'Kagar Badshah'. Heavy bone structure, curved beak, long broad tail.",
-    "healthWarranty": "Full veterinary clearance and transit vaccination certificate.",
-    "description": "An imposing heavyweight Kagar rooster weighing over 4.1 kg. Impeccable posture, wide bone spread, and exceptional tail plumage. Highly recommended for stud rooster breeding.",
+    "healthWarranty": "Full veterinary clearance and health certificate.",
+    "description": "An imposing heavyweight Kagar rooster weighing over 4.1 kg. Impeccable posture, wide bone spread, and exceptional tail plumage. Serves as our primary breeding stud.",
     "createdAt": "2026-11-04",
     "views": 654
   },
@@ -105,9 +99,7 @@
     "diet": "Dry fruits mix, Multigrain soaked daliya, Milk-boiled rice, Spinach",
     "vaccinationStatus": "Fully Vaccinated",
     "vaccines": ["Ranikhet ND+IB", "Fowl Pox", "Coryza Vaccine", "Parasite Cleared"],
-    "price": 14000,
-    "originalPrice": 16500,
-    "status": "reserved",
+    "badge": "Champion Line",
     "images": [
       "https://images.unsplash.com/photo-1598439210625-5067c578f3f6?auto=format&fit=crop&w=1200&q=80",
       "https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?auto=format&fit=crop&w=1200&q=80"
@@ -115,8 +107,8 @@
     "videoUrl": "https://assets.mixkit.co/videos/preview/mixkit-chicken-walking-freely-in-a-farm-42545-large.mp4",
     "featured": true,
     "lineage": "Authentic Sindhi Pure Strain known for monumental height and steel-strong leg shanks.",
-    "healthWarranty": "100% Fit-to-Ship Veterinary Guarantee with certified health records.",
-    "description": "A giant among roosters. Standing 28.5 inches tall with thick bone structure. Sultan has already produced award-winning chicks in our early 2026 spring batch. Currently reserved with booking token.",
+    "healthWarranty": "100% Fit & Healthy Heritage Bloodline.",
+    "description": "A giant among roosters. Standing 28.5 inches tall with thick bone structure. Sultan is a key stud in our preservation breeding program.",
     "createdAt": "2026-10-28",
     "views": 890
   },
@@ -135,9 +127,7 @@
     "diet": "100% Free-Range Organic Pasture, Grains, Termites, Native Herbs",
     "vaccinationStatus": "Fully Vaccinated",
     "vaccines": ["Ranikhet Lasota", "Fowl Pox", "Natural Herbal Immunity Protocol"],
-    "price": 2400,
-    "originalPrice": 2800,
-    "status": "available",
+    "badge": "Heritage Pure",
     "images": [
       "https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?auto=format&fit=crop&w=1200&q=80",
       "https://images.unsplash.com/photo-1589332278453-611a91e5e04d?auto=format&fit=crop&w=1200&q=80"
@@ -146,7 +136,7 @@
     "featured": false,
     "lineage": "Native Andhra-Telangana wild foraging country breed. Extreme disease resilience.",
     "healthWarranty": "Naturally hardy, parasite treated, 100% antibiotic-free.",
-    "description": "A genuine village country rooster raised outdoors on organic grasslands. Incredible energy, morning crow, and high vitality. Excellent for organic backyard farming or building a self-sustaining flock.",
+    "description": "A genuine village country rooster raised outdoors on organic grasslands. Incredible energy, morning crow, and high vitality.",
     "createdAt": "2026-11-05",
     "views": 195
   },
@@ -165,49 +155,44 @@
     "diet": "Sprouted Moong, Crushed Maize, Sesame & Hard Grains",
     "vaccinationStatus": "Fully Vaccinated",
     "vaccines": ["Ranikhet ND Lasota", "Fowl Pox", "Dewormed"],
-    "price": 7200,
-    "originalPrice": 8500,
-    "status": "sold",
+    "badge": "Young Star",
     "images": [
       "https://images.unsplash.com/photo-1612170153139-6f881ff067e0?auto=format&fit=crop&w=1200&q=80"
     ],
     "videoUrl": "https://assets.mixkit.co/videos/preview/mixkit-chicken-walking-freely-in-a-farm-42545-large.mp4",
     "featured": false,
     "lineage": "Reza Bloodline, known for compactness, high agility, and aggressive intelligence.",
-    "healthWarranty": "Sold & Delivered safely to Hyderabad client.",
-    "description": "Bijli is a textbook example of compact Reza genetics. Strong curved beak, white eyes, and rock-solid thigh muscles. [SOLD - Contact for next upcoming clutch]",
+    "healthWarranty": "Flock breeding stock.",
+    "description": "Bijli is a textbook example of compact Reza genetics. Strong curved beak, pearl white eyes, and rock-solid thigh muscles.",
     "createdAt": "2026-10-25",
     "views": 540
   },
   {
     "id": "jp-701",
     "tagId": "JP-TR-701",
-    "name": "Imperial Aseel Breeding Trio (1M + 2F)",
-    "breed": "Pure Aseel Breeding Unit",
+    "name": "Imperial Aseel Breeding Unit",
+    "breed": "Pure Aseel Lineage Trio",
     "category": "breeding-pairs",
     "age": "13 Months Rooster + 10 Months Hens",
     "weight": "Rooster 3.9 Kg | Hens 2.4 Kg each",
     "height": "Rooster 26.5 Inches",
     "combType": "Matching Pea Comb Lineage",
     "colorPattern": "Matching Peela Golden Lineage with Clean Stems",
-    "temperament": "Harmonious Mating Trio, Proven Egg-Laying Record",
+    "temperament": "Harmonious Breeding Group, Natural Mothering Instinct",
     "diet": "High-Protein Breeder Ration, Calcium oyster shell, Sprouted Wheat",
     "vaccinationStatus": "Fully Vaccinated",
     "vaccines": ["Full Flock Vaccination Pack", "Dewormed", "Vitamin & Mineral Fortified"],
-    "price": 18500,
-    "originalPrice": 22000,
-    "status": "available",
+    "badge": "Breeding Flock",
     "images": [
       "https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?auto=format&fit=crop&w=1200&q=80",
       "https://images.unsplash.com/photo-1598439210625-5067c578f3f6?auto=format&fit=crop&w=1200&q=80"
     ],
     "videoUrl": "https://assets.mixkit.co/videos/preview/mixkit-chicken-walking-freely-in-a-farm-42545-large.mp4",
     "featured": true,
-    "lineage": "Handpicked genetic pairing to ensure 95%+ hatchability and championship progeny.",
-    "healthWarranty": "100% Fertility Guarantee & Safe Multi-Bird Transit Crate.",
-    "description": "A turn-key championship breeding unit. Includes 1 prime Stud Rooster and 2 laying pure Aseel hens from compatible bloodlines. Perfect for serious farms looking to produce high-value chicks immediately.",
+    "lineage": "Handpicked genetic pairing to preserve original phenotypic traits and high vitality.",
+    "healthWarranty": "Flock authenticated pedigree records.",
+    "description": "A pure championship breeding flock unit. Maintained for bloodline preservation and natural incubation.",
     "createdAt": "2026-11-06",
     "views": 730
   }
 ]
-

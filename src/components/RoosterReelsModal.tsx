@@ -13,12 +13,11 @@ import {
   Eye, 
   Award, 
   Sparkles,
-  ShoppingBag,
   Share2
 } from 'lucide-react';
 import { Rooster } from '@/types/rooster';
 import { FARM_INFO } from '@/lib/data';
-import { formatPrice, generateWhatsAppLink } from '@/lib/utils';
+import { generateWhatsAppLink } from '@/lib/utils';
 
 interface RoosterReelsModalProps {
   isOpen: boolean;
@@ -26,7 +25,7 @@ interface RoosterReelsModalProps {
   roosters: Rooster[];
   initialRoosterId?: string;
   onSelectRooster: (rooster: Rooster) => void;
-  onBookNow: (rooster: Rooster) => void;
+  onInquire?: (rooster: Rooster) => void;
 }
 
 export const RoosterReelsModal: React.FC<RoosterReelsModalProps> = ({
@@ -35,7 +34,7 @@ export const RoosterReelsModal: React.FC<RoosterReelsModalProps> = ({
   roosters,
   initialRoosterId,
   onSelectRooster,
-  onBookNow,
+  onInquire,
 }) => {
   // Only roosters with videos
   const videoRoosters = roosters.filter(r => !!r.videoUrl);
@@ -98,11 +97,7 @@ export const RoosterReelsModal: React.FC<RoosterReelsModalProps> = ({
 
   const whatsAppUrl = generateWhatsAppLink({
     phone: FARM_INFO.whatsapp,
-    tagId: currentRooster.tagId,
-    roosterName: currentRooster.name,
-    breed: currentRooster.breed,
-    price: currentRooster.price,
-    customMessage: `Hi JP Farms! 🐓 Watching Reel for Rooster #${currentRooster.tagId} (${currentRooster.name} - ${formatPrice(currentRooster.price)}). Is this bird available for booking?`,
+    customMessage: `Hi JP Farms! 🐓 Watching JP Rooster TV Reel for #${currentRooster.tagId} (${currentRooster.name}, ${currentRooster.breed}). I would love to learn more about its lineage and visit the farm.`,
   });
 
   return (
@@ -186,20 +181,6 @@ export const RoosterReelsModal: React.FC<RoosterReelsModalProps> = ({
             <span className="text-[9px] font-bold mt-1">Specs</span>
           </button>
 
-          {/* Book Direct Button */}
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onClose();
-              onBookNow(currentRooster);
-            }}
-            className="p-3 rounded-full bg-amber-500 text-stone-950 hover:bg-amber-400 backdrop-blur-md shadow-lg transition active:scale-95 flex flex-col items-center"
-            title="Book Bird"
-          >
-            <ShoppingBag className="w-5 h-5" />
-            <span className="text-[9px] font-extrabold mt-1">Book</span>
-          </button>
-
           {/* Next / Prev Navigation Arrows */}
           <div className="flex flex-col space-y-2 pt-2">
             <button
@@ -229,16 +210,16 @@ export const RoosterReelsModal: React.FC<RoosterReelsModalProps> = ({
         {/* Bottom Information Card Overlay */}
         <div className="absolute bottom-0 left-0 right-0 z-30 p-5 space-y-3 pointer-events-auto">
           
-          {/* Bird Tags & Pricing */}
+          {/* Bird Tags & Badge */}
           <div>
             <div className="flex items-center space-x-2 mb-1.5">
               <span className="font-mono text-xs font-bold bg-amber-500 text-stone-950 px-2.5 py-0.5 rounded shadow">
                 TAG: {currentRooster.tagId}
               </span>
-              <span className="text-[11px] font-bold bg-emerald-600 text-white px-2 py-0.5 rounded">
-                {currentRooster.status.toUpperCase()}
+              <span className="text-[11px] font-bold bg-stone-900 text-amber-400 border border-amber-500/30 px-2 py-0.5 rounded">
+                {currentRooster.badge}
               </span>
-              <span className="text-xs text-amber-300 font-semibold truncate">
+              <span className="text-xs text-stone-300 font-semibold truncate">
                 {currentRooster.breed}
               </span>
             </div>
@@ -259,10 +240,17 @@ export const RoosterReelsModal: React.FC<RoosterReelsModalProps> = ({
 
           {/* Action Row */}
           <div className="flex items-center space-x-2 pt-1">
-            <div className="bg-stone-900/90 backdrop-blur-md px-3 py-2 rounded-xl border border-stone-700">
-              <p className="text-[9px] uppercase font-bold text-stone-400">Price</p>
-              <p className="text-lg font-black text-amber-400">{formatPrice(currentRooster.price)}</p>
-            </div>
+            <button
+              type="button"
+              onClick={() => {
+                onClose();
+                onSelectRooster(currentRooster);
+              }}
+              className="bg-stone-900/90 hover:bg-stone-800 text-amber-400 font-bold px-3.5 py-3 rounded-xl border border-stone-700 text-xs flex items-center space-x-1.5 transition"
+            >
+              <Eye className="w-4 h-4" />
+              <span>Full Profile</span>
+            </button>
 
             {/* Direct WhatsApp Lead Button */}
             <a
@@ -272,7 +260,7 @@ export const RoosterReelsModal: React.FC<RoosterReelsModalProps> = ({
               className="flex-1 flex items-center justify-center space-x-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 px-4 rounded-xl text-sm shadow-xl transition active:scale-95"
             >
               <MessageCircle className="w-4 h-4" />
-              <span>WhatsApp for this Rooster</span>
+              <span>Inquire on WhatsApp</span>
             </a>
           </div>
 
@@ -283,4 +271,3 @@ export const RoosterReelsModal: React.FC<RoosterReelsModalProps> = ({
     </div>
   );
 };
-

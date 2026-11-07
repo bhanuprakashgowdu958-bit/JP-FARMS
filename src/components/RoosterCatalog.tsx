@@ -1,19 +1,19 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
-import { Search, Filter, SlidersHorizontal, Sparkles, Feather, RotateCcw } from 'lucide-react';
-import { Rooster, RoosterCategory } from '@/types/rooster';
+import { Search, Filter, SlidersHorizontal, Sparkles, Feather, RotateCcw, Award } from 'lucide-react';
+import { Rooster, RoosterCategory, RoosterBadge } from '@/types/rooster';
 import { RoosterCard } from './RoosterCard';
 
 interface RoosterCatalogProps {
   roosters: Rooster[];
   onSelectRooster: (rooster: Rooster) => void;
   onOpenVideo?: (rooster: Rooster) => void;
-  onBookNow?: (rooster: Rooster) => void;
+  onInquire?: (rooster: Rooster) => void;
 }
 
 const CATEGORIES: { label: string; value: string }[] = [
-  { label: 'All Birds', value: 'all' },
+  { label: 'All Breeds', value: 'all' },
   { label: 'Pure Aseel (Peela)', value: 'aseel-peela' },
   { label: 'Aseel (Kagar)', value: 'aseel-kagar' },
   { label: 'Sindhi Heavy Aseel', value: 'aseel-sindhi' },
@@ -22,16 +22,25 @@ const CATEGORIES: { label: string; value: string }[] = [
   { label: 'Breeding Units', value: 'breeding-pairs' },
 ];
 
+const BADGES: { label: string; value: 'all' | RoosterBadge }[] = [
+  { label: 'All Strains', value: 'all' },
+  { label: '👑 Champion Line', value: 'Champion Line' },
+  { label: '⭐ Farm Stud', value: 'Farm Stud' },
+  { label: '🌿 Heritage Pure', value: 'Heritage Pure' },
+  { label: '🌾 Breeding Flock', value: 'Breeding Flock' },
+  { label: '✨ Young Star', value: 'Young Star' },
+];
+
 export const RoosterCatalog: React.FC<RoosterCatalogProps> = ({
   roosters,
   onSelectRooster,
   onOpenVideo,
-  onBookNow,
+  onInquire,
 }) => {
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
-  const [statusFilter, setStatusFilter] = useState<'all' | 'available' | 'reserved' | 'sold'>('available');
+  const [selectedBadge, setSelectedBadge] = useState<'all' | RoosterBadge>('all');
   const [searchQuery, setSearchQuery] = useState<string>('');
-  const [sortBy, setSortBy] = useState<'featured' | 'price-asc' | 'price-desc' | 'weight' | 'newest'>('featured');
+  const [sortBy, setSortBy] = useState<'featured' | 'weight' | 'height' | 'newest'>('featured');
 
   const filteredRoosters = useMemo(() => {
     return roosters
@@ -41,8 +50,8 @@ export const RoosterCatalog: React.FC<RoosterCatalogProps> = ({
           return false;
         }
 
-        // Status filter
-        if (statusFilter !== 'all' && r.status !== statusFilter) {
+        // Badge filter
+        if (selectedBadge !== 'all' && r.badge !== selectedBadge) {
           return false;
         }
 
@@ -61,49 +70,50 @@ export const RoosterCatalog: React.FC<RoosterCatalogProps> = ({
         return true;
       })
       .sort((a, b) => {
-        if (sortBy === 'price-asc') return a.price - b.price;
-        if (sortBy === 'price-desc') return b.price - a.price;
         if (sortBy === 'newest') return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
         if (sortBy === 'weight') {
           const wA = parseFloat(a.weight) || 0;
           const wB = parseFloat(b.weight) || 0;
           return wB - wA;
         }
-        // Default: featured first, then available first
+        if (sortBy === 'height') {
+          const hA = parseFloat(a.height) || 0;
+          const hB = parseFloat(b.height) || 0;
+          return hB - hA;
+        }
+        // Default: featured first, then champion line
         if (a.featured && !b.featured) return -1;
         if (!a.featured && b.featured) return 1;
-        if (a.status === 'available' && b.status !== 'available') return -1;
-        if (a.status !== 'available' && b.status === 'available') return 1;
+        if (a.badge === 'Champion Line' && b.badge !== 'Champion Line') return -1;
+        if (a.badge !== 'Champion Line' && b.badge === 'Champion Line') return 1;
         return 0;
       });
-  }, [roosters, selectedCategory, statusFilter, searchQuery, sortBy]);
-
-  const availableCount = roosters.filter(r => r.status === 'available').length;
+  }, [roosters, selectedCategory, selectedBadge, searchQuery, sortBy]);
 
   return (
-    <section id="catalog" className="py-16 sm:py-20 bg-stone-50/70 border-b border-stone-200">
+    <section id="showcase" className="py-16 sm:py-20 bg-stone-50/70 border-b border-stone-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Section Header */}
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
           <div>
             <div className="inline-flex items-center space-x-1.5 text-xs font-bold uppercase tracking-wider text-amber-700 bg-amber-100/80 px-3 py-1 rounded-full mb-2">
-              <Feather className="w-3.5 h-3.5" />
-              <span>Current Farm Inventory</span>
+              <Award className="w-3.5 h-3.5" />
+              <span>Living Farm Heritage Gallery</span>
             </div>
             <h2 className="text-3xl sm:text-4xl font-extrabold text-stone-900 tracking-tight">
-              Verified Roosters for Sale
+              Farm Studs & Purebred Rooster Showcase
             </h2>
-            <p className="text-stone-600 text-sm mt-1 max-w-xl">
-              Each rooster has a unique leg tag ID, verified weight, age, and HD stance video. Ready for direct farm pickup or safe crate delivery.
+            <p className="text-stone-600 text-sm mt-1 max-w-2xl">
+              Explore pure indigenous bloodlines maintained at JP Farms. Each rooster is tagged with verifiable biological traits, comb anatomy, weight, and HD video documentation.
             </p>
           </div>
 
-          {/* Quick Availability Badge */}
+          {/* Quick Stats Badge */}
           <div className="flex items-center space-x-2 text-xs font-semibold bg-white border border-stone-200 px-4 py-2.5 rounded-2xl shadow-sm self-start md:self-auto">
             <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
             <span className="text-stone-800">
-              <strong className="text-emerald-700">{availableCount} Birds</strong> Available Today
+              <strong className="text-emerald-700">{roosters.length} Registered Birds</strong> on Exhibition
             </span>
           </div>
         </div>
@@ -111,7 +121,7 @@ export const RoosterCatalog: React.FC<RoosterCatalogProps> = ({
         {/* Filter Controls Bar */}
         <div className="bg-white p-4 sm:p-5 rounded-2xl border border-stone-200 shadow-sm space-y-4 mb-8">
           
-          {/* Top Row: Search & Status Filters */}
+          {/* Top Row: Search & Badges Filters */}
           <div className="flex flex-col lg:flex-row gap-4 justify-between items-center">
             
             {/* Search Input */}
@@ -121,7 +131,7 @@ export const RoosterCatalog: React.FC<RoosterCatalogProps> = ({
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search Tag (e.g. JP-AS-101), Breed, or Name..."
+                placeholder="Search Tag (e.g. JP-AS-101), Breed, or Lineage..."
                 className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-stone-200 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 bg-stone-50/50"
               />
               {searchQuery && (
@@ -134,24 +144,22 @@ export const RoosterCatalog: React.FC<RoosterCatalogProps> = ({
               )}
             </div>
 
-            {/* Status Pills */}
-            <div className="flex items-center space-x-1 w-full lg:w-auto overflow-x-auto pb-1 lg:pb-0">
-              <span className="text-xs font-bold text-stone-400 uppercase tracking-wider mr-2 hidden sm:inline">
+            {/* Badge Filter Pills */}
+            <div className="flex items-center space-x-1.5 w-full lg:w-auto overflow-x-auto pb-1 lg:pb-0 scrollbar-none">
+              <span className="text-xs font-bold text-stone-400 uppercase tracking-wider mr-1 hidden sm:inline">
                 Status:
               </span>
-              {(['available', 'all', 'reserved', 'sold'] as const).map((status) => (
+              {BADGES.map((badgeItem) => (
                 <button
-                  key={status}
-                  onClick={() => setStatusFilter(status)}
-                  className={`px-3.5 py-1.5 rounded-xl text-xs font-bold capitalize transition whitespace-nowrap ${
-                    statusFilter === status
-                      ? status === 'available'
-                        ? 'bg-emerald-600 text-white shadow-sm'
-                        : 'bg-stone-900 text-white shadow-sm'
+                  key={badgeItem.value}
+                  onClick={() => setSelectedBadge(badgeItem.value)}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition whitespace-nowrap ${
+                    selectedBadge === badgeItem.value
+                      ? 'bg-stone-900 text-amber-400 shadow-sm border border-amber-500/40'
                       : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
                   }`}
                 >
-                  {status === 'available' ? '🟢 Available' : status === 'all' ? 'All Birds' : status}
+                  {badgeItem.label}
                 </button>
               ))}
             </div>
@@ -165,10 +173,9 @@ export const RoosterCatalog: React.FC<RoosterCatalogProps> = ({
                 className="bg-stone-100 border-none rounded-xl text-xs font-semibold px-3 py-2 text-stone-800 focus:ring-2 focus:ring-amber-500"
               >
                 <option value="featured">Featured First</option>
-                <option value="price-asc">Price: Low to High</option>
-                <option value="price-desc">Price: High to Low</option>
                 <option value="weight">Heaviest Weight First</option>
-                <option value="newest">Newly Listed</option>
+                <option value="height">Tallest Height First</option>
+                <option value="newest">Newly Documented</option>
               </select>
             </div>
 
@@ -196,14 +203,15 @@ export const RoosterCatalog: React.FC<RoosterCatalogProps> = ({
         {/* Results Counter & Active Filters Reset */}
         <div className="flex items-center justify-between mb-6 text-xs text-stone-500">
           <p>
-            Showing <strong className="text-stone-900">{filteredRoosters.length}</strong> roosters
+            Showing <strong className="text-stone-900">{filteredRoosters.length}</strong> birds
             {selectedCategory !== 'all' && ` in ${selectedCategory}`}
+            {selectedBadge !== 'all' && ` • ${selectedBadge}`}
           </p>
-          {(selectedCategory !== 'all' || statusFilter !== 'available' || searchQuery) && (
+          {(selectedCategory !== 'all' || selectedBadge !== 'all' || searchQuery) && (
             <button
               onClick={() => {
                 setSelectedCategory('all');
-                setStatusFilter('available');
+                setSelectedBadge('all');
                 setSearchQuery('');
               }}
               className="flex items-center space-x-1 text-amber-700 hover:text-amber-900 font-semibold"
@@ -223,7 +231,7 @@ export const RoosterCatalog: React.FC<RoosterCatalogProps> = ({
                 rooster={rooster}
                 onSelect={onSelectRooster}
                 onOpenVideo={onOpenVideo}
-                onBookNow={onBookNow}
+                onInquire={onInquire}
               />
             ))}
           </div>
@@ -236,13 +244,13 @@ export const RoosterCatalog: React.FC<RoosterCatalogProps> = ({
             <div>
               <h3 className="text-lg font-bold text-stone-900">No Roosters Match Your Filter</h3>
               <p className="text-xs text-stone-500 mt-1">
-                We might have this breed growing in our upcoming batch or in quarantine before listing.
+                We maintain ongoing breeding batches for this category. Contact us to learn more.
               </p>
             </div>
             <button
               onClick={() => {
                 setSelectedCategory('all');
-                setStatusFilter('all');
+                setSelectedBadge('all');
                 setSearchQuery('');
               }}
               className="bg-stone-900 text-white text-xs font-semibold px-4 py-2.5 rounded-xl hover:bg-stone-800 transition"
@@ -256,4 +264,3 @@ export const RoosterCatalog: React.FC<RoosterCatalogProps> = ({
     </section>
   );
 };
-

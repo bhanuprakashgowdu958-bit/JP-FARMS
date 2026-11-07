@@ -189,8 +189,8 @@ export function useRoosters() {
     }
   };
 
-  const toggleStatus = (id: string, newStatus: Rooster['status']) => {
-    updateRooster(id, { status: newStatus });
+  const toggleBadge = (id: string, newBadge: Rooster['badge']) => {
+    updateRooster(id, { badge: newBadge });
   };
 
   const resetToDefault = () => {
@@ -204,7 +204,7 @@ export function useRoosters() {
     addRooster,
     updateRooster,
     deleteRooster,
-    toggleStatus,
+    toggleBadge,
     resetToDefault,
   };
 }

@@ -1,15 +1,15 @@
 'use client';
 
 import React from 'react';
-import { PlayCircle, ShieldCheck, CheckCircle2, Truck, ArrowRight, Award, Flame, Eye } from 'lucide-react';
+import { PlayCircle, ShieldCheck, CheckCircle2, ArrowRight, Award, Flame, Eye, Feather } from 'lucide-react';
 import { FARM_INFO } from '@/lib/data';
 
 interface HeroProps {
   onOpenReels?: () => void;
-  availableCount?: number;
+  birdsCount?: number;
 }
 
-export const Hero: React.FC<HeroProps> = ({ onOpenReels, availableCount = 6 }) => {
+export const Hero: React.FC<HeroProps> = ({ onOpenReels, birdsCount = 7 }) => {
   return (
     <section className="relative rooster-hero-mesh text-stone-100 overflow-hidden border-b border-stone-800">
       {/* Background Subtle Pattern */}
@@ -23,8 +23,8 @@ export const Hero: React.FC<HeroProps> = ({ onOpenReels, availableCount = 6 }) =
             
             {/* Live Badge */}
             <div className="inline-flex items-center space-x-2 bg-amber-500/10 border border-amber-500/30 rounded-full px-4 py-1.5 text-xs font-semibold text-amber-300">
-              <Flame className="w-4 h-4 text-amber-400 animate-pulse" />
-              <span>FRESH 2026 MATURE CHAMPION ROOSTERS READY FOR DISPATCH</span>
+              <Award className="w-4 h-4 text-amber-400" />
+              <span>INDIGENOUS INDIAN GAMEFOWL & HERITAGE AVIAN ESTATE</span>
             </div>
 
             {/* Main Headline */}
@@ -38,26 +38,22 @@ export const Hero: React.FC<HeroProps> = ({ onOpenReels, availableCount = 6 }) =
 
             {/* Subtitle */}
             <p className="text-base sm:text-lg text-stone-300 max-w-2xl mx-auto lg:mx-0 font-normal leading-relaxed">
-              Every rooster at <strong>JP Farms</strong> is individually tagged, naturally fed with sprouted grains, fully vaccinated, and showcased with <strong>HD walking & stance videos</strong>. Reserve your pure champion breed online with safe all-India live transit.
+              Welcome to the official online living gallery of <strong>JP Farms</strong>. We conserve pure Indian Aseel, Kadaknath, and native country breeds, raising them in open pastures on traditional sprouted grain diets with <strong>unfiltered HD walking and stance videos</strong>.
             </p>
 
             {/* Key Trust Checkmarks */}
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 pt-2 text-xs sm:text-sm text-stone-200">
               <div className="flex items-center space-x-2">
                 <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-                <span>100% Pure Bloodline</span>
+                <span>100% Pure Bloodlines</span>
               </div>
               <div className="flex items-center space-x-2">
                 <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-                <span>HD Live Video Proof</span>
+                <span>HD Video Proof</span>
               </div>
               <div className="flex items-center space-x-2">
                 <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-                <span>Full Vaccine Card</span>
-              </div>
-              <div className="flex items-center space-x-2">
-                <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-                <span>Safe AC / Train Transit</span>
+                <span>Natural Sun Pastures</span>
               </div>
               <div className="flex items-center space-x-2">
                 <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
@@ -65,19 +61,23 @@ export const Hero: React.FC<HeroProps> = ({ onOpenReels, availableCount = 6 }) =
               </div>
               <div className="flex items-center space-x-2">
                 <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-                <span>Direct Farm Pickup</span>
+                <span>Lineage Authenticity</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                <span>Visitors Welcome</span>
               </div>
             </div>
 
             {/* Action Buttons */}
             <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 pt-4">
               <a
-                href="#catalog"
+                href="#showcase"
                 className="w-full sm:w-auto inline-flex items-center justify-center space-x-3 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-stone-950 font-bold px-8 py-4 rounded-xl shadow-xl shadow-amber-950/50 hover:shadow-amber-500/20 transition-all duration-200 text-base"
               >
-                <span>View Available Roosters</span>
-                <span className="bg-stone-950/20 text-stone-950 px-2 py-0.5 rounded text-xs">
-                  {availableCount} In Stock
+                <span>Explore Rooster Gallery</span>
+                <span className="bg-stone-950/20 text-stone-950 px-2 py-0.5 rounded text-xs font-mono font-bold">
+                  {birdsCount} Strains
                 </span>
                 <ArrowRight className="w-4 h-4" />
               </a>
@@ -87,14 +87,14 @@ export const Hero: React.FC<HeroProps> = ({ onOpenReels, availableCount = 6 }) =
                 className="w-full sm:w-auto inline-flex items-center justify-center space-x-2.5 bg-stone-900/90 hover:bg-stone-800 text-white font-semibold px-6 py-4 rounded-xl border border-stone-700 hover:border-amber-500/50 transition-all text-base group"
               >
                 <PlayCircle className="w-5 h-5 text-amber-400 group-hover:scale-110 transition" />
-                <span>Watch Video Reels TV</span>
-                <span className="bg-red-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded uppercase">
-                  Reels
+                <span>Watch Rooster TV (Reels)</span>
+                <span className="bg-amber-600 text-stone-950 text-[10px] font-bold px-1.5 py-0.5 rounded uppercase">
+                  VIDEOS
                 </span>
               </button>
             </div>
 
-            {/* Trust Quote / Guarantee */}
+            {/* Trust Quote / Conservation Mission */}
             <div className="pt-2 flex items-center justify-center lg:justify-start space-x-2 text-xs text-stone-400">
               <ShieldCheck className="w-4 h-4 text-emerald-400" />
               <span>{FARM_INFO.guaranteeText}</span>
@@ -125,9 +125,9 @@ export const Hero: React.FC<HeroProps> = ({ onOpenReels, availableCount = 6 }) =
                     <span className="bg-stone-950/90 backdrop-blur-md text-amber-400 font-mono text-xs font-bold px-2.5 py-1 rounded-md border border-amber-500/40">
                       TAG: JP-AS-101
                     </span>
-                    <span className="bg-emerald-600/90 text-white text-xs font-semibold px-2 py-0.5 rounded-md flex items-center space-x-1">
-                      <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse"></span>
-                      <span>AVAILABLE</span>
+                    <span className="bg-amber-600 text-stone-950 text-xs font-bold px-2.5 py-0.5 rounded-md flex items-center space-x-1">
+                      <Award className="w-3 h-3 text-stone-950" />
+                      <span>FARM STUD</span>
                     </span>
                   </div>
 
@@ -145,12 +145,13 @@ export const Hero: React.FC<HeroProps> = ({ onOpenReels, availableCount = 6 }) =
                   {/* Bottom Image Overlay */}
                   <div className="absolute bottom-3 left-4 right-4 flex items-end justify-between">
                     <div>
-                      <p className="text-xs uppercase tracking-wider text-amber-400 font-bold">Featured Breed</p>
+                      <p className="text-xs uppercase tracking-wider text-amber-400 font-bold">Featured Stud</p>
                       <h3 className="text-xl font-bold text-white">Sikandar • Pure Peela Aseel</h3>
                     </div>
                     <div className="text-right">
-                      <p className="text-xs text-stone-400 line-through">₹10,000</p>
-                      <p className="text-xl font-extrabold text-amber-400">₹8,500</p>
+                      <span className="text-xs bg-emerald-950 text-emerald-400 border border-emerald-700/60 px-2 py-0.5 rounded font-mono font-semibold">
+                        Prime Age: 14M
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -162,26 +163,26 @@ export const Hero: React.FC<HeroProps> = ({ onOpenReels, availableCount = 6 }) =
                     <p className="font-bold text-stone-100">3.85 Kg</p>
                   </div>
                   <div className="bg-stone-900 p-2 rounded-lg border border-stone-800">
-                    <p className="text-stone-400 text-[10px] uppercase font-semibold">Age</p>
-                    <p className="font-bold text-stone-100">14 Months</p>
+                    <p className="text-stone-400 text-[10px] uppercase font-semibold">Comb Type</p>
+                    <p className="font-bold text-stone-100">Pea Comb</p>
                   </div>
                   <div className="bg-stone-900 p-2 rounded-lg border border-stone-800">
-                    <p className="text-stone-400 text-[10px] uppercase font-semibold">Height</p>
+                    <p className="text-stone-400 text-[10px] uppercase font-semibold">Standing Height</p>
                     <p className="font-bold text-stone-100">26 Inches</p>
                   </div>
                 </div>
 
-                {/* Micro CTA Footer */}
+                {/* Micro Footer */}
                 <div className="p-3 bg-stone-900 flex items-center justify-between border-t border-stone-800">
                   <span className="text-xs text-stone-300 flex items-center">
                     <Award className="w-3.5 h-3.5 text-amber-400 mr-1.5" />
-                    Championship Garuda Bloodline
+                    Garuda Championship Bloodline
                   </span>
                   <a
-                    href="#catalog"
+                    href="#showcase"
                     className="text-xs font-bold text-amber-400 hover:text-amber-300 flex items-center"
                   >
-                    <span>View Bird Details</span>
+                    <span>Inspect Profile</span>
                     <ArrowRight className="w-3 h-3 ml-1" />
                   </a>
                 </div>
@@ -195,20 +196,20 @@ export const Hero: React.FC<HeroProps> = ({ onOpenReels, availableCount = 6 }) =
         {/* Bottom Metrics Bar */}
         <div className="mt-16 pt-8 border-t border-stone-800 grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
           <div className="space-y-1">
-            <p className="text-3xl sm:text-4xl font-black text-amber-400">3,450+</p>
-            <p className="text-xs sm:text-sm text-stone-400 font-medium">Roosters Safely Delivered</p>
+            <p className="text-3xl sm:text-4xl font-black text-amber-400">350+</p>
+            <p className="text-xs sm:text-sm text-stone-400 font-medium">Champion Birds Documented</p>
           </div>
           <div className="space-y-1">
             <p className="text-3xl sm:text-4xl font-black text-emerald-400">100%</p>
-            <p className="text-xs sm:text-sm text-stone-400 font-medium">Verified Pure Bloodline</p>
+            <p className="text-xs sm:text-sm text-stone-400 font-medium">Verified Pure Bloodlines</p>
           </div>
           <div className="space-y-1">
-            <p className="text-3xl sm:text-4xl font-black text-amber-400">18+ States</p>
-            <p className="text-xs sm:text-sm text-stone-400 font-medium">All-India Pet Transit Hubs</p>
+            <p className="text-3xl sm:text-4xl font-black text-amber-400">12 Lines</p>
+            <p className="text-xs sm:text-sm text-stone-400 font-medium">Heritage Breeding Programs</p>
           </div>
           <div className="space-y-1">
             <p className="text-3xl sm:text-4xl font-black text-stone-100">9+ Years</p>
-            <p className="text-xs sm:text-sm text-stone-400 font-medium">Heritage Breeding Legacy</p>
+            <p className="text-xs sm:text-sm text-stone-400 font-medium">Poultry Conservation Legacy</p>
           </div>
         </div>
 
@@ -216,4 +217,3 @@ export const Hero: React.FC<HeroProps> = ({ onOpenReels, availableCount = 6 }) =
     </section>
   );
 };
-

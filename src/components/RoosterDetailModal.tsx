@@ -11,29 +11,29 @@ import {
   Share2, 
   Award, 
   Activity, 
-  Truck, 
   Feather, 
   Scale, 
   Clock, 
   Ruler, 
   Eye, 
-  AlertCircle 
+  Calendar,
+  MapPin
 } from 'lucide-react';
 import { Rooster } from '@/types/rooster';
 import { FARM_INFO } from '@/lib/data';
-import { formatPrice, generateWhatsAppLink } from '@/lib/utils';
+import { generateWhatsAppLink } from '@/lib/utils';
 import { BreedCertificateModal } from './BreedCertificateModal';
 
 interface RoosterDetailModalProps {
   rooster: Rooster | null;
   onClose: () => void;
-  onBookNow: (rooster: Rooster) => void;
+  onInquire?: (rooster: Rooster) => void;
 }
 
 export const RoosterDetailModal: React.FC<RoosterDetailModalProps> = ({
   rooster,
   onClose,
-  onBookNow,
+  onInquire,
 }) => {
   const [activeMedia, setActiveMedia] = useState<'photo' | 'video'>('photo');
   const [selectedPhotoIndex, setSelectedPhotoIndex] = useState(0);
@@ -44,23 +44,33 @@ export const RoosterDetailModal: React.FC<RoosterDetailModalProps> = ({
 
   const whatsAppUrl = generateWhatsAppLink({
     phone: FARM_INFO.whatsapp,
-    tagId: rooster.tagId,
-    roosterName: rooster.name,
-    breed: rooster.breed,
-    price: rooster.price,
+    customMessage: `Hello JP Farms! 🐓 I am viewing Rooster #${rooster.tagId} (${rooster.name}, ${rooster.breed}) on your website. I would like to inquire about its lineage and schedule a visit to your farm.`,
   });
 
   const handleShare = () => {
-    if (navigator.clipboard) {
+    if (typeof window !== 'undefined' && navigator.clipboard) {
       navigator.clipboard.writeText(window.location.href);
       setCopiedLink(true);
       setTimeout(() => setCopiedLink(false), 2000);
     }
   };
 
-  const isSold = rooster.status === 'sold';
-  const isReserved = rooster.status === 'reserved';
-  const isAvailable = rooster.status === 'available';
+  const getBadgeStyle = (badge: Rooster['badge']) => {
+    switch (badge) {
+      case 'Champion Line':
+        return 'bg-gradient-to-r from-amber-500 to-amber-600 text-stone-950 font-black shadow-md border border-amber-300';
+      case 'Farm Stud':
+        return 'bg-stone-900 text-amber-400 font-bold border border-amber-500/40 shadow-sm';
+      case 'Heritage Pure':
+        return 'bg-emerald-600 text-white font-bold shadow-sm';
+      case 'Breeding Flock':
+        return 'bg-blue-600 text-white font-bold shadow-sm';
+      case 'Young Star':
+        return 'bg-purple-600 text-white font-bold shadow-sm';
+      default:
+        return 'bg-stone-800 text-stone-200';
+    }
+  };
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto bg-black/80 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 md:p-6 animate-in fade-in duration-200">
@@ -123,6 +133,7 @@ export const RoosterDetailModal: React.FC<RoosterDetailModalProps> = ({
                 >
                   HD Photos ({rooster.images.length})
                 </button>
+
                 {rooster.videoUrl && (
                   <button
                     type="button"
@@ -130,213 +141,192 @@ export const RoosterDetailModal: React.FC<RoosterDetailModalProps> = ({
                     className={`flex items-center space-x-1.5 px-4 py-1.5 rounded-lg text-xs font-bold transition ${
                       activeMedia === 'video'
                         ? 'bg-amber-600 text-white shadow'
-                        : 'text-stone-600 hover:text-stone-900'
+                        : 'text-amber-800 hover:text-amber-900'
                     }`}
                   >
                     <PlayCircle className="w-4 h-4" />
-                    <span>Watch Walking Video</span>
+                    <span>Watch Stance Reel</span>
                   </button>
                 )}
               </div>
 
-              {/* Status Badge */}
-              <div>
-                {isAvailable && (
-                  <span className="text-xs font-bold px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300 flex items-center space-x-1.5">
-                    <span className="w-2 h-2 rounded-full bg-emerald-600 animate-pulse"></span>
-                    <span>READY FOR IMMEDIATE DISPATCH</span>
-                  </span>
-                )}
-                {isReserved && (
-                  <span className="text-xs font-bold px-3 py-1 rounded-full bg-amber-100 text-amber-900 border border-amber-300">
-                    TOKEN RESERVED (HELD)
-                  </span>
-                )}
-                {isSold && (
-                  <span className="text-xs font-bold px-3 py-1 rounded-full bg-stone-200 text-stone-700">
-                    SOLD OUT
-                  </span>
-                )}
-              </div>
+              {/* Badge */}
+              <span className={`text-xs px-3 py-1 rounded-full flex items-center space-x-1 ${getBadgeStyle(rooster.badge)}`}>
+                <Award className="w-3.5 h-3.5" />
+                <span>{rooster.badge}</span>
+              </span>
             </div>
 
-            {/* Main Media Display Viewport */}
-            <div className="relative aspect-[16/10] sm:aspect-[16/9] w-full bg-stone-950 rounded-2xl overflow-hidden border border-stone-800 shadow-inner flex items-center justify-center">
-              {activeMedia === 'video' && rooster.videoUrl ? (
-                <div className="w-full h-full flex flex-col justify-center items-center bg-black">
-                  <video
-                    src={rooster.videoUrl}
-                    controls
-                    autoPlay
-                    playsInline
-                    className="w-full h-full object-contain"
-                  >
-                    Your browser does not support HTML5 video.
-                  </video>
-                </div>
-              ) : (
+            {/* Media Display Area */}
+            <div className="relative aspect-video sm:aspect-[16/9] w-full bg-stone-950 rounded-2xl overflow-hidden shadow-inner border border-stone-200">
+              {activeMedia === 'photo' ? (
                 <img
                   src={rooster.images[selectedPhotoIndex] || rooster.images[0]}
-                  alt={`${rooster.name} view`}
-                  className="w-full h-full object-cover object-center"
+                  alt={rooster.name}
+                  className="w-full h-full object-contain"
+                />
+              ) : (
+                <video
+                  src={rooster.videoUrl}
+                  controls
+                  autoPlay
+                  playsInline
+                  className="w-full h-full object-contain"
                 />
               )}
             </div>
 
-            {/* Thumbnail Gallery (Photos) */}
+            {/* Photo Thumbnail Strip */}
             {activeMedia === 'photo' && rooster.images.length > 1 && (
-              <div className="flex items-center space-x-2 overflow-x-auto py-1">
-                {rooster.images.map((img, idx) => (
+              <div className="flex items-center space-x-2 overflow-x-auto pb-1">
+                {rooster.images.map((imgUrl, index) => (
                   <button
-                    key={idx}
-                    onClick={() => setSelectedPhotoIndex(idx)}
-                    className={`relative w-20 h-16 rounded-xl overflow-hidden border-2 transition shrink-0 ${
-                      selectedPhotoIndex === idx
-                        ? 'border-amber-500 scale-105 shadow-md'
-                        : 'border-transparent opacity-70 hover:opacity-100'
+                    key={index}
+                    onClick={() => setSelectedPhotoIndex(index)}
+                    className={`relative w-20 h-14 rounded-xl overflow-hidden border-2 transition shrink-0 ${
+                      selectedPhotoIndex === index
+                        ? 'border-amber-500 scale-95'
+                        : 'border-transparent opacity-60 hover:opacity-100'
                     }`}
                   >
-                    <img src={img} alt="" className="w-full h-full object-cover" />
+                    <img src={imgUrl} alt="" className="w-full h-full object-cover" />
                   </button>
                 ))}
               </div>
             )}
           </div>
 
-          {/* Pricing & Key Summary Header */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 bg-stone-50 rounded-2xl border border-stone-200">
+          {/* Core Information Grid */}
+          <div className="space-y-6">
+            
+            {/* Title, Breed & Heritage Tag */}
             <div>
-              <p className="text-xs font-bold uppercase tracking-wider text-amber-700">
-                {rooster.breed}
-              </p>
+              <div className="flex items-center space-x-2 text-xs font-semibold text-amber-700 mb-1">
+                <Feather className="w-3.5 h-3.5" />
+                <span>{rooster.breed}</span>
+                <span>•</span>
+                <span className="font-mono text-stone-600">ID: {rooster.tagId}</span>
+              </div>
               <h1 className="text-2xl sm:text-3xl font-extrabold text-stone-900">
                 {rooster.name}
               </h1>
-              <p className="text-xs text-stone-500 mt-0.5">
-                Physical Leg Tag: <strong className="text-stone-800 font-mono">{rooster.tagId}</strong>
-              </p>
-            </div>
-
-            <div className="sm:text-right">
-              <p className="text-xs font-semibold text-stone-400 uppercase">Farm Direct Price</p>
-              <div className="flex items-baseline sm:justify-end space-x-2">
-                <span className="text-3xl font-black text-stone-900">
-                  {formatPrice(rooster.price)}
-                </span>
-                {rooster.originalPrice && (
-                  <span className="text-sm text-stone-400 line-through">
-                    {formatPrice(rooster.originalPrice)}
-                  </span>
-                )}
-              </div>
-              <p className="text-[11px] text-emerald-700 font-medium">
-                Live Animal Pet Transit Crate included
-              </p>
-            </div>
-          </div>
-
-          {/* Key Biological Metrics Grid */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            <div className="bg-stone-50 p-4 rounded-xl border border-stone-200">
-              <div className="flex items-center space-x-2 text-stone-500 text-xs font-semibold mb-1">
-                <Scale className="w-4 h-4 text-amber-600" />
-                <span>Live Weight</span>
-              </div>
-              <p className="text-lg font-bold text-stone-900">{rooster.weight}</p>
-              <p className="text-[11px] text-stone-400">Muscular Bone Density</p>
-            </div>
-
-            <div className="bg-stone-50 p-4 rounded-xl border border-stone-200">
-              <div className="flex items-center space-x-2 text-stone-500 text-xs font-semibold mb-1">
-                <Clock className="w-4 h-4 text-amber-600" />
-                <span>Age</span>
-              </div>
-              <p className="text-lg font-bold text-stone-900">{rooster.age}</p>
-              <p className="text-[11px] text-stone-400">Prime Breeding Maturity</p>
-            </div>
-
-            <div className="bg-stone-50 p-4 rounded-xl border border-stone-200">
-              <div className="flex items-center space-x-2 text-stone-500 text-xs font-semibold mb-1">
-                <Ruler className="w-4 h-4 text-amber-600" />
-                <span>Standing Height</span>
-              </div>
-              <p className="text-lg font-bold text-stone-900">{rooster.height}</p>
-              <p className="text-[11px] text-stone-400">Upright Stance</p>
-            </div>
-
-            <div className="bg-stone-50 p-4 rounded-xl border border-stone-200">
-              <div className="flex items-center space-x-2 text-stone-500 text-xs font-semibold mb-1">
-                <Feather className="w-4 h-4 text-amber-600" />
-                <span>Comb Structure</span>
-              </div>
-              <p className="text-lg font-bold text-stone-900">{rooster.combType}</p>
-              <p className="text-[11px] text-stone-400">Pure Heritage Trait</p>
-            </div>
-          </div>
-
-          {/* Description & Temperament */}
-          <div className="space-y-4">
-            <div>
-              <h3 className="text-sm font-bold text-stone-900 uppercase tracking-wider mb-2 flex items-center">
-                <Eye className="w-4 h-4 text-amber-600 mr-2" />
-                Bird Characteristics & Lineage
-              </h3>
-              <p className="text-stone-700 text-sm leading-relaxed bg-stone-50/70 p-4 rounded-xl border border-stone-200">
+              <p className="text-sm text-stone-600 mt-2 leading-relaxed">
                 {rooster.description}
               </p>
             </div>
 
-            {/* Bloodline Ancestry */}
-            <div className="bg-amber-50/70 border border-amber-200 p-4 rounded-xl">
-              <div className="flex items-center space-x-2 text-amber-900 font-bold text-sm mb-1">
-                <Award className="w-4 h-4 text-amber-700" />
-                <span>Pedigree & Bloodline Ancestry</span>
+            {/* Biological Specifications Matrix */}
+            <div>
+              <h3 className="text-xs uppercase font-extrabold tracking-wider text-stone-400 mb-3 flex items-center">
+                <Activity className="w-4 h-4 mr-1.5 text-stone-700" />
+                Biological Traits & Measured Specifications
+              </h3>
+              
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                <div className="p-3.5 rounded-xl bg-stone-50 border border-stone-200">
+                  <div className="flex items-center space-x-1.5 text-stone-400 text-xs mb-1">
+                    <Scale className="w-3.5 h-3.5" />
+                    <span>Weight</span>
+                  </div>
+                  <p className="text-base font-bold text-stone-900">{rooster.weight}</p>
+                  <p className="text-[10px] text-stone-500">Live scale verified</p>
+                </div>
+
+                <div className="p-3.5 rounded-xl bg-stone-50 border border-stone-200">
+                  <div className="flex items-center space-x-1.5 text-stone-400 text-xs mb-1">
+                    <Clock className="w-3.5 h-3.5" />
+                    <span>Age</span>
+                  </div>
+                  <p className="text-base font-bold text-stone-900">{rooster.age}</p>
+                  <p className="text-[10px] text-stone-500">Hatch date documented</p>
+                </div>
+
+                <div className="p-3.5 rounded-xl bg-stone-50 border border-stone-200">
+                  <div className="flex items-center space-x-1.5 text-stone-400 text-xs mb-1">
+                    <Ruler className="w-3.5 h-3.5" />
+                    <span>Height / Stance</span>
+                  </div>
+                  <p className="text-base font-bold text-stone-900">{rooster.height}</p>
+                  <p className="text-[10px] text-stone-500">Standing upright height</p>
+                </div>
+
+                <div className="p-3.5 rounded-xl bg-stone-50 border border-stone-200">
+                  <div className="flex items-center space-x-1.5 text-stone-400 text-xs mb-1">
+                    <Award className="w-3.5 h-3.5" />
+                    <span>Comb Anatomy</span>
+                  </div>
+                  <p className="text-base font-bold text-stone-900 truncate" title={rooster.combType}>
+                    {rooster.combType.split('(')[0].trim()}
+                  </p>
+                  <p className="text-[10px] text-stone-500">Pure breed trait</p>
+                </div>
               </div>
-              <p className="text-xs text-amber-800 leading-relaxed font-medium">
-                {rooster.lineage}
-              </p>
             </div>
 
-            {/* Color & Stance Detailed Specs Table */}
-            <div className="border border-stone-200 rounded-xl overflow-hidden">
-              <table className="w-full text-left text-xs">
-                <tbody className="divide-y divide-stone-200">
-                  <tr className="bg-stone-50">
-                    <th className="py-2.5 px-4 font-semibold text-stone-600 w-1/3">Color & Plumage</th>
-                    <td className="py-2.5 px-4 text-stone-900 font-medium">{rooster.colorPattern}</td>
-                  </tr>
-                  <tr>
-                    <th className="py-2.5 px-4 font-semibold text-stone-600">Temperament / Stance</th>
-                    <td className="py-2.5 px-4 text-stone-900 font-medium">{rooster.temperament}</td>
-                  </tr>
-                  <tr className="bg-stone-50">
-                    <th className="py-2.5 px-4 font-semibold text-stone-600">Nutrition & Daily Diet</th>
-                    <td className="py-2.5 px-4 text-stone-900 font-medium">{rooster.diet}</td>
-                  </tr>
-                  <tr>
-                    <th className="py-2.5 px-4 font-semibold text-stone-600">Health Warranty</th>
-                    <td className="py-2.5 px-4 text-stone-900 font-medium text-emerald-800">{rooster.healthWarranty}</td>
-                  </tr>
-                </tbody>
-              </table>
+            {/* Color, Plumage & Temperament */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="p-4 rounded-2xl bg-amber-50/60 border border-amber-200/70">
+                <h4 className="text-xs font-bold text-amber-900 uppercase tracking-wide mb-1">
+                  Color Pattern & Plumage
+                </h4>
+                <p className="text-xs text-amber-950 font-medium leading-relaxed">
+                  {rooster.colorPattern}
+                </p>
+              </div>
+
+              <div className="p-4 rounded-2xl bg-stone-50 border border-stone-200">
+                <h4 className="text-xs font-bold text-stone-700 uppercase tracking-wide mb-1">
+                  Temperament & Behavior
+                </h4>
+                <p className="text-xs text-stone-800 font-medium leading-relaxed">
+                  {rooster.temperament}
+                </p>
+              </div>
             </div>
 
-            {/* Vaccination Certificate Records */}
-            <div className="bg-emerald-50/80 border border-emerald-200 rounded-xl p-4">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-xs font-bold text-emerald-900 flex items-center uppercase tracking-wide">
-                  <ShieldCheck className="w-4 h-4 text-emerald-700 mr-1.5" />
-                  Verified Veterinary Vaccination Card
-                </span>
-                <span className="text-[11px] font-semibold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded">
+            {/* Lineage & Organic Diet */}
+            <div className="space-y-3">
+              <div className="p-4 rounded-2xl bg-stone-900 text-white space-y-1">
+                <div className="flex items-center space-x-2 text-amber-400 text-xs font-bold uppercase tracking-wider">
+                  <Award className="w-4 h-4" />
+                  <span>Authenticated Bloodline & Lineage</span>
+                </div>
+                <p className="text-sm font-semibold text-stone-200">
+                  {rooster.lineage}
+                </p>
+              </div>
+
+              <div className="p-4 rounded-2xl bg-stone-50 border border-stone-200 space-y-1">
+                <h4 className="text-xs font-bold text-stone-700 uppercase tracking-wide">
+                  Traditional Organic Diet & Conditioning
+                </h4>
+                <p className="text-xs text-stone-600 leading-relaxed">
+                  {rooster.diet}
+                </p>
+              </div>
+            </div>
+
+            {/* Veterinary Vaccine & Health Records */}
+            <div className="p-5 rounded-2xl bg-emerald-50/80 border border-emerald-200 space-y-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-2 text-emerald-800">
+                  <ShieldCheck className="w-5 h-5 text-emerald-600" />
+                  <h4 className="text-sm font-bold">Veterinary & Vaccination Records</h4>
+                </div>
+                <span className="text-xs font-bold bg-emerald-600 text-white px-3 py-1 rounded-full shadow-sm">
                   {rooster.vaccinationStatus}
                 </span>
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-emerald-900">
-                {rooster.vaccines.map((vax, i) => (
-                  <div key={i} className="flex items-center space-x-2">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-                    <span>{vax}</span>
+
+              <p className="text-xs text-emerald-900/80">
+                Strict bio-security protocol followed. This bird is quarantined, dewormed, and immunized under avian veterinary supervision.
+              </p>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
+                {rooster.vaccines.map((vaccine, idx) => (
+                  <div key={idx} className="flex items-center space-x-2 text-xs text-emerald-950 font-medium bg-white/80 px-3 py-1.5 rounded-lg border border-emerald-200">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                    <span>{vaccine}</span>
                   </div>
                 ))}
               </div>
@@ -353,7 +343,7 @@ export const RoosterDetailModal: React.FC<RoosterDetailModalProps> = ({
                     Official Pedigree & Health Certificate
                   </h4>
                   <p className="text-[11px] text-stone-600">
-                    Authenticated bloodline seal, microchip/leg-tag registry, and full veterinary stamps.
+                    Authenticated bloodline seal, leg-tag registry, and full veterinary stamps.
                   </p>
                 </div>
               </div>
@@ -368,13 +358,13 @@ export const RoosterDetailModal: React.FC<RoosterDetailModalProps> = ({
               </button>
             </div>
 
-            {/* Safe Delivery Promise */}
+            {/* Farm Visitation & Conservation Notice */}
             <div className="bg-stone-100 rounded-xl p-4 flex items-start space-x-3 text-stone-700 text-xs">
-              <Truck className="w-5 h-5 text-stone-800 shrink-0 mt-0.5" />
+              <MapPin className="w-5 h-5 text-amber-700 shrink-0 mt-0.5" />
               <div>
-                <p className="font-bold text-stone-900">Safe All-India Live Animal Pet Transit</p>
+                <p className="font-bold text-stone-900">Farm Visits & Conservation Enthusiasts Welcome</p>
                 <p className="text-stone-600 mt-0.5">
-                  Shipped in customized ventilated travel crates equipped with water gel, fresh cut cucumbers/apples, and grain bedding. Available via direct express road routes, express trains, or direct farm pickup.
+                  Plan a visit to JP Farms to observe these magnificent birds in open natural paddocks. Open 7:00 AM - 7:00 PM daily. Contact our farm manager to schedule your visit.
                 </p>
               </div>
             </div>
@@ -388,24 +378,30 @@ export const RoosterDetailModal: React.FC<RoosterDetailModalProps> = ({
           
           <div className="flex items-center space-x-3 w-full sm:w-auto">
             <div>
-              <p className="text-[10px] uppercase font-bold text-stone-400">Total Price</p>
-              <p className="text-2xl font-black text-amber-400">{formatPrice(rooster.price)}</p>
+              <span className={`text-xs px-2.5 py-0.5 rounded font-bold ${getBadgeStyle(rooster.badge)}`}>
+                {rooster.badge}
+              </span>
+              <p className="text-sm font-extrabold text-white mt-1">TAG: {rooster.tagId}</p>
             </div>
             <div className="border-l border-stone-800 pl-3">
-              <p className="text-xs text-stone-300 font-medium">Tag: {rooster.tagId}</p>
-              <p className="text-[11px] text-stone-500">Live Health Guarantee</p>
+              <p className="text-xs text-stone-300 font-medium">{rooster.breed}</p>
+              <p className="text-[11px] text-emerald-400">Verified Bloodline</p>
             </div>
           </div>
 
           <div className="flex items-center gap-2.5 w-full sm:w-auto">
-            {/* Book Now Button */}
-            {isAvailable && (
+            {/* Schedule Visit Button */}
+            {onInquire && (
               <button
                 type="button"
-                onClick={() => onBookNow(rooster)}
-                className="flex-1 sm:flex-none bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-stone-950 font-bold px-6 py-3 rounded-xl text-sm transition shadow-lg shadow-amber-950"
+                onClick={() => {
+                  onClose();
+                  onInquire(rooster);
+                }}
+                className="flex-1 sm:flex-none inline-flex items-center justify-center space-x-2 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-stone-950 font-bold px-5 py-3 rounded-xl text-sm transition shadow-lg shadow-amber-950"
               >
-                Book This Bird Now
+                <Calendar className="w-4 h-4" />
+                <span>Schedule Visit</span>
               </button>
             )}
 
@@ -444,4 +440,3 @@ export const RoosterDetailModal: React.FC<RoosterDetailModalProps> = ({
     </div>
   );
 };
-

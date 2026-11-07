@@ -22,25 +22,25 @@ export default function HomePage() {
   const { roosters, isLoaded } = useRoosters();
 
   const [selectedRooster, setSelectedRooster] = useState<Rooster | null>(null);
-  const [bookingRooster, setBookingRooster] = useState<Rooster | null>(null);
+  const [inquiryRooster, setInquiryRooster] = useState<Rooster | null>(null);
   const [isReelsOpen, setIsReelsOpen] = useState(false);
   const [reelsInitialId, setReelsInitialId] = useState<string | undefined>(undefined);
 
-  const availableCount = roosters.filter(r => r.status === 'available').length;
+  const birdsCount = roosters.length;
 
   const handleOpenVideo = (rooster: Rooster) => {
     setReelsInitialId(rooster.id);
     setIsReelsOpen(true);
   };
 
-  const handleBookNow = (rooster: Rooster) => {
+  const handleInquire = (rooster: Rooster) => {
     setSelectedRooster(null); // close detail modal if open
-    setBookingRooster(rooster);
+    setInquiryRooster(rooster);
   };
 
   const whatsAppFloatingUrl = generateWhatsAppLink({
     phone: FARM_INFO.whatsapp,
-    customMessage: 'Hello JP Farms, I am browsing your website and want to inquire about available desi roosters.',
+    customMessage: 'Hello JP Farms! I am browsing your website and want to inquire about visiting your farm and seeing your desi roosters.',
   });
 
   return (
@@ -49,7 +49,7 @@ export default function HomePage() {
       {/* Main Header */}
       <Header 
         onOpenReels={() => setIsReelsOpen(true)} 
-        availableCount={availableCount} 
+        birdsCount={birdsCount} 
       />
 
       {/* Main Content Area */}
@@ -57,15 +57,15 @@ export default function HomePage() {
         {/* Hero Section */}
         <Hero 
           onOpenReels={() => setIsReelsOpen(true)} 
-          availableCount={availableCount} 
+          birdsCount={birdsCount} 
         />
 
-        {/* Roosters For Sale Catalog */}
+        {/* Heritage Rooster Living Gallery */}
         <RoosterCatalog
           roosters={roosters}
           onSelectRooster={(rooster) => setSelectedRooster(rooster)}
           onOpenVideo={handleOpenVideo}
-          onBookNow={handleBookNow}
+          onInquire={handleInquire}
         />
 
         {/* Heritage Breeds Educational Guide */}
@@ -74,10 +74,10 @@ export default function HomePage() {
         {/* Farm Bio-Security, Organic Diet & Vaccination Standards */}
         <FarmBioSecurity />
 
-        {/* Safe Live Transit Logistics & Delivery Timings */}
+        {/* Safe Farm Logistics & Visitor Guidelines */}
         <DeliveryProcess />
 
-        {/* Customer Proof & Breeder Reviews */}
+        {/* Avian Enthusiast Proof & Breeder Testimonials */}
         <Testimonials />
       </main>
 
@@ -118,7 +118,7 @@ export default function HomePage() {
       <RoosterDetailModal
         rooster={selectedRooster}
         onClose={() => setSelectedRooster(null)}
-        onBookNow={handleBookNow}
+        onInquire={handleInquire}
       />
 
       {/* 2. Interactive Rooster Reels TV Shorts Player */}
@@ -131,16 +131,15 @@ export default function HomePage() {
           setIsReelsOpen(false);
           setSelectedRooster(rooster);
         }}
-        onBookNow={handleBookNow}
+        onInquire={handleInquire}
       />
 
-      {/* 3. Booking & Inquiry Checkout Dialog */}
+      {/* 3. Farm Visit & Breed Inquiry Dialog */}
       <BookingModal
-        rooster={bookingRooster}
-        onClose={() => setBookingRooster(null)}
+        rooster={inquiryRooster}
+        onClose={() => setInquiryRooster(null)}
       />
 
     </div>
   );
 }
-

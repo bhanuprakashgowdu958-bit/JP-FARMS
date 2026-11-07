@@ -7,7 +7,7 @@ export type RoosterCategory =
   | 'country-desi'
   | 'breeding-pairs';
 
-export type RoosterStatus = 'available' | 'reserved' | 'sold';
+export type RoosterBadge = 'Champion Line' | 'Farm Stud' | 'Heritage Pure' | 'Breeding Flock' | 'Young Star';
 
 export interface Rooster {
   id: string;
@@ -24,9 +24,7 @@ export interface Rooster {
   diet: string; // e.g. "Sprouted Bajra, Almond paste, Boiled pulses & Greens"
   vaccinationStatus: 'Fully Vaccinated' | 'Core Vaccines Completed' | 'Dewormed & Certified';
   vaccines: string[];
-  price: number;
-  originalPrice?: number;
-  status: RoosterStatus;
+  badge: RoosterBadge;
   images: string[];
   videoUrl?: string;
   featured: boolean;
@@ -37,33 +35,16 @@ export interface Rooster {
   views?: number;
 }
 
-export interface RoosterFilter {
-  category: string;
-  status: string;
-  search: string;
-  minPrice?: number;
-  maxPrice?: number;
-  sortBy: 'featured' | 'price-asc' | 'price-desc' | 'newest' | 'weight';
-}
-
 export interface CustomerInquiry {
   id: string;
-  roosterId: string;
-  roosterTag: string;
-  roosterName: string;
+  roosterId?: string;
+  roosterTag?: string;
+  roosterName?: string;
   customerName: string;
   phoneNumber: string;
   cityState: string;
   message: string;
-  inquiryType: 'whatsapp' | 'call_request' | 'booking_token' | 'farm_visit';
+  inquiryType: 'general' | 'farm_visit' | 'breed_info' | 'whatsapp';
   createdAt: string;
-  status: 'new' | 'contacted' | 'deal_closed' | 'archived';
+  status: 'new' | 'contacted' | 'archived';
 }
-
-export interface FarmStats {
-  totalRoostersSold: number;
-  happyBreeders: number;
-  pureBreedsCount: number;
-  statesDelivered: number;
-}
-

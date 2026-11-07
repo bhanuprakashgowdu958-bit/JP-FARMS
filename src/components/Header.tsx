@@ -2,35 +2,35 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { Phone, MessageCircle, PlayCircle, ShieldCheck, Menu, X, Settings, Feather, Sparkles } from 'lucide-react';
+import { Phone, MessageCircle, PlayCircle, ShieldCheck, Menu, X, Settings, Feather, Sparkles, MapPin } from 'lucide-react';
 import { FARM_INFO } from '@/lib/data';
 import { generateWhatsAppLink } from '@/lib/utils';
 
 interface HeaderProps {
   onOpenReels?: () => void;
-  availableCount?: number;
+  birdsCount?: number;
 }
 
-export const Header: React.FC<HeaderProps> = ({ onOpenReels, availableCount = 6 }) => {
+export const Header: React.FC<HeaderProps> = ({ onOpenReels, birdsCount = 7 }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const generalWhatsAppUrl = generateWhatsAppLink({
     phone: FARM_INFO.whatsapp,
-    customMessage: `Hello JP Farms! I visited your website and would like to learn more about the roosters currently available for purchase and transit details.`,
+    customMessage: `Hello JP Farms! I visited your website showcase and would like to learn more about your heritage roosters and plan a visit to your farm.`,
   });
 
   return (
     <header className="sticky top-0 z-40 bg-stone-950/95 backdrop-blur-md border-b border-stone-800 text-stone-100">
-      {/* Top Banner: Farm Trust & Live Status */}
+      {/* Top Banner: Farm Heritage & Visitors Welcome */}
       <div className="bg-emerald-950/80 border-b border-emerald-900/60 text-xs px-4 py-1.5 text-stone-300">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div className="flex items-center space-x-3">
             <span className="flex items-center text-emerald-400 font-medium">
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse mr-1.5 inline-block"></span>
-              {availableCount} Verified Roosters Ready for Dispatch
+              {birdsCount} Champion Strains Documented • Visitors Welcome
             </span>
             <span className="hidden sm:inline text-stone-500">•</span>
-            <span className="hidden sm:inline text-stone-400">All-India Safe Pet Transit Guaranteed</span>
+            <span className="hidden sm:inline text-stone-400">Pure Indian Gamefowl & Desi Avian Conservation</span>
           </div>
           <div className="flex items-center space-x-4">
             <a 
@@ -38,15 +38,15 @@ export const Header: React.FC<HeaderProps> = ({ onOpenReels, availableCount = 6 
               className="flex items-center text-stone-300 hover:text-emerald-400 transition"
             >
               <Phone className="w-3 h-3 mr-1" />
-              <span>Call Farm: {FARM_INFO.phone}</span>
+              <span>Farm Helpline: {FARM_INFO.phone}</span>
             </a>
             <Link
               href="/admin"
               className="text-stone-400 hover:text-amber-400 transition flex items-center space-x-1 pl-2 border-l border-stone-700"
-              title="Farm Owner & Admin Management Portal"
+              title="Farm Owner Showcase Manager"
             >
               <Settings className="w-3 h-3" />
-              <span className="hidden md:inline">Admin Login</span>
+              <span className="hidden md:inline">Admin</span>
             </Link>
           </div>
         </div>
@@ -73,37 +73,37 @@ export const Header: React.FC<HeaderProps> = ({ onOpenReels, availableCount = 6 
                 </span>
               </div>
               <p className="text-[11px] text-stone-400 tracking-wide">
-                Pure Bloodline Desi & Aseel Roosters
+                Heritage Desi Rooster Showcase Estate
               </p>
             </div>
           </Link>
 
           {/* Desktop Nav Links */}
           <nav className="hidden lg:flex items-center space-x-7 text-sm font-medium text-stone-300">
-            <a href="#catalog" className="hover:text-amber-400 transition py-1">
-              Available Roosters
+            <a href="#showcase" className="hover:text-amber-400 transition py-1">
+              Rooster Showcase
             </a>
             <a href="#breeds" className="hover:text-amber-400 transition py-1">
-              Our Breeds
+              Pure Breeds
             </a>
             <button
               onClick={onOpenReels}
               className="flex items-center space-x-1.5 text-amber-400 hover:text-amber-300 font-semibold bg-amber-950/40 hover:bg-amber-950/70 border border-amber-600/40 px-3 py-1.5 rounded-full transition group"
             >
               <PlayCircle className="w-4 h-4 text-amber-400 group-hover:scale-110 transition" />
-              <span>Rooster Reels TV</span>
-              <span className="bg-red-600 text-white text-[9px] font-bold px-1.5 py-0.2 rounded-full uppercase tracking-wider animate-pulse">
-                Live
+              <span>Rooster TV (Videos)</span>
+              <span className="bg-amber-600 text-stone-950 text-[9px] font-extrabold px-1.5 py-0.2 rounded-full uppercase tracking-wider">
+                HD
               </span>
             </button>
             <a href="#biosecurity" className="hover:text-amber-400 transition py-1">
-              Health & Diet
+              Diet & Care
             </a>
-            <a href="#transit" className="hover:text-amber-400 transition py-1">
-              Safe Delivery
+            <a href="#visit" className="hover:text-amber-400 transition py-1">
+              Farm Visit
             </a>
-            <a href="#reviews" className="hover:text-amber-400 transition py-1">
-              Customer Reviews
+            <a href="#community" className="hover:text-amber-400 transition py-1">
+              Breeder Community
             </a>
           </nav>
 
@@ -113,10 +113,10 @@ export const Header: React.FC<HeaderProps> = ({ onOpenReels, availableCount = 6 
               href={generalWhatsAppUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center space-x-2 bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-semibold px-4 py-2.5 rounded-xl shadow-lg shadow-emerald-950 transition active:scale-95"
+              className="flex items-center space-x-2 bg-emerald-700 hover:bg-emerald-600 text-white text-sm font-semibold px-4 py-2.5 rounded-xl shadow-lg transition active:scale-95"
             >
               <MessageCircle className="w-4 h-4" />
-              <span>WhatsApp Farm</span>
+              <span>Connect with Farm</span>
             </a>
           </div>
 
@@ -128,7 +128,7 @@ export const Header: React.FC<HeaderProps> = ({ onOpenReels, availableCount = 6 
                 className="flex items-center space-x-1 text-xs font-bold text-amber-400 bg-amber-950/60 border border-amber-600/40 px-2.5 py-1.5 rounded-lg"
               >
                 <PlayCircle className="w-4 h-4" />
-                <span>Reels</span>
+                <span>Videos</span>
               </button>
             )}
             <button
@@ -147,11 +147,11 @@ export const Header: React.FC<HeaderProps> = ({ onOpenReels, availableCount = 6 
         <div className="lg:hidden bg-stone-900 border-b border-stone-800 px-4 pt-3 pb-6 space-y-3">
           <nav className="flex flex-col space-y-3 text-base font-medium text-stone-200">
             <a
-              href="#catalog"
+              href="#showcase"
               onClick={() => setMobileMenuOpen(false)}
               className="p-2 hover:bg-stone-800 rounded-lg"
             >
-              🐓 Available Roosters ({availableCount})
+              🐓 Rooster Showcase ({birdsCount} Strains)
             </a>
             <a
               href="#breeds"
@@ -169,9 +169,9 @@ export const Header: React.FC<HeaderProps> = ({ onOpenReels, availableCount = 6 
             >
               <span className="flex items-center space-x-2">
                 <PlayCircle className="w-5 h-5" />
-                <span>Watch Rooster Reels TV</span>
+                <span>Watch Rooster TV Videos</span>
               </span>
-              <span className="bg-red-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
+              <span className="bg-amber-600 text-stone-950 text-[10px] font-bold px-2 py-0.5 rounded-full">
                 VIDEOS
               </span>
             </button>
@@ -180,21 +180,14 @@ export const Header: React.FC<HeaderProps> = ({ onOpenReels, availableCount = 6 
               onClick={() => setMobileMenuOpen(false)}
               className="p-2 hover:bg-stone-800 rounded-lg"
             >
-              🌿 Farm Bio-Security & Feeding
+              🌿 Organic Nutrition & Natural Care
             </a>
             <a
-              href="#transit"
+              href="#visit"
               onClick={() => setMobileMenuOpen(false)}
               className="p-2 hover:bg-stone-800 rounded-lg"
             >
-              📦 Safe Live Transit Across India
-            </a>
-            <a
-              href="#reviews"
-              onClick={() => setMobileMenuOpen(false)}
-              className="p-2 hover:bg-stone-800 rounded-lg"
-            >
-              ⭐ Customer Reviews
+              📍 Schedule a Farm Visit
             </a>
             <Link
               href="/admin"
@@ -202,7 +195,7 @@ export const Header: React.FC<HeaderProps> = ({ onOpenReels, availableCount = 6 
               className="p-2 text-stone-400 hover:text-amber-400 rounded-lg flex items-center space-x-2"
             >
               <Settings className="w-4 h-4" />
-              <span>Farm Admin Portal</span>
+              <span>Showcase Manager (Admin)</span>
             </Link>
           </nav>
 
@@ -214,14 +207,7 @@ export const Header: React.FC<HeaderProps> = ({ onOpenReels, availableCount = 6 
               className="flex items-center justify-center space-x-2 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold py-3 rounded-xl shadow-lg"
             >
               <MessageCircle className="w-5 h-5" />
-              <span>WhatsApp Us Directly</span>
-            </a>
-            <a
-              href={`tel:${FARM_INFO.phone}`}
-              className="flex items-center justify-center space-x-2 bg-stone-800 hover:bg-stone-700 text-stone-200 font-medium py-2.5 rounded-xl border border-stone-700"
-            >
-              <Phone className="w-4 h-4 text-emerald-400" />
-              <span>Call Farm Manager: {FARM_INFO.phone}</span>
+              <span>Message Farm on WhatsApp</span>
             </a>
           </div>
         </div>
@@ -229,4 +215,3 @@ export const Header: React.FC<HeaderProps> = ({ onOpenReels, availableCount = 6 
     </header>
   );
 };
-
