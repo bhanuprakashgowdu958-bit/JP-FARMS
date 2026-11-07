@@ -22,7 +22,7 @@ const BANNERS: BannerItem[] = [
   },
 ];
 
-const AUTO_SLIDE_INTERVAL = 35000; // 35 seconds
+const AUTO_SLIDE_INTERVAL = 15000; // 15 seconds
 
 interface PixarRoosterBanner3DProps {
   onOpenReels?: () => void;
@@ -116,7 +116,7 @@ export const PixarRoosterBanner3D: React.FC<PixarRoosterBanner3DProps> = () => {
             />
           );
         })}
-        <span className="text-[10px] font-mono text-stone-400 pl-1">35s</span>
+        <span className="text-[10px] font-mono text-stone-400 pl-1">15s</span>
       </div>
     </section>
   );
