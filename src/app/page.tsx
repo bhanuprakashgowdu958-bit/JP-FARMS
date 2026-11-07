@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { Header } from '@/components/Header';
-import { AutoSlideBanner } from '@/components/AutoSlideBanner';
+import { PixarRoosterBanner3D } from '@/components/PixarRoosterBanner3D';
 import { Hero } from '@/components/Hero';
 import { RoosterCatalog } from '@/components/RoosterCatalog';
 import { BreedsGuide } from '@/components/BreedsGuide';
@@ -56,8 +56,8 @@ export default function HomePage() {
 
       {/* Main Content Area */}
       <main className="flex-1">
-        {/* Dynamic Auto-Sliding Hero Showcase Banner */}
-        <AutoSlideBanner 
+        {/* 3D Pixar-Style Animated Rooster & Sun Banner (As in Reference Video) */}
+        <PixarRoosterBanner3D 
           onOpenReels={() => setIsReelsOpen(true)}
           onScheduleVisit={() => setInquiryRooster(roosters[0] || null)}
         />
