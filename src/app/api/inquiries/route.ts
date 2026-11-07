@@ -76,3 +76,4 @@ export async function PATCH(req: NextRequest) {
     return NextResponse.json({ error: 'Failed to update inquiry status', details: err.message }, { status: 500 });
   }
 }
+

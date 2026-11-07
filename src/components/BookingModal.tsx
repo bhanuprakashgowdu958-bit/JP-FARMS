@@ -148,6 +148,48 @@ export const BookingModal: React.FC<BookingModalProps> = ({
               </div>
             </div>
 
+            {/* Instant UPI Payment Card */}
+            <div className="bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-300/80 rounded-2xl p-4 text-center space-y-3">
+              <div className="flex items-center justify-between text-xs border-b border-amber-200 pb-2">
+                <span className="font-bold text-amber-950 flex items-center">
+                  <CreditCard className="w-4 h-4 mr-1 text-amber-700" />
+                  Instant UPI Lock Token (PhonePe / GPay)
+                </span>
+                <span className="font-mono font-bold bg-amber-200/80 text-amber-950 px-2 py-0.5 rounded text-xs">
+                  {bookingType === 'token' ? '₹500.00' : formatPrice(rooster.price)}
+                </span>
+              </div>
+
+              {/* Dynamic QR Code */}
+              <div className="flex flex-col items-center justify-center pt-1">
+                <div className="bg-white p-2.5 rounded-2xl border-2 border-dashed border-amber-400 shadow-md">
+                  <img
+                    src={`https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${encodeURIComponent(
+                      `upi://pay?pa=9876543210@upi&pn=JP%20Farms&am=${bookingType === 'token' ? 500 : rooster.price}&tn=${encodeURIComponent(`Token for Rooster ${rooster.tagId}`)}&cu=INR`
+                    )}`}
+                    alt="UPI Payment QR Code"
+                    className="w-36 h-36 rounded-lg"
+                  />
+                </div>
+                <p className="text-[11px] text-stone-600 mt-2 font-medium">
+                  Scan using <strong>PhonePe, Google Pay, Paytm, or BHIM</strong>
+                </p>
+                <p className="text-[10px] font-mono text-stone-500">
+                  UPI ID: <strong className="text-stone-800 font-bold select-all">9876543210@upi</strong>
+                </p>
+              </div>
+
+              <div className="pt-1">
+                <a
+                  href={`upi://pay?pa=9876543210@upi&pn=JP%20Farms&am=${bookingType === 'token' ? 500 : rooster.price}&tn=${encodeURIComponent(`Token for Rooster ${rooster.tagId}`)}&cu=INR`}
+                  className="sm:hidden w-full inline-flex items-center justify-center space-x-1.5 bg-amber-600 hover:bg-amber-500 text-white font-bold py-2 px-3 rounded-xl text-xs transition"
+                >
+                  <CreditCard className="w-3.5 h-3.5" />
+                  <span>Open in PhonePe / GPay App</span>
+                </a>
+              </div>
+            </div>
+
             <div className="space-y-3 pt-2">
               <a
                 href={whatsAppFinalUrl}

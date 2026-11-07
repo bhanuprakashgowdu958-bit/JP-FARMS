@@ -22,6 +22,7 @@ import {
 import { Rooster } from '@/types/rooster';
 import { FARM_INFO } from '@/lib/data';
 import { formatPrice, generateWhatsAppLink } from '@/lib/utils';
+import { BreedCertificateModal } from './BreedCertificateModal';
 
 interface RoosterDetailModalProps {
   rooster: Rooster | null;
@@ -37,6 +38,7 @@ export const RoosterDetailModal: React.FC<RoosterDetailModalProps> = ({
   const [activeMedia, setActiveMedia] = useState<'photo' | 'video'>('photo');
   const [selectedPhotoIndex, setSelectedPhotoIndex] = useState(0);
   const [copiedLink, setCopiedLink] = useState(false);
+  const [showCertificate, setShowCertificate] = useState(false);
 
   if (!rooster) return null;
 
@@ -340,6 +342,32 @@ export const RoosterDetailModal: React.FC<RoosterDetailModalProps> = ({
               </div>
             </div>
 
+            {/* Official Certificate Trigger Banner */}
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-amber-50/80 border border-amber-300 rounded-2xl p-4">
+              <div className="flex items-center space-x-3">
+                <div className="w-10 h-10 rounded-xl bg-amber-600/10 border border-amber-600/20 flex items-center justify-center text-amber-700 shrink-0">
+                  <Award className="w-5 h-5" />
+                </div>
+                <div>
+                  <h4 className="text-xs sm:text-sm font-bold text-stone-900">
+                    Official Pedigree & Health Certificate
+                  </h4>
+                  <p className="text-[11px] text-stone-600">
+                    Authenticated bloodline seal, microchip/leg-tag registry, and full veterinary stamps.
+                  </p>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setShowCertificate(true)}
+                className="w-full sm:w-auto inline-flex items-center justify-center space-x-1.5 bg-stone-900 hover:bg-stone-800 text-amber-400 font-bold px-4 py-2 rounded-xl text-xs transition shadow-sm"
+              >
+                <Award className="w-3.5 h-3.5" />
+                <span>View & Print Certificate</span>
+              </button>
+            </div>
+
             {/* Safe Delivery Promise */}
             <div className="bg-stone-100 rounded-xl p-4 flex items-start space-x-3 text-stone-700 text-xs">
               <Truck className="w-5 h-5 text-stone-800 shrink-0 mt-0.5" />
@@ -405,6 +433,13 @@ export const RoosterDetailModal: React.FC<RoosterDetailModalProps> = ({
         </div>
 
       </div>
+
+      {/* Official Printable Pedigree & Vaccine Certificate */}
+      <BreedCertificateModal
+        rooster={rooster}
+        isOpen={showCertificate}
+        onClose={() => setShowCertificate(false)}
+      />
 
     </div>
   );

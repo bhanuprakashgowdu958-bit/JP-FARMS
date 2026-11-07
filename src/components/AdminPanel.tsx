@@ -49,6 +49,8 @@ export const AdminPanel: React.FC = () => {
   const [editingRooster, setEditingRooster] = useState<Rooster | null>(null);
   const [uploadingField, setUploadingField] = useState<string | null>(null);
   const [uploadProgress, setUploadProgress] = useState<number>(0);
+  const [uploadingField, setUploadingField] = useState<string | null>(null);
+  const [uploadProgress, setUploadProgress] = useState<number>(0);
 
   // Form State for Adding / Editing Rooster
   const [formData, setFormData] = useState({

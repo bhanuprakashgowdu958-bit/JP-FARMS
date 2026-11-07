@@ -30,3 +30,4 @@ declare module 'firebase/auth' {
   export type Auth = any;
   export function getAuth(app?: any): any;
 }
+

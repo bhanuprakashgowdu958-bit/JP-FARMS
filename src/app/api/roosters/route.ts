@@ -98,3 +98,4 @@ export async function DELETE(req: NextRequest) {
     return NextResponse.json({ error: 'Failed to delete rooster', details: err.message }, { status: 500 });
   }
 }
+
