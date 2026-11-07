@@ -34,3 +34,4 @@ export function generateWhatsAppLink(params: {
 
   return `https://wa.me/${cleanPhone}?text=${encodeURIComponent(text)}`;
 }
+

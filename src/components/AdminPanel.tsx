@@ -29,6 +29,8 @@ import { Rooster, RoosterCategory, CustomerInquiry } from '@/types/rooster';
 import { useRoosters, useInquiries } from '@/lib/roosterStore';
 import { formatPrice, generateWhatsAppLink } from '@/lib/utils';
 import { FARM_INFO } from '@/lib/data';
+import { isFirebaseConfigured } from '@/lib/firebase';
+import { uploadRoosterMediaToFirebase } from '@/lib/firebaseService';
 
 export const AdminPanel: React.FC = () => {
   const { 
@@ -45,6 +47,8 @@ export const AdminPanel: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'roosters' | 'inquiries' | 'add'>('roosters');
   const [searchFilter, setSearchFilter] = useState('');
   const [editingRooster, setEditingRooster] = useState<Rooster | null>(null);
+  const [uploadingField, setUploadingField] = useState<string | null>(null);
+  const [uploadProgress, setUploadProgress] = useState<number>(0);
 
   // Form State for Adding / Editing Rooster
   const [formData, setFormData] = useState({
@@ -103,12 +107,42 @@ export const AdminPanel: React.FC = () => {
     setActiveTab('add');
   };
 
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>, field: 'imageUrl1' | 'imageUrl2' | 'videoUrl') => {
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, field: 'imageUrl1' | 'imageUrl2' | 'videoUrl') => {
     const file = e.target.files?.[0];
-    if (file) {
-      // Create local object URL for instant preview & persistence
-      const url = URL.createObjectURL(file);
-      setFormData(prev => ({ ...prev, [field]: url }));
+    if (!file) return;
+
+    // Instant local preview
+    const localPreviewUrl = URL.createObjectURL(file);
+    setFormData(prev => ({ ...prev, [field]: localPreviewUrl }));
+    setUploadingField(field);
+    setUploadProgress(10);
+
+    try {
+      if (isFirebaseConfigured) {
+        // Upload directly to Firebase Storage bucket!
+        const folder = field === 'videoUrl' ? 'rooster-videos' : 'rooster-photos';
+        const downloadUrl = await uploadRoosterMediaToFirebase(file, folder, (percent) => {
+          setUploadProgress(percent);
+        });
+        setFormData(prev => ({ ...prev, [field]: downloadUrl }));
+      } else {
+        // Upload via local API
+        const uploadData = new FormData();
+        uploadData.append('file', file);
+        const res = await fetch('/api/upload', {
+          method: 'POST',
+          body: uploadData,
+        });
+        const data = await res.json();
+        if (data.success && data.url) {
+          setFormData(prev => ({ ...prev, [field]: data.url }));
+        }
+      }
+    } catch (err: any) {
+      console.warn('Upload fallback to local URL:', err);
+    } finally {
+      setUploadingField(null);
+      setUploadProgress(0);
     }
   };
 
@@ -212,6 +246,16 @@ export const AdminPanel: React.FC = () => {
                   <span className="text-[10px] bg-amber-500 text-stone-950 font-bold px-2 py-0.5 rounded">
                     Admin
                   </span>
+                  {isFirebaseConfigured ? (
+                    <span className="text-[10px] bg-emerald-950 text-emerald-400 border border-emerald-700/60 font-semibold px-2 py-0.5 rounded-full flex items-center space-x-1">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                      <span>Firebase Connected</span>
+                    </span>
+                  ) : (
+                    <span className="text-[10px] bg-stone-800 text-stone-400 border border-stone-700 px-2 py-0.5 rounded-full">
+                      Local Mode (Vercel Ready)
+                    </span>
+                  )}
                 </h1>
                 <p className="text-xs text-stone-400">
                   Manage roosters, upload photos & videos, and track customer inquiries
@@ -736,16 +780,22 @@ export const AdminPanel: React.FC = () => {
                       onChange={(e) => setFormData({ ...formData, imageUrl1: e.target.value })}
                       className="w-full px-3 py-1.5 text-xs rounded-lg border border-stone-300 mb-1"
                     />
-                    <label className="flex items-center space-x-1 text-[11px] text-amber-700 cursor-pointer">
-                      <Upload className="w-3 h-3" />
-                      <span>Upload from Device</span>
-                      <input 
-                        type="file" 
-                        accept="image/*" 
-                        className="hidden" 
-                        onChange={(e) => handleFileUpload(e, 'imageUrl1')} 
-                      />
-                    </label>
+                    <div className="flex items-center justify-between">
+                      <label className="flex items-center space-x-1 text-[11px] text-amber-700 hover:text-amber-800 cursor-pointer font-medium">
+                        <Upload className="w-3 h-3" />
+                        <span>{uploadingField === 'imageUrl1' ? `Uploading (${uploadProgress}%)...` : 'Upload Photo File'}</span>
+                        <input 
+                          type="file" 
+                          accept="image/*" 
+                          className="hidden" 
+                          disabled={uploadingField === 'imageUrl1'}
+                          onChange={(e) => handleFileUpload(e, 'imageUrl1')} 
+                        />
+                      </label>
+                      {formData.imageUrl1 && (
+                        <span className="text-[10px] text-emerald-600 font-semibold">✓ Photo Ready</span>
+                      )}
+                    </div>
                   </div>
 
                   <div>
@@ -757,18 +807,24 @@ export const AdminPanel: React.FC = () => {
                       placeholder="Paste MP4 / Video URL"
                       value={formData.videoUrl}
                       onChange={(e) => setFormData({ ...formData, videoUrl: e.target.value })}
-                      className="w-full px-3 py-1.5 text-xs rounded-lg border border-stone-300 mb-1"
+                      className="w-full px-3 py-1.5 text-xs rounded-lg border border-stone-300 mb-1 font-mono text-[11px]"
                     />
-                    <label className="flex items-center space-x-1 text-[11px] text-amber-700 cursor-pointer">
-                      <Upload className="w-3 h-3" />
-                      <span>Upload Video from Device</span>
-                      <input 
-                        type="file" 
-                        accept="video/*" 
-                        className="hidden" 
-                        onChange={(e) => handleFileUpload(e, 'videoUrl')} 
-                      />
-                    </label>
+                    <div className="flex items-center justify-between">
+                      <label className="flex items-center space-x-1 text-[11px] text-amber-700 hover:text-amber-800 cursor-pointer font-medium">
+                        <Upload className="w-3 h-3" />
+                        <span>{uploadingField === 'videoUrl' ? `Uploading Video (${uploadProgress}%)...` : 'Upload Video File'}</span>
+                        <input 
+                          type="file" 
+                          accept="video/*" 
+                          className="hidden" 
+                          disabled={uploadingField === 'videoUrl'}
+                          onChange={(e) => handleFileUpload(e, 'videoUrl')} 
+                        />
+                      </label>
+                      {formData.videoUrl && (
+                        <span className="text-[10px] text-emerald-600 font-semibold">✓ Video Attached</span>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -833,3 +889,4 @@ export const AdminPanel: React.FC = () => {
     </div>
   );
 };
+

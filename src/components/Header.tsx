@@ -229,3 +229,4 @@ export const Header: React.FC<HeaderProps> = ({ onOpenReels, availableCount = 6 
     </header>
   );
 };
+

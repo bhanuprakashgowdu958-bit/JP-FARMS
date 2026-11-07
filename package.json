@@ -15,7 +15,8 @@
     "lucide-react": "^0.460.0",
     "clsx": "^2.1.1",
     "tailwind-merge": "^2.5.4",
-    "canvas-confetti": "^1.9.3"
+    "canvas-confetti": "^1.9.3",
+    "firebase": "^10.14.1"
   },
   "devDependencies": {
     "@types/node": "^20.14.0",

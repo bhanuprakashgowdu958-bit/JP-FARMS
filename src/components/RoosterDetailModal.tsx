@@ -409,3 +409,4 @@ export const RoosterDetailModal: React.FC<RoosterDetailModalProps> = ({
     </div>
   );
 };
+

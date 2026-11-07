@@ -269,3 +269,4 @@ export const INITIAL_INQUIRIES: CustomerInquiry[] = [
     status: 'new',
   },
 ];
+

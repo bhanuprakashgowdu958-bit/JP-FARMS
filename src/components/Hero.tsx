@@ -216,3 +216,4 @@ export const Hero: React.FC<HeroProps> = ({ onOpenReels, availableCount = 6 }) =
     </section>
   );
 };
+

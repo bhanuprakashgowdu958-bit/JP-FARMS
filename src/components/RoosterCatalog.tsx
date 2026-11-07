@@ -256,3 +256,4 @@ export const RoosterCatalog: React.FC<RoosterCatalogProps> = ({
     </section>
   );
 };
+

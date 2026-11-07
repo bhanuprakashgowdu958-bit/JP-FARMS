@@ -1,0 +1,29 @@
+[
+  {
+    "id": "inq-101",
+    "roosterId": "jp-101",
+    "roosterTag": "JP-AS-101",
+    "roosterName": "Sikandar - Pure Peela Aseel",
+    "customerName": "Ramesh Reddy",
+    "phoneNumber": "+91 94401 23456",
+    "cityState": "Vijayawada, Andhra Pradesh",
+    "message": "Can you deliver this bird safely to Vijayawada? Please share 360-degree walking video on WhatsApp.",
+    "inquiryType": "whatsapp",
+    "createdAt": "2026-11-07 14:30",
+    "status": "contacted"
+  },
+  {
+    "id": "inq-102",
+    "roosterId": "jp-402",
+    "roosterTag": "JP-SN-402",
+    "roosterName": "Sultan - Sindhi Longneck Aseel",
+    "customerName": "Mohammad Farooq",
+    "phoneNumber": "+91 98850 78901",
+    "cityState": "Hyderabad, Telangana",
+    "message": "Paid advance token for Sultan. Booking scheduled for Sunday pickup at farm.",
+    "inquiryType": "booking_token",
+    "createdAt": "2026-11-06 18:20",
+    "status": "deal_closed"
+  }
+]
+

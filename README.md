@@ -107,3 +107,4 @@ Edit `src/lib/data.ts` to update:
 - Farm Name, Phone Number, and WhatsApp Number.
 - Farm physical address and visiting hours.
 - Default pricing, breeds, and initial roosters.
+

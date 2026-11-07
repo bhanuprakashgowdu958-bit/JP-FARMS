@@ -66,3 +66,4 @@ export interface FarmStats {
   pureBreedsCount: number;
   statesDelivered: number;
 }
+
