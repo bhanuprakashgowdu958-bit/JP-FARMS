@@ -92,3 +92,43 @@ body {
   animation: gradient-pan 8s ease infinite;
 }
 
+/* 3D Floating & Glow Keyframes */
+@keyframes float-slow {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-12px) rotate(1deg);
+  }
+}
+
+@keyframes float-reverse {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  50% {
+    transform: translateY(10px) rotate(-1deg);
+  }
+}
+
+@keyframes pulse-glow-3d {
+  0%, 100% {
+    box-shadow: 0 0 25px rgba(245, 158, 11, 0.25), 0 20px 40px rgba(0, 0, 0, 0.6);
+  }
+  50% {
+    box-shadow: 0 0 45px rgba(245, 158, 11, 0.45), 0 25px 50px rgba(0, 0, 0, 0.8);
+  }
+}
+
+.animate-float-slow {
+  animation: float-slow 6s ease-in-out infinite;
+}
+
+.animate-float-reverse {
+  animation: float-reverse 7s ease-in-out infinite;
+}
+
+.glow-3d {
+  animation: pulse-glow-3d 4s ease-in-out infinite;
+}
+
