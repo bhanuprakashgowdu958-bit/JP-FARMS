@@ -71,8 +71,8 @@ export const PixarRoosterBanner3D: React.FC<PixarRoosterBanner3DProps> = () => {
             <img
               src={banner.src}
               alt={banner.alt}
-              loading={index === 0 ? 'eager' : 'lazy'}
-              fetchPriority={index === 0 ? 'high' : 'auto'}
+              loading="eager"
+              decoding="async"
               className="w-full h-full object-cover object-center filter brightness-[1.02] contrast-[1.04]"
             />
           </div>
