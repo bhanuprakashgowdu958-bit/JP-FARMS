@@ -9,7 +9,7 @@ import { generateWhatsAppLink } from '@/lib/utils';
 export const Footer: React.FC = () => {
   const whatsAppUrl = generateWhatsAppLink({
     phone: FARM_INFO.whatsapp,
-    customMessage: 'Hello JP Farms, I am interested in visiting the farm or inquiring about roosters.',
+    customMessage: 'Hello JP Farms, I am interested in visiting the farm and exploring your heritage roosters.',
   });
 
   return (
@@ -32,33 +32,33 @@ export const Footer: React.FC = () => {
             </div>
 
             <p className="text-xs text-stone-400 leading-relaxed">
-              India&apos;s leading farm for pure bloodline Peela Aseel, Kagar, Sindhi Aseel, Kadaknath, and indigenous country roosters. Committed to heritage genetics and zero in-breeding.
+              India&apos;s premier conservation estate for pure bloodline Peela Aseel, Kagar, Sindhi Aseel, Kadaknath, and indigenous country roosters. Committed to authentic genetic preservation and ethical pasture breeding.
             </p>
 
             <div className="flex items-center space-x-2 text-xs text-emerald-400 font-medium">
               <ShieldCheck className="w-4 h-4 shrink-0" />
-              <span>Govt. Certified Veterinary Protocols</span>
+              <span>Certified Avian Bio-Security & Veterinary Care</span>
             </div>
           </div>
 
           {/* Col 2: Quick Links */}
           <div className="space-y-3">
-            <h4 className="text-sm font-bold uppercase tracking-wider text-white">Quick Navigation</h4>
+            <h4 className="text-sm font-bold uppercase tracking-wider text-white">Showcase Navigation</h4>
             <ul className="text-xs space-y-2 text-stone-400">
               <li>
-                <a href="#catalog" className="hover:text-amber-400 transition">Available Roosters</a>
+                <a href="#showcase" className="hover:text-amber-400 transition">Rooster Living Gallery</a>
               </li>
               <li>
                 <a href="#breeds" className="hover:text-amber-400 transition">Heritage Breed Guide</a>
               </li>
               <li>
-                <a href="#biosecurity" className="hover:text-amber-400 transition">Farm Bio-Security & Diet</a>
+                <a href="#biosecurity" className="hover:text-amber-400 transition">Natural Diet & Care Standards</a>
               </li>
               <li>
-                <a href="#transit" className="hover:text-amber-400 transition">Safe Pet Transit Logistics</a>
+                <a href="#visit-guide" className="hover:text-amber-400 transition">Farm Visitation & Route Guide</a>
               </li>
               <li>
-                <a href="#reviews" className="hover:text-amber-400 transition">Breeder Reviews & Proofs</a>
+                <a href="#reviews" className="hover:text-amber-400 transition">Breeder & Visitor Reviews</a>
               </li>
               <li>
                 <Link href="/admin" className="text-amber-500 hover:text-amber-400 font-semibold transition">
@@ -70,14 +70,14 @@ export const Footer: React.FC = () => {
 
           {/* Col 3: Popular Breeds */}
           <div className="space-y-3">
-            <h4 className="text-sm font-bold uppercase tracking-wider text-white">Featured Breeds</h4>
+            <h4 className="text-sm font-bold uppercase tracking-wider text-white">Preserved Breeds</h4>
             <ul className="text-xs space-y-2 text-stone-400">
               <li>Pure Peela Aseel (Golden Red)</li>
               <li>Kagar Aseel (Emerald Green Sheen)</li>
-              <li>Sindhi Heavy Aseel (28&quot; Tall)</li>
+              <li>Sindhi Heavy Aseel (28&quot; Tall Stance)</li>
               <li>Pure Kadaknath (Jhabua Lineage)</li>
               <li>Natu Kodi (Indigenous Country Desi)</li>
-              <li>Breeding Trios & Fertile Pairs</li>
+              <li>Documented Pedigree Sires</li>
             </ul>
           </div>
 
@@ -98,43 +98,37 @@ export const Footer: React.FC = () => {
               </p>
               <p className="flex items-center space-x-2">
                 <MessageCircle className="w-4 h-4 text-emerald-500 shrink-0" />
-                <a href={whatsAppUrl} target="_blank" rel="noopener noreferrer" className="hover:text-white transition">
+                <a 
+                  href={whatsAppUrl} 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  className="hover:text-white transition"
+                >
                   WhatsApp: {FARM_INFO.whatsapp}
                 </a>
               </p>
               <p className="flex items-center space-x-2">
-                <Clock className="w-4 h-4 text-amber-500 shrink-0" />
+                <Clock className="w-4 h-4 text-amber-400 shrink-0" />
                 <span>{FARM_INFO.hours}</span>
               </p>
-            </div>
-
-            <div className="pt-2">
-              <a
-                href={whatsAppUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-full inline-flex items-center justify-center space-x-2 bg-emerald-700 hover:bg-emerald-600 text-white font-bold py-2.5 px-4 rounded-xl text-xs transition"
-              >
-                <MessageCircle className="w-4 h-4" />
-                <span>Message Farm on WhatsApp</span>
-              </a>
             </div>
           </div>
 
         </div>
 
-        {/* Ethical Disclaimer & Bottom bar */}
-        <div className="mt-12 pt-8 border-t border-stone-800 text-center text-xs text-stone-500 space-y-3">
-          <p className="max-w-3xl mx-auto leading-relaxed text-[11px] text-stone-500">
-            <strong>Ethical Breeding & Heritage Conservation:</strong> JP Farms is dedicated exclusively to the preservation, scientific conservation, and cruelty-free husbandry of indigenous Indian poultry genetics. We support sustainable backyard farming, disease-resistant heritage birds, and organic aviculture.
-          </p>
-          <p>
-            © {new Date().getFullYear()} JP Farms. All rights reserved. Designed for elite livestock presentation.
-          </p>
+        {/* Bottom Bar */}
+        <div className="mt-12 pt-8 border-t border-stone-800 text-xs text-stone-400 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <p>© {new Date().getFullYear()} JP Farms. Dedicated to the Conservation of Indigenous Indian Gamefowl.</p>
+          <div className="flex items-center space-x-4">
+            <a href="#showcase" className="hover:text-white transition">Showcase</a>
+            <span>•</span>
+            <a href="#visit-guide" className="hover:text-white transition">Plan Visit</a>
+            <span>•</span>
+            <Link href="/admin" className="hover:text-amber-400 transition">Farm Admin</Link>
+          </div>
         </div>
 
       </div>
     </footer>
   );
 };
-

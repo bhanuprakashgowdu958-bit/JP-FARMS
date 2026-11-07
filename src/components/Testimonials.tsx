@@ -7,25 +7,25 @@ const REVIEWS = [
   {
     name: 'Venkatesh Naidu',
     location: 'Guntur, Andhra Pradesh',
-    breedBought: 'Pure Peela Aseel (Tag: JP-AS-88)',
+    strainObserved: 'Pure Peela Aseel (Tag: JP-AS-88)',
     rating: 5,
-    text: 'Received the bird via safe travel crate in Vijayawada within 18 hours of booking. The rooster was 100% active upon unboxing. Bone thickness and pea comb were exactly as shown in the live video. Highly trustworthy farm.',
+    text: 'Visited JP Farms directly near the highway border. The roosters are raised in open, unpolluted natural paddocks. Bone thickness, pea comb, and upright stance match the unedited walking videos perfectly. Truly an exceptional indigenous breeding estate.',
     date: 'October 2026',
   },
   {
     name: 'Abdul Rehman',
     location: 'Bangalore Rural, Karnataka',
-    breedBought: 'Sindhi Heavy Aseel (4.2 Kg)',
+    strainObserved: 'Sindhi Heavy Aseel (4.2 Kg)',
     rating: 5,
-    text: 'Best Aseel bloodline I have acquired in 7 years of breeding. The rooster produced 14 fertile eggs in our first clutch.JP Farms shares genuine unedited walking videos so you know exactly what you are purchasing.',
+    text: 'Purest Aseel bloodlines I have seen in 9 years of gamefowl research. The farm team is deeply knowledgeable about indigenous genetics, traditional bajra diets, and selective line breeding. Their video reels give complete transparency.',
     date: 'September 2026',
   },
   {
     name: 'Dr. Sandeep Kulkarni',
     location: 'Kolhapur, Maharashtra',
-    breedBought: 'Original Kadaknath Breeding Trio',
+    strainObserved: 'Original Kadaknath Heritage Line',
     rating: 5,
-    text: 'Ordered Kadaknath rooster and two hens for organic free-range farming. Shipped to Pune hub with zero stress. Full vaccination card was stamped and attached to crate. Will buy again.',
+    text: 'Inspected their Kadaknath flock and farm bio-security protocols during my visit. 100% natural feed with zero antibiotics, thorough veterinary records, and verified melanin purity. A model facility for native avian conservation.',
     date: 'November 2026',
   },
 ];
@@ -39,13 +39,13 @@ export const Testimonials: React.FC = () => {
         <div className="text-center max-w-2xl mx-auto mb-16 space-y-3">
           <div className="inline-flex items-center space-x-1.5 text-xs font-bold uppercase tracking-wider text-amber-800 bg-amber-100 px-3 py-1 rounded-full">
             <UserCheck className="w-3.5 h-3.5 text-amber-700" />
-            <span>Verified Customer Experiences</span>
+            <span>Visitor & Breeder Experiences</span>
           </div>
           <h2 className="text-3xl sm:text-4xl font-extrabold text-stone-900 tracking-tight">
-            Trusted by Serious Breeders Nationwide
+            Recognized by Avian Breeders Nationwide
           </h2>
           <p className="text-stone-600 text-sm sm:text-base">
-            Over 3,450 roosters safely delivered to breeders, poultry farms, and enthusiasts across India.
+            Visited by poultry conservationists, avian veterinarians, and desi rooster enthusiasts from across India.
           </p>
         </div>
 
@@ -77,12 +77,12 @@ export const Testimonials: React.FC = () => {
                     <h4 className="font-bold text-sm text-stone-900">{review.name}</h4>
                     <p className="text-xs text-stone-500">{review.location}</p>
                   </div>
-                  <span title="Verified Purchaser">
+                  <span title="Verified Visitor">
                     <CheckCircle2 className="w-4 h-4 text-emerald-600" />
                   </span>
                 </div>
                 <div className="mt-2 text-[11px] font-semibold text-amber-800 bg-amber-100/60 px-2 py-0.5 rounded inline-block">
-                  {review.breedBought}
+                  {review.strainObserved}
                 </div>
               </div>
             </div>

@@ -2,12 +2,12 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "JP Farms | Heritage Desi Roosters, Pure Aseel & Kadaknath Breeding Farm",
-  description: "Official online showroom for JP Farms. View live videos, photos, and buy pure bloodline Peela Aseel, Kagar, Sindhi Aseel, Kadaknath, and indigenous country roosters with safe All-India live transit.",
-  keywords: "Desi rooster farm, pure Aseel rooster for sale, buy Kadaknath rooster, Peela Aseel, Kagar Aseel, Sindhi fighter rooster, Natu Kodi farm, rooster videos",
+  title: "JP Farms | Heritage Desi Roosters, Pure Aseel & Indigenous Avian Conservation",
+  description: "Official online living gallery for JP Farms. Explore pure bloodline Peela Aseel, Kagar, Sindhi Heavy Aseel, Kadaknath, and indigenous Indian gamefowl with HD stance videos, biological traits, and farm visit schedules.",
+  keywords: "Desi rooster farm, pure Aseel roosters, Kadaknath conservation, Peela Aseel, Kagar Aseel, Sindhi Aseel, Natu Kodi showcase, rooster videos, Indian gamefowl heritage",
   openGraph: {
     title: "JP Farms - Pure Desi Roosters & Heritage Bloodlines",
-    description: "Explore top-class verified roosters with live walking videos, pedigree specs, and direct farm booking.",
+    description: "Explore elite verified heritage roosters with unfiltered HD walking videos, biological pedigree traits, and farm visitation guide.",
     images: ["https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?auto=format&fit=crop&w=1200&q=80"],
   },
 };
@@ -25,4 +25,3 @@ export default function RootLayout({
     </html>
   );
 }
-
