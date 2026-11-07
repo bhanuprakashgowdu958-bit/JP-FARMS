@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { Header } from '@/components/Header';
+import { AutoSlideBanner } from '@/components/AutoSlideBanner';
 import { Hero } from '@/components/Hero';
 import { RoosterCatalog } from '@/components/RoosterCatalog';
 import { BreedsGuide } from '@/components/BreedsGuide';
@@ -55,10 +56,10 @@ export default function HomePage() {
 
       {/* Main Content Area */}
       <main className="flex-1">
-        {/* Hero Section */}
-        <Hero 
-          onOpenReels={() => setIsReelsOpen(true)} 
-          birdsCount={birdsCount} 
+        {/* Dynamic Auto-Sliding Hero Showcase Banner */}
+        <AutoSlideBanner 
+          onOpenReels={() => setIsReelsOpen(true)}
+          onScheduleVisit={() => setInquiryRooster(roosters[0] || null)}
         />
 
         {/* Colorful Grand Heritage Exhibition Banner & Marquee */}
