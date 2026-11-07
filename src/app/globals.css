@@ -1,0 +1,61 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --foreground-rgb: 24, 30, 26;
+  --background-start-rgb: 250, 252, 250;
+  --background-end-rgb: 245, 248, 245;
+}
+
+body {
+  color: rgb(var(--foreground-rgb));
+  background: #fbfdfa;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  overflow-x: hidden;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f5f1;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #9ab99e;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #518956;
+}
+
+/* Video reel styling */
+.reel-scroll-snap {
+  scroll-snap-type: y mandatory;
+}
+
+.reel-card-snap {
+  scroll-snap-align: start;
+}
+
+/* Smooth badges and gradients */
+.gold-gradient {
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+}
+
+.emerald-gradient {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+}
+
+.rooster-hero-mesh {
+  background-color: #0d1e11;
+  background-image: 
+    radial-gradient(at 10% 20%, rgba(35, 75, 42, 0.7) 0px, transparent 50%),
+    radial-gradient(at 90% 80%, rgba(180, 83, 9, 0.35) 0px, transparent 50%),
+    radial-gradient(at 50% 50%, rgba(20, 45, 25, 0.9) 0px, transparent 100%);
+}
