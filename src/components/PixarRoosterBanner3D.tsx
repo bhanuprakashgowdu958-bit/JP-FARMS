@@ -247,7 +247,9 @@ export const PixarRoosterBanner3D: React.FC<PixarRoosterBanner3DProps> = () => {
               alt={banner.alt}
               loading="eager"
               decoding="async"
-              className="w-full h-full object-cover object-center filter brightness-[1.02] contrast-[1.04]"
+              className={`w-full h-full object-cover object-center filter brightness-[1.02] contrast-[1.04] transition-transform duration-[15000ms] ease-out ${
+                isActive ? 'scale-105' : 'scale-100'
+              }`}
             />
           </div>
         );
