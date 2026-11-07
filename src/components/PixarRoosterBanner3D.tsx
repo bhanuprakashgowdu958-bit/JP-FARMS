@@ -16,9 +16,19 @@ const BANNERS: BannerItem[] = [
     alt: 'JP Farms Morning Sunrise Crowing Rooster with Smiling Sun',
   },
   {
+    id: 'afternoon-sunlit-pasture',
+    src: '/banners/banner_afternoon_pasture.jpg',
+    alt: 'JP Farms Sunlit Pasture with Free-Range Chicks',
+  },
+  {
     id: 'sunset-wagon-estate',
     src: '/banners/banner_sunset_wagon_estate.jpg',
     alt: 'JP Farms Sunset Farm Heritage Rooster on Rustic Wagon',
+  },
+  {
+    id: 'twilight-starlit-farm',
+    src: '/banners/banner_twilight_starlit_farm.jpg',
+    alt: 'JP Farms Twilight Serenity with Starlit Farm and Fireflies',
   },
 ];
 
