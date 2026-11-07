@@ -18,7 +18,6 @@ export interface BannerItem {
   src: string;
   alt: string;
   title: string;
-  filterClass?: string;
 }
 
 export interface TimeSlotConfig {
@@ -64,12 +63,6 @@ export const TIME_SLOTS: Record<TimeSlotKey, TimeSlotConfig> = {
         alt: 'Morning Farm Pasture at First Light',
         title: 'First Light Over the Farm Pastures',
       },
-      {
-        id: 'morning-4',
-        src: '/banners/morning_4_royal_peela.jpg',
-        alt: 'Royal Peela Aseel Rooster with Morning Sunflowers',
-        title: 'Royal Peela Aseel in Morning Sun',
-      },
     ],
   },
   midday: {
@@ -91,18 +84,12 @@ export const TIME_SLOTS: Record<TimeSlotKey, TimeSlotConfig> = {
       },
       {
         id: 'midday-2',
-        src: '/banners/midday_2_meadow_feeding.jpg',
-        alt: 'Single Heritage Rooster on Wooden Fence in Sunlit Valley',
-        title: 'Sunlit Fence Breakfast & Valley View',
+        src: '/banners/midday_3_peela_champion.jpg',
+        alt: 'Champion Peela Aseel on Ancient Stone Gate in Noon Sun',
+        title: 'Alpha Champion on Ancient Stone Gate',
       },
       {
         id: 'midday-3',
-        src: '/banners/midday_3_peela_champion.jpg',
-        alt: 'Champion Peela Aseel on Ancient Stone Gate',
-        title: 'Warrior Pedigree in High Noon Sun',
-      },
-      {
-        id: 'midday-4',
         src: '/banners/midday_4_farm_stream.jpg',
         alt: 'Rooster by Sparkling Freshwater Farm Stream',
         title: 'Sparkling Farm Stream & Willows',
@@ -123,7 +110,7 @@ export const TIME_SLOTS: Record<TimeSlotKey, TimeSlotConfig> = {
       {
         id: 'evening-1',
         src: '/banners/evening_1_sunset_wagon.jpg',
-        alt: 'Rooster on Hay Wagon with JP Farms Sign',
+        alt: 'Rooster on Hay Wagon with Handcrafted JP Farms Sign',
         title: 'Sunset Hay Wagon & JP Farms Sign',
       },
       {
@@ -134,15 +121,9 @@ export const TIME_SLOTS: Record<TimeSlotKey, TimeSlotConfig> = {
       },
       {
         id: 'evening-3',
-        src: '/banners/evening_3_golden_panorama.jpg',
-        alt: 'Royal Golden Peela Aseel Rooster on Rustic Fence at Sunset',
-        title: 'Royal Peela Aseel in Golden Sunset Glow',
-      },
-      {
-        id: 'evening-4',
-        src: '/banners/evening_4_sunset_showcase.jpg',
-        alt: 'Alpha Champion Aseel on Ancient Carved Stone Gate at Sunset',
-        title: 'Alpha Champion on Ancient Stone Gate',
+        src: '/banners/banner_royal_peela_aseel.jpg',
+        alt: 'Royal Golden Peela Aseel on Rustic Fence at Sunset',
+        title: 'Royal Peela Aseel in Sunset Glow',
       },
     ],
   },
@@ -166,22 +147,8 @@ export const TIME_SLOTS: Record<TimeSlotKey, TimeSlotConfig> = {
       {
         id: 'night-2',
         src: '/banners/night_2_black_kadaknath.jpg',
-        alt: 'Iridescent Black Kadaknath on Stone Ledge at Night',
+        alt: 'Iridescent Black Kadaknath on Moonlit Stone Ledge',
         title: 'Midnight Emerald Black Kadaknath',
-      },
-      {
-        id: 'night-3',
-        src: '/banners/night_3_moonlit_roost.jpg',
-        alt: 'Moonlit Heritage Rooster Resting on Fence',
-        title: 'Moonlit Roost on the Wooden Fence',
-        filterClass: 'brightness-[0.7] hue-rotate-[195deg] saturate-[1.15] contrast-[1.1]',
-      },
-      {
-        id: 'night-4',
-        src: '/banners/night_4_midnight_pasture.jpg',
-        alt: 'Peaceful Nocturnal Farm Pasture Under Moonbeams',
-        title: 'Midnight Pasture & Quiet Farmhouse',
-        filterClass: 'brightness-[0.68] hue-rotate-[195deg] saturate-[1.1] contrast-[1.1]',
       },
     ],
   },
@@ -205,7 +172,7 @@ export const PixarRoosterBanner3D: React.FC<PixarRoosterBanner3DProps> = () => {
 
   const [activeSlotKey, setActiveSlotKey] = useState<TimeSlotKey>('night');
   const [liveSlotKey, setLiveSlotKey] = useState<TimeSlotKey>('night');
-  const [slideIndex, setSlideIndex] = useState(0); // 0 to 3
+  const [slideIndex, setSlideIndex] = useState(0);
   const [isLiveMode, setIsLiveMode] = useState(true);
 
   // Sync with real-time hour on client mount
@@ -226,12 +193,12 @@ export const PixarRoosterBanner3D: React.FC<PixarRoosterBanner3DProps> = () => {
     return () => clearInterval(interval);
   }, [getLiveSlotKey, isLiveMode]);
 
-  // Active time slot config & banners (always exactly 4 banners)
+  // Active time slot config & banners (each strictly unique)
   const currentSlot = TIME_SLOTS[activeSlotKey];
   const banners = currentSlot.banners;
   const ActiveIcon = currentSlot.icon;
 
-  // Auto-slide every 15 seconds through the 4 banners of the active time slot
+  // Auto-slide every 15 seconds through the unique banners of the active time slot
   useEffect(() => {
     const timer = setInterval(() => {
       setSlideIndex((prev) => (prev + 1) % banners.length);
@@ -265,7 +232,7 @@ export const PixarRoosterBanner3D: React.FC<PixarRoosterBanner3DProps> = () => {
       className="relative w-full aspect-[16/9] min-h-[480px] sm:min-h-[580px] lg:min-h-[720px] max-h-[88vh] overflow-hidden select-none border-b border-stone-800 bg-stone-950 group"
       aria-label={`JP Farms ${currentSlot.title} Rooster Showcase`}
     >
-      {/* 4 HIGH-RESOLUTION CROSSFADE BANNERS FOR ACTIVE TIME SLOT */}
+      {/* 100% UNIQUE HIGH-RESOLUTION CROSSFADE BANNERS */}
       {banners.map((banner, index) => {
         const isActive = index === slideIndex;
         return (
@@ -280,9 +247,7 @@ export const PixarRoosterBanner3D: React.FC<PixarRoosterBanner3DProps> = () => {
               alt={banner.alt}
               loading="eager"
               decoding="async"
-              className={`w-full h-full object-cover object-center filter brightness-[1.02] contrast-[1.04] ${
-                banner.filterClass || ''
-              }`}
+              className="w-full h-full object-cover object-center filter brightness-[1.02] contrast-[1.04]"
             />
           </div>
         );
@@ -312,7 +277,7 @@ export const PixarRoosterBanner3D: React.FC<PixarRoosterBanner3DProps> = () => {
         <div className="flex items-center space-x-1.5 font-medium">
           <ActiveIcon className="w-3.5 h-3.5 text-amber-400" />
           <span className="text-white font-semibold">{currentSlot.title}</span>
-          <span className="text-amber-300 text-[11px] font-mono">({slideIndex + 1}/4)</span>
+          <span className="text-amber-300 text-[11px] font-mono">({slideIndex + 1}/{banners.length})</span>
           <span className="hidden sm:inline text-stone-400 text-[11px]">({currentSlot.hoursLabel})</span>
         </div>
       </div>
@@ -336,10 +301,10 @@ export const PixarRoosterBanner3D: React.FC<PixarRoosterBanner3DProps> = () => {
         <ChevronRight className="w-6 h-6 text-amber-300" />
       </button>
 
-      {/* BOTTOM-CENTER CONTROLLER (TIME SLOTS + 4 SLIDE DOTS + 15S INDICATOR) */}
+      {/* BOTTOM-CENTER CONTROLLER (TIME SLOTS + DYNAMIC SLIDE DOTS + 15S INDICATOR) */}
       <div className="absolute bottom-5 left-1/2 -translate-x-1/2 z-20 flex flex-col items-center space-y-2">
         
-        {/* Active Slot's 4 Banner Slide Dots */}
+        {/* Active Slot's Slide Dots */}
         <div className="flex items-center space-x-2 px-3 py-1 rounded-full bg-stone-950/60 backdrop-blur-md border border-white/10 shadow-lg">
           {banners.map((banner, index) => {
             const isActive = index === slideIndex;
@@ -398,12 +363,12 @@ export const PixarRoosterBanner3D: React.FC<PixarRoosterBanner3DProps> = () => {
                     ? 'bg-amber-500 text-stone-950 font-bold shadow-[0_0_14px_#f59e0b]'
                     : 'text-stone-300 hover:text-white hover:bg-white/10'
                 }`}
-                title={`${slot.title} (${slot.hoursLabel}) - 4 Banners`}
+                title={`${slot.title} (${slot.hoursLabel}) - ${slot.banners.length} Unique Banners`}
               >
                 <SlotIcon className={`w-3.5 h-3.5 ${isSelected ? 'text-stone-950' : 'text-amber-400'}`} />
                 <span>{slot.shortLabel}</span>
                 <span className={`text-[10px] px-1 py-0.2 rounded-full ${isSelected ? 'bg-stone-950/20 text-stone-950' : 'bg-white/10 text-stone-400'}`}>
-                  4
+                  {slot.banners.length}
                 </span>
                 {isActuallyLive && !isSelected && (
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 ml-0.5" title="Currently Live Time" />
