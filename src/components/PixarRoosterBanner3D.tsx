@@ -141,8 +141,8 @@ export const TIME_SLOTS: Record<TimeSlotKey, TimeSlotConfig> = {
       {
         id: 'evening-4',
         src: '/banners/evening_4_sunset_showcase.jpg',
-        alt: 'Heritage Rooster Crowing on Farm Cart at Sunset',
-        title: 'Sunset Heritage Crow & Warm Skies',
+        alt: 'Alpha Champion Aseel on Ancient Carved Stone Gate at Sunset',
+        title: 'Alpha Champion on Ancient Stone Gate',
       },
     ],
   },
