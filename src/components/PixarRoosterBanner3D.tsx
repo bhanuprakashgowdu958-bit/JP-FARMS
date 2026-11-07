@@ -92,8 +92,8 @@ export const TIME_SLOTS: Record<TimeSlotKey, TimeSlotConfig> = {
       {
         id: 'midday-2',
         src: '/banners/midday_2_meadow_feeding.jpg',
-        alt: 'Heritage Rooster Foraging in Sunny Meadow',
-        title: 'Sunlit Meadow Grains & Wildflowers',
+        alt: 'Single Heritage Rooster on Wooden Fence in Sunlit Valley',
+        title: 'Sunlit Fence Breakfast & Valley View',
       },
       {
         id: 'midday-3',
@@ -135,8 +135,8 @@ export const TIME_SLOTS: Record<TimeSlotKey, TimeSlotConfig> = {
       {
         id: 'evening-3',
         src: '/banners/evening_3_golden_panorama.jpg',
-        alt: 'Scenic Golden Sunset Panorama Over Farm Estate',
-        title: 'Golden Hour Panorama at the Estate',
+        alt: 'Royal Golden Peela Aseel Rooster on Rustic Fence at Sunset',
+        title: 'Royal Peela Aseel in Golden Sunset Glow',
       },
       {
         id: 'evening-4',
