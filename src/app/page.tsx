@@ -9,6 +9,7 @@ import { FarmBioSecurity } from '@/components/FarmBioSecurity';
 import { DeliveryProcess } from '@/components/DeliveryProcess';
 import { Testimonials } from '@/components/Testimonials';
 import { Footer } from '@/components/Footer';
+import { ColorfulShowcaseBanner } from '@/components/ColorfulShowcaseBanner';
 import { RoosterDetailModal } from '@/components/RoosterDetailModal';
 import { RoosterReelsModal } from '@/components/RoosterReelsModal';
 import { BookingModal } from '@/components/BookingModal';
@@ -58,6 +59,12 @@ export default function HomePage() {
         <Hero 
           onOpenReels={() => setIsReelsOpen(true)} 
           birdsCount={birdsCount} 
+        />
+
+        {/* Colorful Grand Heritage Exhibition Banner & Marquee */}
+        <ColorfulShowcaseBanner 
+          onOpenReels={() => setIsReelsOpen(true)}
+          onScheduleVisit={() => setInquiryRooster(roosters[0] || null)}
         />
 
         {/* Heritage Rooster Living Gallery */}

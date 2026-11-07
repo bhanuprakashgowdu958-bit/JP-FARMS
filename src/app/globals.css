@@ -60,3 +60,35 @@ body {
     radial-gradient(at 50% 50%, rgba(20, 45, 25, 0.9) 0px, transparent 100%);
 }
 
+/* Infinite Marquee Animation */
+@keyframes marquee {
+  0% {
+    transform: translateX(0%);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-marquee {
+  display: flex;
+  width: max-content;
+  animation: marquee 30s linear infinite;
+}
+
+.animate-marquee:hover {
+  animation-play-state: paused;
+}
+
+/* Colorful Animated Glow Gradient */
+@keyframes gradient-pan {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.animate-gradient-pan {
+  background-size: 200% 200%;
+  animation: gradient-pan 8s ease infinite;
+}
+
