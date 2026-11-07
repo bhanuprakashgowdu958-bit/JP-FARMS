@@ -72,11 +72,15 @@ async function start() {
 
   console.log(`\n🌾 Starting JP Farms Dev Server on ${url} ...\n`);
 
-  // Use npx.cmd on Windows to avoid DEP0190 shell concatenation warning
-  const npxCmd = process.platform === 'win32' ? 'npx.cmd' : 'npx';
-  const nextDev = spawn(npxCmd, ['next', 'dev', '-p', String(port)], {
+  // Use cmd.exe on Windows to run npx cleanly without EINVAL or DEP0190 warnings
+  const isWin = process.platform === 'win32';
+  const bin = isWin ? 'cmd.exe' : 'npx';
+  const args = isWin
+    ? ['/d', '/s', '/c', `npx next dev -p ${port}`]
+    : ['next', 'dev', '-p', String(port)];
+
+  const nextDev = spawn(bin, args, {
     stdio: 'inherit',
-    shell: false,
   });
 
   // Browser launcher
