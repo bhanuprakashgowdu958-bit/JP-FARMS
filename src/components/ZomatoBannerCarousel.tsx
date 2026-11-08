@@ -89,6 +89,21 @@ export const ZomatoBannerCarousel: React.FC<ZomatoBannerCarouselProps> = ({
       imageAlt: 'Royal Peela Aseel Rooster with Rainbow Wings at JP Farms',
     },
     {
+      id: 'winter-storybook',
+      tag: '❄️ ALL-SEASON HARDINESS • NATURAL VIGOR',
+      tagIcon: <Sparkles className="w-3.5 h-3.5 text-sky-600" />,
+      tagStyle: 'bg-sky-50 text-sky-900 border-sky-200',
+      headline: 'Winter Heritage &',
+      highlightText: 'Pure Avian Resilience',
+      subhead: 'Indigenous Indian gamefowl possess dense feather insulation, robust immune vigor, and natural hardiness across all seasons.',
+      ctaText: 'Explore Heritage Breeds',
+      ctaAction: 'catalog',
+      ctaStyle: 'bg-gradient-to-r from-sky-600 to-indigo-600 hover:from-sky-700 hover:to-indigo-700 text-white shadow-sky-600/25',
+      bgGradient: 'from-sky-100/80 via-sky-50/60 to-white',
+      image: '/banners/winter_storybook_rooster_snow.jpg',
+      imageAlt: 'Winter Storybook 3D Illustration: Magnificent Rooster on Snowy Fence at JP Farms',
+    },
+    {
       id: 'farm-visit',
       tag: 'OPEN DAILY 7:00 AM – 7:00 PM • NH 65 CORRIDOR',
       tagIcon: <MapPin className="w-3.5 h-3.5 text-emerald-600" />,
@@ -143,12 +158,14 @@ export const ZomatoBannerCarousel: React.FC<ZomatoBannerCarouselProps> = ({
     setCurrentIndex((prev) => (prev - 1 + BANNERS.length) % BANNERS.length);
   }, [BANNERS.length]);
 
-  // Auto-advance timer (8s), pauses on hover
+  // Auto-advance timer (7s), smoothly resets on user interaction and pauses on hover
   useEffect(() => {
     if (isPaused) return;
-    const interval = setInterval(handleNext, 8000);
-    return () => clearInterval(interval);
-  }, [isPaused, handleNext]);
+    const timer = setInterval(() => {
+      setCurrentIndex((prev) => (prev + 1) % BANNERS.length);
+    }, 7000);
+    return () => clearInterval(timer);
+  }, [isPaused, currentIndex, BANNERS.length]);
 
   // Touch swipe support for mobile
   const handleTouchStart = (e: React.TouchEvent) => {
