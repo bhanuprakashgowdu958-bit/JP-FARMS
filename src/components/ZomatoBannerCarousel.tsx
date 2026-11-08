@@ -4,18 +4,11 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { 
   ChevronLeft, 
   ChevronRight, 
-  Calendar, 
-  PlayCircle, 
-  ShieldCheck, 
-  ArrowRight, 
   Award, 
   MapPin, 
-  Sun,
-  Flame,
-  Sparkles
+  PlayCircle, 
+  ShieldCheck 
 } from 'lucide-react';
-import { FARM_INFO } from '@/lib/data';
-import { generateWhatsAppLink } from '@/lib/utils';
 import { Rooster } from '@/types/rooster';
 
 interface ZomatoBannerCarouselProps {
@@ -27,16 +20,6 @@ interface ZomatoBannerCarouselProps {
 
 interface BannerSlide {
   id: string;
-  tag: string;
-  tagIcon: React.ReactNode;
-  tagStyle: string;
-  headline: string;
-  highlightText: string;
-  subhead: string;
-  ctaText: string;
-  ctaAction: 'whatsapp' | 'reels' | 'catalog' | 'biosecurity';
-  ctaStyle: string;
-  bgGradient: string;
   image: string;
   imageAlt: string;
 }
@@ -52,99 +35,34 @@ export const ZomatoBannerCarousel: React.FC<ZomatoBannerCarouselProps> = ({
   const touchStartX = useRef<number | null>(null);
   const touchEndX = useRef<number | null>(null);
 
-  const whatsAppVisitUrl = generateWhatsAppLink({
-    phone: FARM_INFO.whatsapp,
-    customMessage: 'Hello JP Farms! 🐓 I saw your farm banner and would like to schedule a visit to your paddocks this weekend.',
-  });
-
   const BANNERS: BannerSlide[] = [
     {
       id: 'commercial-grain-ad',
-      tag: '🌾 100% ORGANIC GRAIN NUTRITION • AYURVEDIC CARE',
-      tagIcon: <Sun className="w-3.5 h-3.5 text-amber-500" />,
-      tagStyle: 'bg-amber-50 text-amber-900 border-amber-200',
-      headline: 'Nurtured Naturally on',
-      highlightText: 'Golden Farm Grains',
-      subhead: 'Champion Indian Desi roosters raised on sprouted bajra, whole wheat, and cracked golden corn. 0% commercial steroids or growth hormones.',
-      ctaText: 'Explore Nutrition & Farm Care',
-      ctaAction: 'biosecurity',
-      ctaStyle: 'bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white shadow-amber-500/25',
-      bgGradient: 'from-amber-50 via-sky-50/60 to-white',
       image: '/banners/ad_rooster_golden_grains_commercial.jpg',
-      imageAlt: '3D Commercial Ad: Champion Rooster Feeding on Golden Grains at JP Farms',
-    },
-    {
-      id: 'peela-aseel',
-      tag: 'ROYAL HERITAGE LINEAGE • EST. 2016',
-      tagIcon: <Award className="w-3.5 h-3.5 text-amber-500" />,
-      tagStyle: 'bg-amber-50 text-amber-900 border-amber-200',
-      headline: 'Towering 26" Pure',
-      highlightText: 'Peela Aseel Studs',
-      subhead: 'Direct Deccan royal bloodlines preserved for 7 generations. Distinct upright warrior stance & dense bone density.',
-      ctaText: 'Explore Available Roosters',
-      ctaAction: 'catalog',
-      ctaStyle: 'bg-gradient-to-r from-sky-600 to-sky-700 hover:from-sky-700 hover:to-sky-800 text-white shadow-sky-600/25',
-      bgGradient: 'from-sky-50 via-sky-50/60 to-white',
-      image: '/banners/banner_rainbow_wings_crow.jpg',
-      imageAlt: 'Royal Peela Aseel Rooster with Rainbow Wings at JP Farms',
+      imageAlt: '3D Commercial Advertisement: Champion Rooster Feeding on Golden Grains at JP Farms',
     },
     {
       id: 'winter-storybook',
-      tag: '❄️ ALL-SEASON HARDINESS • NATURAL VIGOR',
-      tagIcon: <Sparkles className="w-3.5 h-3.5 text-sky-600" />,
-      tagStyle: 'bg-sky-50 text-sky-900 border-sky-200',
-      headline: 'Winter Heritage &',
-      highlightText: 'Pure Avian Resilience',
-      subhead: 'Indigenous Indian gamefowl possess dense feather insulation, robust immune vigor, and natural hardiness across all seasons.',
-      ctaText: 'Explore Heritage Breeds',
-      ctaAction: 'catalog',
-      ctaStyle: 'bg-gradient-to-r from-sky-600 to-indigo-600 hover:from-sky-700 hover:to-indigo-700 text-white shadow-sky-600/25',
-      bgGradient: 'from-sky-100/80 via-sky-50/60 to-white',
       image: '/banners/winter_storybook_rooster_snow.jpg',
       imageAlt: 'Winter Storybook 3D Illustration: Magnificent Rooster on Snowy Fence at JP Farms',
     },
     {
-      id: 'farm-visit',
-      tag: 'OPEN DAILY 7:00 AM – 7:00 PM • NH 65 CORRIDOR',
-      tagIcon: <MapPin className="w-3.5 h-3.5 text-emerald-600" />,
-      tagStyle: 'bg-emerald-50 text-emerald-900 border-emerald-200',
-      headline: 'Experience the Farm in Person',
-      highlightText: 'Guided Paddock Tours',
-      subhead: 'Walk through green pastures, inspect live breeding pairs, and experience true organic desi poultry heritage.',
-      ctaText: 'Schedule Visit on WhatsApp',
-      ctaAction: 'whatsapp',
-      ctaStyle: 'bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 text-white shadow-emerald-600/25',
-      bgGradient: 'from-emerald-50 via-sky-50/60 to-white',
+      id: 'peela-aseel',
+      image: '/banners/banner_rainbow_wings_crow.jpg',
+      imageAlt: 'Royal Peela Aseel Rooster with Rainbow Wings Crowing at JP Farms',
+    },
+    {
+      id: 'alpha-staredown',
+      image: '/banners/banner_alpha_warrior_staredown.jpg',
+      imageAlt: 'Alpha Warrior Staredown: Purebred Champion Sire at JP Farms',
+    },
+    {
+      id: 'farm-stream',
       image: '/banners/midday_4_farm_stream.jpg',
       imageAlt: 'JP Farms Green Pastures and Natural Stream Paddocks',
     },
     {
-      id: 'rooster-tv',
-      tag: 'ROOSTER TV • UNFILTERED 4K PROOF',
-      tagIcon: <PlayCircle className="w-3.5 h-3.5 text-sky-600" />,
-      tagStyle: 'bg-sky-50 text-sky-900 border-sky-200',
-      headline: 'Uncut Walking Stance &',
-      highlightText: 'Vocal Crowing Reels',
-      subhead: 'Zero camera filters or deceptive angles. Watch genuine 4K video shorts of our roosters before planning your journey.',
-      ctaText: 'Watch 4K Video Reels',
-      ctaAction: 'reels',
-      ctaStyle: 'bg-gradient-to-r from-sky-600 to-sky-700 hover:from-sky-700 hover:to-sky-800 text-white shadow-sky-600/25',
-      bgGradient: 'from-sky-100/70 via-sky-50/70 to-white',
-      image: '/banners/banner_alpha_warrior_staredown.jpg',
-      imageAlt: 'Alpha Warrior Staredown Rooster TV Video Showcase',
-    },
-    {
-      id: 'kadaknath-biosecurity',
-      tag: '100% DNA CERTIFIED PURE • ZERO ANTIBIOTICS',
-      tagIcon: <ShieldCheck className="w-3.5 h-3.5 text-purple-600" />,
-      tagStyle: 'bg-purple-50 text-purple-900 border-purple-200',
-      headline: 'Jhabua Kadaknath &',
-      highlightText: 'Ayurvedic Diet Nutrition',
-      subhead: 'Raised on sprouted organic bajra, neem leaves, and crushed almonds. Fully vaccinated with 4-stage veterinary health cards.',
-      ctaText: 'Explore Bio-Security Standards',
-      ctaAction: 'biosecurity',
-      ctaStyle: 'bg-gradient-to-r from-purple-600 to-indigo-700 hover:from-purple-700 hover:to-indigo-800 text-white shadow-purple-600/25',
-      bgGradient: 'from-purple-50 via-sky-50/50 to-white',
+      id: 'black-kadaknath',
       image: '/banners/night_2_black_kadaknath.jpg',
       imageAlt: 'Pure Jet-Black Jhabua Kadaknath Rooster at JP Farms',
     },
@@ -158,12 +76,12 @@ export const ZomatoBannerCarousel: React.FC<ZomatoBannerCarouselProps> = ({
     setCurrentIndex((prev) => (prev - 1 + BANNERS.length) % BANNERS.length);
   }, [BANNERS.length]);
 
-  // Auto-advance timer (7s), smoothly resets on user interaction and pauses on hover
+  // Auto-advance timer: Slides every 10 seconds automatically, smoothly resets on click, pauses on hover
   useEffect(() => {
     if (isPaused) return;
     const timer = setInterval(() => {
       setCurrentIndex((prev) => (prev + 1) % BANNERS.length);
-    }, 7000);
+    }, 10000);
     return () => clearInterval(timer);
   }, [isPaused, currentIndex, BANNERS.length]);
 
@@ -188,138 +106,76 @@ export const ZomatoBannerCarousel: React.FC<ZomatoBannerCarouselProps> = ({
     touchEndX.current = null;
   };
 
-  const handleCtaClick = (action: BannerSlide['ctaAction']) => {
-    switch (action) {
-      case 'whatsapp':
-        window.open(whatsAppVisitUrl, '_blank');
-        break;
-      case 'reels':
-        if (onOpenReels) onOpenReels();
-        break;
-      case 'catalog': {
-        const catalogEl = document.getElementById('catalog');
-        if (catalogEl) {
-          catalogEl.scrollIntoView({ behavior: 'smooth' });
-        } else if (roosters.length > 0 && onSelectRooster) {
-          onSelectRooster(roosters[0]);
-        }
-        break;
-      }
-      case 'biosecurity': {
-        const biosecurityEl = document.getElementById('biosecurity');
-        if (biosecurityEl) {
-          biosecurityEl.scrollIntoView({ behavior: 'smooth' });
-        }
-        break;
+  const current = BANNERS[currentIndex];
+
+  const handleBannerClick = () => {
+    if (current.id === 'alpha-staredown' && onOpenReels) {
+      onOpenReels();
+    } else if (current.id === 'farm-stream' && onScheduleVisit) {
+      onScheduleVisit();
+    } else {
+      const catalogEl = document.getElementById('catalog');
+      if (catalogEl) {
+        catalogEl.scrollIntoView({ behavior: 'smooth' });
       }
     }
   };
 
-  const current = BANNERS[currentIndex];
-
   return (
-    <section className="relative w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
+    <section className="relative w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 sm:py-5">
       
-      {/* Zomato-Style Featured Banner Container */}
+      {/* 100% Full-Bleed Clean Banner Container (Zero Text Overlap, Pure Master Artwork) */}
       <div 
-        className="group relative rounded-2xl sm:rounded-3xl border border-sky-200/90 shadow-lg shadow-sky-950/5 overflow-hidden transition-all duration-300"
+        className="group relative w-full aspect-[16/9] sm:aspect-[21/9] lg:aspect-[21/8] min-h-[220px] sm:min-h-[320px] lg:min-h-[420px] rounded-2xl sm:rounded-3xl border border-sky-200/90 shadow-xl shadow-sky-950/5 overflow-hidden bg-slate-900 transition-all duration-300 cursor-pointer"
         onMouseEnter={() => setIsPaused(true)}
         onMouseLeave={() => setIsPaused(false)}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
+        onClick={handleBannerClick}
       >
         
-        {/* Active Banner Slide */}
-        <div className={`relative w-full bg-gradient-to-r ${current.bgGradient} transition-colors duration-500`}>
-          <div className="grid grid-cols-1 lg:grid-cols-12 min-h-[300px] sm:min-h-[340px] lg:min-h-[360px] items-center">
-            
-            {/* LEFT 58%: Zomato-Style Punchy Editorial & CTA */}
-            <div className="lg:col-span-7 p-6 sm:p-8 lg:p-10 lg:pl-14 flex flex-col justify-center space-y-3 sm:space-y-4 z-10">
-              
-              {/* Category Pill Tag */}
-              <div className="flex items-center space-x-2">
-                <span className={`inline-flex items-center space-x-1.5 px-3 py-1 rounded-full text-[11px] font-extrabold uppercase tracking-wider border shadow-xs ${current.tagStyle}`}>
-                  {current.tagIcon}
-                  <span>{current.tag}</span>
-                </span>
-              </div>
-
-              {/* Bold Title */}
-              <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black text-slate-900 tracking-tight leading-tight">
-                {current.headline}{' '}
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-sky-600 via-sky-700 to-amber-600">
-                  {current.highlightText}
-                </span>
-              </h2>
-
-              {/* Clean Subtitle */}
-              <p className="text-slate-600 text-xs sm:text-sm lg:text-base leading-relaxed max-w-xl">
-                {current.subhead}
-              </p>
-
-              {/* Prominent Action Button + Secondary Prompt */}
-              <div className="pt-2 flex flex-wrap items-center gap-3">
-                <button
-                  type="button"
-                  onClick={() => handleCtaClick(current.ctaAction)}
-                  className={`inline-flex items-center space-x-2 px-5 py-3 sm:px-6 sm:py-3.5 rounded-xl font-bold text-xs sm:text-sm shadow-md transition-all active:scale-95 cursor-pointer ${current.ctaStyle}`}
-                >
-                  <span>{current.ctaText}</span>
-                  <ArrowRight className="w-4 h-4 ml-0.5" />
-                </button>
-
-                {current.ctaAction !== 'reels' && onOpenReels && (
-                  <button
-                    type="button"
-                    onClick={onOpenReels}
-                    className="inline-flex items-center space-x-1.5 px-4 py-3 rounded-xl bg-white/90 hover:bg-white text-slate-700 font-semibold text-xs border border-sky-200 shadow-xs transition"
-                  >
-                    <PlayCircle className="w-4 h-4 text-sky-600" />
-                    <span>Watch Video Reels</span>
-                  </button>
-                )}
-              </div>
-
-            </div>
-
-            {/* RIGHT 42%: 100% Unobstructed Vibrant 3D Artwork Showcase */}
-            <div className="lg:col-span-5 h-[220px] sm:h-[280px] lg:h-[320px] relative overflow-hidden flex items-center justify-center p-3 sm:p-5 lg:pr-8">
-              <div className="relative w-full h-full rounded-xl sm:rounded-2xl overflow-hidden border border-sky-200/80 shadow-md bg-slate-900">
-                <img
-                  key={current.id}
-                  src={current.image}
-                  alt={current.imageAlt}
-                  className="w-full h-full object-cover object-[center_35%] filter brightness-[1.02] contrast-[1.03] transition-transform duration-700 ease-out group-hover:scale-105"
-                />
-              </div>
-            </div>
-
-          </div>
+        {/* Full-Bleed Artwork Banner Image */}
+        <div className="relative w-full h-full overflow-hidden">
+          <img
+            key={current.id}
+            src={current.image}
+            alt={current.imageAlt}
+            className="w-full h-full object-cover object-[center_35%] filter brightness-[1.02] contrast-[1.03] transition-all duration-700 ease-out group-hover:scale-[1.02]"
+          />
         </div>
 
-        {/* Zomato-Style Left Arrow Button (Appears on Hover, No Text Overlap) */}
+        {/* Clean Hover-Activated Left Arrow */}
         <button
           type="button"
-          onClick={handlePrev}
-          aria-label="Previous Slide"
-          className="absolute left-3 top-1/2 -translate-y-1/2 z-20 w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white/95 hover:bg-white text-slate-700 hover:text-slate-900 shadow-lg border border-slate-200/90 hidden sm:flex items-center justify-center transition-all opacity-0 group-hover:opacity-100 hover:scale-110 active:scale-95"
+          onClick={(e) => {
+            e.stopPropagation();
+            handlePrev();
+          }}
+          aria-label="Previous Banner"
+          className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 z-20 w-9 h-9 sm:w-11 sm:h-11 rounded-full bg-white/95 hover:bg-white text-slate-800 shadow-xl border border-slate-200/90 hidden sm:flex items-center justify-center transition-all opacity-0 group-hover:opacity-100 hover:scale-110 active:scale-90"
         >
-          <ChevronLeft className="w-5 h-5" />
+          <ChevronLeft className="w-5 h-5 sm:w-6 sm:h-6" />
         </button>
 
-        {/* Zomato-Style Right Arrow Button (Appears on Hover, No Image Overlap) */}
+        {/* Clean Hover-Activated Right Arrow */}
         <button
           type="button"
-          onClick={handleNext}
-          aria-label="Next Slide"
-          className="absolute right-3 top-1/2 -translate-y-1/2 z-20 w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white/95 hover:bg-white text-slate-700 hover:text-slate-900 shadow-lg border border-slate-200/90 hidden sm:flex items-center justify-center transition-all opacity-0 group-hover:opacity-100 hover:scale-110 active:scale-95"
+          onClick={(e) => {
+            e.stopPropagation();
+            handleNext();
+          }}
+          aria-label="Next Banner"
+          className="absolute right-3 sm:right-4 top-1/2 -translate-y-1/2 z-20 w-9 h-9 sm:w-11 sm:h-11 rounded-full bg-white/95 hover:bg-white text-slate-800 shadow-xl border border-slate-200/90 hidden sm:flex items-center justify-center transition-all opacity-0 group-hover:opacity-100 hover:scale-110 active:scale-90"
         >
-          <ChevronRight className="w-5 h-5" />
+          <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6" />
         </button>
 
-        {/* Zomato-Style Bottom Indicator Pills (Active Dash + Dots) */}
-        <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-20 flex items-center space-x-1.5 bg-white/90 backdrop-blur-md px-3 py-1.5 rounded-full border border-sky-200 shadow-xs">
+        {/* Minimalist Bottom Indicator Dash/Dots */}
+        <div 
+          className="absolute bottom-3.5 left-1/2 -translate-x-1/2 z-20 flex items-center space-x-1.5 bg-white/90 backdrop-blur-md px-3.5 py-1.5 rounded-full border border-sky-200/80 shadow-md"
+          onClick={(e) => e.stopPropagation()}
+        >
           {BANNERS.map((banner, index) => {
             const isActive = index === currentIndex;
             return (
@@ -327,10 +183,10 @@ export const ZomatoBannerCarousel: React.FC<ZomatoBannerCarouselProps> = ({
                 key={banner.id}
                 type="button"
                 onClick={() => setCurrentIndex(index)}
-                aria-label={`Go to slide ${index + 1}`}
+                aria-label={`Go to banner ${index + 1}`}
                 className={`transition-all duration-300 rounded-full ${
                   isActive 
-                    ? 'w-6 h-2 bg-sky-600' 
+                    ? 'w-7 h-2 bg-sky-600' 
                     : 'w-2 h-2 bg-slate-300 hover:bg-slate-400'
                 }`}
               />
@@ -340,7 +196,7 @@ export const ZomatoBannerCarousel: React.FC<ZomatoBannerCarouselProps> = ({
 
       </div>
 
-      {/* Zomato-Style Quick Feature Ticker Below Banner (4 Value Badges) */}
+      {/* Quick Feature Ticker Below Banner (4 Clean Value Badges) */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-4 mt-3">
         
         <div className="flex items-center space-x-2.5 px-3 py-2 rounded-xl bg-white border border-sky-100 shadow-xs">
@@ -388,4 +244,3 @@ export const ZomatoBannerCarousel: React.FC<ZomatoBannerCarouselProps> = ({
     </section>
   );
 };
-
