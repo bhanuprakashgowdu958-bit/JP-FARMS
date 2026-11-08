@@ -20,7 +20,8 @@ import {
   ChevronRight,
   LogOut,
   ExternalLink,
-  HelpCircle
+  HelpCircle,
+  User
 } from 'lucide-react';
 import { FARM_INFO } from '@/lib/data';
 import { generateWhatsAppLink } from '@/lib/utils';
@@ -28,6 +29,7 @@ import { useCart } from '@/lib/cartStore';
 import { useOrders } from '@/lib/roosterStore';
 import { useAuth } from '@/lib/authStore';
 import { GoogleSignInButton } from './GoogleSignInButton';
+import { UserProfileModal } from './UserProfileModal';
 
 interface HeaderProps {
   onOpenReels?: () => void;
@@ -41,6 +43,7 @@ export const Header: React.FC<HeaderProps> = ({
   birdsCount = 7 
 }) => {
   const [sideMenuOpen, setSideMenuOpen] = useState(false);
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
   const { cartCount, openCart } = useCart();
   const { orders } = useOrders();
@@ -56,6 +59,13 @@ export const Header: React.FC<HeaderProps> = ({
     const handleOpenMenu = () => setSideMenuOpen(true);
     window.addEventListener('open-side-menu', handleOpenMenu);
     return () => window.removeEventListener('open-side-menu', handleOpenMenu);
+  }, []);
+
+  // Listen for programmatic profile modal open events
+  useEffect(() => {
+    const handleOpenProfile = () => setIsProfileModalOpen(true);
+    window.addEventListener('open-profile-modal', handleOpenProfile);
+    return () => window.removeEventListener('open-profile-modal', handleOpenProfile);
   }, []);
 
   // Lock body scroll when drawer is open
@@ -99,49 +109,52 @@ export const Header: React.FC<HeaderProps> = ({
   return (
     <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-sky-100 text-slate-800 shadow-xs">
       {/* Top Banner: Farm Heritage & Helpline */}
-      <div className="bg-sky-50/90 border-b border-sky-100/80 text-xs px-4 py-1.5 text-sky-950">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <span className="flex items-center text-sky-800 font-semibold">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse mr-1.5 inline-block"></span>
-              {birdsCount} Champion Strains Documented • Visitors Welcome Daily
+      <div className="bg-sky-50/90 border-b border-sky-100/80 text-[11px] sm:text-xs px-3 sm:px-4 py-1 sm:py-1.5 text-sky-950">
+        <div className="max-w-7xl mx-auto flex items-center justify-between gap-2">
+          <div className="flex items-center space-x-2 truncate">
+            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shrink-0"></span>
+            <span className="text-sky-800 font-semibold truncate">
+              {birdsCount} Champion Strains Documented
             </span>
-            <span className="hidden sm:inline text-sky-300">•</span>
-            <span className="hidden sm:inline text-sky-700">Pure Indian Gamefowl & Desi Avian Conservation</span>
+            <span className="hidden md:inline text-sky-300">•</span>
+            <span className="hidden md:inline text-sky-700">Pure Indian Gamefowl & Desi Avian Conservation</span>
           </div>
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-1 shrink-0">
             <a 
               href={`tel:${FARM_INFO.phone}`} 
-              className="flex items-center text-sky-800 hover:text-sky-950 font-medium transition"
+              className="flex items-center text-sky-800 hover:text-sky-950 font-bold transition whitespace-nowrap"
             >
-              <Phone className="w-3 h-3 mr-1 text-sky-600" />
-              <span>Farm Helpline: {FARM_INFO.phone}</span>
+              <Phone className="w-3 h-3 mr-1 text-sky-600 shrink-0" />
+              <span className="hidden sm:inline">Farm Helpline: </span>
+              <span>{FARM_INFO.phone}</span>
             </a>
           </div>
         </div>
       </div>
 
-      {/* Main Navigation Bar */}
+      {/* Main Navigation Bar Container */}
       <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-20">
+        
+        {/* 1. Desktop Navigation Bar (h-20, hidden on mobile) */}
+        <div className="hidden sm:flex items-center justify-between h-20">
           
-          {/* Logo */}
-          <Link href="/" className="flex items-center space-x-2.5 sm:space-x-3 group shrink-0">
-            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-amber-500 to-amber-600 p-0.5 shadow-md shadow-amber-500/20 group-hover:scale-105 transition duration-200 shrink-0">
+          {/* Logo (Desktop) */}
+          <Link href="/" className="flex items-center space-x-3 group shrink-0">
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-amber-500 to-amber-600 p-0.5 shadow-md shadow-amber-500/20 group-hover:scale-105 transition duration-200 shrink-0">
               <div className="w-full h-full bg-white rounded-[10px] flex items-center justify-center">
-                <Feather className="w-5 h-5 sm:w-6 sm:h-6 text-amber-600 transform -rotate-12" />
+                <Feather className="w-6 h-6 text-amber-600 transform -rotate-12" />
               </div>
             </div>
             <div className="shrink-0">
-              <div className="flex items-center space-x-1.5 sm:space-x-2 whitespace-nowrap">
-                <span className="font-extrabold text-lg sm:text-2xl tracking-tight text-slate-900 group-hover:text-sky-700 transition whitespace-nowrap">
+              <div className="flex items-center space-x-2 whitespace-nowrap">
+                <span className="font-extrabold text-2xl tracking-tight text-slate-900 group-hover:text-sky-700 transition whitespace-nowrap">
                   JP FARMS
                 </span>
-                <span className="text-[9px] sm:text-[10px] uppercase font-bold tracking-widest px-1.5 py-0.5 rounded bg-sky-100 text-sky-800 border border-sky-200 whitespace-nowrap hidden min-[360px]:inline-block">
+                <span className="text-[10px] uppercase font-bold tracking-widest px-1.5 py-0.5 rounded bg-sky-100 text-sky-800 border border-sky-200 whitespace-nowrap">
                   Est. 2016
                 </span>
               </div>
-              <p className="text-[11px] text-slate-500 tracking-wide whitespace-nowrap hidden sm:block">
+              <p className="text-[11px] text-slate-500 tracking-wide whitespace-nowrap">
                 Heritage Desi Rooster Showcase Estate
               </p>
             </div>
@@ -167,9 +180,20 @@ export const Header: React.FC<HeaderProps> = ({
           </nav>
 
           {/* Top Right Actions (Desktop): Profile, Orders, Cart & Menu Bar */}
-          <div className="hidden sm:flex items-center space-x-2.5 shrink-0">
+          <div className="flex items-center space-x-2.5 shrink-0">
             {/* Google Sign In / Account Avatar Button */}
             <GoogleSignInButton variant="header" />
+
+            {/* My Profile Button */}
+            <button
+              type="button"
+              onClick={() => setIsProfileModalOpen(true)}
+              className="flex items-center space-x-1.5 bg-slate-900 hover:bg-slate-800 text-amber-300 hover:text-white text-xs font-bold px-3.5 py-2.5 rounded-xl border border-amber-500/40 shadow-sm transition active:scale-95 whitespace-nowrap group cursor-pointer"
+              title="View & Edit My Profile"
+            >
+              <User className="w-4 h-4 text-amber-400 group-hover:scale-110 transition" />
+              <span>My Profile</span>
+            </button>
 
             {/* My Orders Button */}
             <button
@@ -226,21 +250,51 @@ export const Header: React.FC<HeaderProps> = ({
               </span>
             </button>
           </div>
+        </div>
 
-          {/* Mobile Right Actions: Profile, Orders, Cart & Menu Button */}
-          <div className="flex items-center sm:hidden space-x-1 sm:space-x-1.5 shrink-0">
-            {/* Mobile Google Sign In */}
+        {/* 2. Mobile Navigation Bar (Amazon / Flipkart Style: Menu + Logo on Left, Actions on Right) */}
+        <div className="flex sm:hidden items-center justify-between h-16">
+          
+          {/* Left: Hamburger Menu + Logo Brand */}
+          <div className="flex items-center space-x-2.5 min-w-0">
+            {/* Hamburger Menu Button (Amazon/Flipkart Top-Left Standard) */}
+            <button
+              type="button"
+              onClick={() => setSideMenuOpen(true)}
+              className="p-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-amber-400 border border-amber-500/30 transition active:scale-95 flex items-center justify-center shadow-xs cursor-pointer shrink-0"
+              aria-label="Open navigation menu"
+              title="Menu"
+            >
+              <Menu className="w-5 h-5 text-amber-400" />
+            </button>
+
+            {/* Mobile Brand Logo */}
+            <Link href="/" className="flex items-center space-x-2 group min-w-0">
+              <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-amber-500 to-amber-600 p-0.5 shadow-sm shadow-amber-500/20 shrink-0">
+                <div className="w-full h-full bg-white rounded-[7px] flex items-center justify-center">
+                  <Feather className="w-4 h-4 text-amber-600 transform -rotate-12" />
+                </div>
+              </div>
+              <span className="font-black text-lg tracking-tight text-slate-900 truncate">
+                JP FARMS
+              </span>
+            </Link>
+          </div>
+
+          {/* Right: Profile Avatar, Orders & Cart (Zero-Overflow Flipkart/Amazon Action Strip) */}
+          <div className="flex items-center space-x-2 shrink-0">
+            {/* Mobile Profile Avatar (Tap to open My Profile) */}
             <GoogleSignInButton variant="compact" />
 
             {/* Mobile Orders Button */}
             <button
               type="button"
               onClick={onOpenOrders}
-              className="relative p-2 rounded-xl bg-slate-900 text-amber-400 font-bold flex items-center justify-center border border-amber-500/30 shadow-xs transition active:scale-95 cursor-pointer"
+              className="relative p-2 rounded-xl bg-slate-900 text-amber-400 font-bold flex items-center justify-center border border-amber-500/30 shadow-xs transition active:scale-95 cursor-pointer shrink-0"
               aria-label="Track orders"
               title="My Orders"
             >
-              <Package className="w-4 h-4 sm:w-5 sm:h-5 text-amber-400" />
+              <Package className="w-4.5 h-4.5 text-amber-400" />
               {activeOrdersCount > 0 && (
                 <span className="absolute -top-1 -right-1 bg-amber-500 text-stone-950 text-[9px] font-black w-4 h-4 rounded-full flex items-center justify-center border border-slate-900">
                   {activeOrdersCount}
@@ -252,33 +306,20 @@ export const Header: React.FC<HeaderProps> = ({
             <button
               type="button"
               onClick={openCart}
-              className="relative p-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-stone-950 font-bold flex items-center justify-center shadow-xs transition active:scale-95 cursor-pointer"
+              className="relative p-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-stone-950 font-bold flex items-center justify-center shadow-xs transition active:scale-95 cursor-pointer shrink-0"
               aria-label="Open cart"
               title="Cart"
             >
-              <ShoppingCart className="w-4 h-4 sm:w-5 sm:h-5 text-stone-950" />
+              <ShoppingCart className="w-4.5 h-4.5 text-stone-950" />
               {cartCount > 0 && (
                 <span className="absolute -top-1.5 -right-1.5 bg-stone-950 text-amber-300 text-[9px] font-black w-4 h-4 rounded-full flex items-center justify-center border border-white">
                   {cartCount}
                 </span>
               )}
             </button>
-
-            {/* Mobile Menu Bar Button - Placed RIGHT NEXT TO CART */}
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                setSideMenuOpen(true);
-              }}
-              className="p-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-amber-400 border border-amber-500/30 transition active:scale-95 flex items-center justify-center shadow-xs cursor-pointer"
-              aria-label="Open menu"
-              title="Menu"
-            >
-              <Menu className="w-4 h-4 sm:w-5 sm:h-5 text-amber-400" />
-            </button>
           </div>
         </div>
+
       </div>
 
       {/* Amazon / Flipkart Style Slide-Over Side Menu Drawer (Desktop & Mobile) via Portal */}
@@ -300,14 +341,21 @@ export const Header: React.FC<HeaderProps> = ({
           <div className="fixed inset-y-0 right-0 max-w-full flex pl-8 sm:pl-16">
             <div className="w-screen max-w-md bg-white shadow-2xl flex flex-col h-full overflow-hidden animate-in slide-in-from-right duration-300">
               
-              {/* Drawer Top Header (Amazon Hello User Style) */}
-              <div className="shrink-0 p-5 bg-gradient-to-r from-slate-900 via-stone-900 to-slate-950 text-white flex items-center justify-between border-b border-stone-800">
+              {/* Drawer Top Header (Amazon Hello User Style) - Clickable for My Profile */}
+              <div 
+                onClick={() => {
+                  setSideMenuOpen(false);
+                  setIsProfileModalOpen(true);
+                }}
+                className="shrink-0 p-5 bg-gradient-to-r from-slate-900 via-stone-900 to-slate-950 text-white flex items-center justify-between border-b border-stone-800 cursor-pointer group hover:bg-slate-850 transition"
+                title="View & Edit My Profile"
+              >
                 <div className="flex items-center space-x-3">
                   {user ? (
                     <img
                       src={user.photoURL || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=120&q=80'}
                       alt=""
-                      className="w-10 h-10 rounded-full object-cover border-2 border-amber-400 shrink-0"
+                      className="w-10 h-10 rounded-full object-cover border-2 border-amber-400 shrink-0 group-hover:scale-105 transition"
                     />
                   ) : (
                     <div className="w-10 h-10 rounded-full bg-slate-800 text-amber-400 flex items-center justify-center border border-slate-700 font-bold shrink-0">
@@ -315,8 +363,9 @@ export const Header: React.FC<HeaderProps> = ({
                     </div>
                   )}
                   <div>
-                    <h3 className="text-sm font-black text-white leading-tight">
-                      {user ? `Hello, ${user.displayName?.split(' ')[0]}!` : 'Hello, Breeder!'}
+                    <h3 className="text-sm font-black text-white leading-tight flex items-center space-x-1.5">
+                      <span>{user ? `Hello, ${user.displayName?.split(' ')[0]}!` : 'Hello, Breeder!'}</span>
+                      <span className="text-[10px] text-amber-400 font-bold group-hover:underline">Edit →</span>
                     </h3>
                     <p className="text-[11px] text-amber-400 font-semibold">
                       JP Farms Heritage Menu
@@ -326,7 +375,10 @@ export const Header: React.FC<HeaderProps> = ({
 
                 <button
                   type="button"
-                  onClick={() => setSideMenuOpen(false)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setSideMenuOpen(false);
+                  }}
                   className="p-2 text-slate-400 hover:text-white rounded-lg hover:bg-white/10 transition cursor-pointer"
                   aria-label="Close menu drawer"
                 >
@@ -337,7 +389,35 @@ export const Header: React.FC<HeaderProps> = ({
               {/* Drawer Body Links */}
               <div className="flex-1 overflow-y-auto p-4 space-y-4 text-xs overscroll-contain">
                 
-                {/* 1. Orders & Tracking Highlight Card */}
+                {/* 1. My Profile & Account Card */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSideMenuOpen(false);
+                    setIsProfileModalOpen(true);
+                  }}
+                  className="w-full flex items-center justify-between p-3 rounded-2xl bg-gradient-to-r from-amber-500/15 via-orange-500/10 to-amber-500/15 border border-amber-300 hover:border-amber-400 font-bold text-slate-900 transition text-left cursor-pointer group shadow-2xs"
+                >
+                  <div className="flex items-center space-x-3">
+                    <div className="w-9 h-9 rounded-xl bg-amber-500 text-stone-950 flex items-center justify-center font-bold shadow-xs">
+                      <User className="w-5 h-5 text-stone-950" />
+                    </div>
+                    <div>
+                      <div className="flex items-center space-x-2">
+                        <span className="text-xs font-black text-slate-900">My Profile</span>
+                        <span className="text-[9px] bg-amber-500/30 text-amber-950 font-black px-1.5 py-0.2 rounded-full uppercase">
+                          Account
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-slate-600 font-medium truncate max-w-[200px]">
+                        {user?.displayName ? `${user.displayName} • Address & Phone` : 'View profile, phone & address'}
+                      </p>
+                    </div>
+                  </div>
+                  <ChevronRight className="w-4 h-4 text-amber-700 group-hover:translate-x-0.5 transition-transform" />
+                </button>
+
+                {/* 2. Orders & Tracking Highlight Card */}
                 <div className="bg-gradient-to-r from-amber-500/15 via-orange-500/10 to-amber-500/15 border border-amber-300 rounded-2xl p-3.5 shadow-xs">
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-[11px] font-extrabold uppercase tracking-wider text-amber-950">
@@ -574,6 +654,14 @@ export const Header: React.FC<HeaderProps> = ({
         </div>,
         document.body
       )}
+
+      {/* User Profile Modal */}
+      <UserProfileModal
+        isOpen={isProfileModalOpen}
+        onClose={() => setIsProfileModalOpen(false)}
+        onOpenOrders={onOpenOrders}
+        onOpenCart={openCart}
+      />
     </header>
   );
 };

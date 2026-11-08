@@ -2,7 +2,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { useAuth } from '@/lib/authStore';
-import { LogOut, ChevronDown, CheckCircle2, Phone, Package, ChevronRight } from 'lucide-react';
+import { LogOut, ChevronDown, CheckCircle2, Phone, Package, ChevronRight, User } from 'lucide-react';
 import { PhoneCaptureModal } from './PhoneCaptureModal';
 
 export const GoogleIcon: React.FC<{ className?: string }> = ({ className = 'w-4 h-4' }) => (
@@ -52,6 +52,27 @@ export const GoogleSignInButton: React.FC<GoogleSignInButtonProps> = ({
   }, []);
 
   if (isAuthenticated && user) {
+    if (variant === 'compact') {
+      return (
+        <button
+          type="button"
+          onClick={() => {
+            window.dispatchEvent(new CustomEvent('open-profile-modal'));
+          }}
+          className="relative p-0.5 rounded-full hover:ring-2 hover:ring-amber-400 transition cursor-pointer active:scale-95 shrink-0"
+          title={`My Profile (${user.displayName || user.email})`}
+          aria-label="My Profile"
+        >
+          <img
+            src={user.photoURL || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=120&q=80'}
+            alt=""
+            className="w-7 h-7 rounded-full object-cover border-2 border-amber-400 shadow-xs"
+          />
+          <span className="absolute -bottom-0.5 -right-0.5 w-2 h-2 bg-emerald-500 rounded-full border border-white" />
+        </button>
+      );
+    }
+
     const firstName = user.displayName?.split(' ')[0] || 'User';
 
     return (
@@ -126,15 +147,33 @@ export const GoogleSignInButton: React.FC<GoogleSignInButtonProps> = ({
               </div>
             </div>
 
-            {/* Dropdown Action: My Orders */}
+            {/* Dropdown Action: My Profile */}
             <div className="pt-2 border-t border-slate-100">
+              <button
+                type="button"
+                onClick={() => {
+                  setDropdownOpen(false);
+                  window.dispatchEvent(new CustomEvent('open-profile-modal'));
+                }}
+                className="w-full text-left flex items-center justify-between px-3 py-2 text-xs font-bold text-slate-800 hover:bg-amber-50 rounded-xl transition group cursor-pointer"
+              >
+                <div className="flex items-center space-x-2">
+                  <User className="w-3.5 h-3.5 text-amber-600" />
+                  <span>My Profile & Address</span>
+                </div>
+                <ChevronRight className="w-3 h-3 text-slate-400 group-hover:text-amber-600 transition" />
+              </button>
+            </div>
+
+            {/* Dropdown Action: My Orders */}
+            <div className="pt-1">
               <button
                 type="button"
                 onClick={() => {
                   setDropdownOpen(false);
                   window.dispatchEvent(new Event('open-orders-drawer'));
                 }}
-                className="w-full text-left flex items-center justify-between px-3 py-2 text-xs font-bold text-slate-800 hover:bg-amber-50 rounded-xl transition group"
+                className="w-full text-left flex items-center justify-between px-3 py-2 text-xs font-bold text-slate-800 hover:bg-amber-50 rounded-xl transition group cursor-pointer"
               >
                 <div className="flex items-center space-x-2">
                   <Package className="w-3.5 h-3.5 text-amber-600" />
@@ -183,7 +222,21 @@ export const GoogleSignInButton: React.FC<GoogleSignInButtonProps> = ({
     );
   }
 
-  // Header compact button variant
+  if (variant === 'compact') {
+    return (
+      <button
+        onClick={() => signInWithGoogle()}
+        disabled={isLoading}
+        className={`p-2 rounded-xl bg-white hover:bg-stone-50 text-stone-800 border border-stone-200 shadow-xs transition active:scale-95 shrink-0 ${className}`}
+        title="Sign in with Google"
+        aria-label="Sign in"
+      >
+        <GoogleIcon className="w-4 h-4 shrink-0" />
+      </button>
+    );
+  }
+
+  // Header button variant
   return (
     <button
       onClick={() => signInWithGoogle()}
