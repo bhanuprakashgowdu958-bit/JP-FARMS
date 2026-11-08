@@ -36,12 +36,12 @@ export const ZomatoBannerCarousel: React.FC<ZomatoBannerCarouselProps> = ({
   const BANNERS: BannerSlide[] = [
     {
       id: 'commercial-grain-ad',
-      image: '/banners/ad_rooster_golden_grains_commercial.jpg',
+      image: '/banners/ad_rooster_golden_grains_wide.jpg',
       imageAlt: '3D Commercial Advertisement: Champion Rooster Feeding on Golden Grains at JP Farms',
     },
     {
       id: 'winter-storybook',
-      image: '/banners/winter_storybook_rooster_snow.jpg',
+      image: '/banners/winter_storybook_rooster_wide.jpg',
       imageAlt: 'Winter Storybook 3D Illustration: Magnificent Rooster on Snowy Fence at JP Farms',
     },
     {
@@ -127,10 +127,9 @@ export const ZomatoBannerCarousel: React.FC<ZomatoBannerCarouselProps> = ({
   return (
     <section className="relative w-full overflow-hidden bg-[#f4f9fd]">
       
-      {/* 100% Full-Screen Edge-to-Edge Banner (Zero Gaps, Zero Cuts, Smooth 10s Auto-Slide Track) */}
+      {/* 100% Full-Screen Edge-to-Edge Banner (Zero Gaps, Zero Cuts, Responsive Viewport Height, Smooth 10s Auto-Slide) */}
       <div 
-        className="group relative w-full overflow-hidden bg-slate-950 transition-all duration-300 cursor-pointer shadow-md"
-        style={{ aspectRatio: '1376 / 768' }}
+        className="group relative w-full h-[48vh] sm:h-[54vh] lg:h-[58vh] min-h-[340px] sm:min-h-[400px] max-h-[500px] overflow-hidden bg-slate-950 transition-all duration-300 cursor-pointer shadow-md"
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
@@ -152,7 +151,7 @@ export const ZomatoBannerCarousel: React.FC<ZomatoBannerCarouselProps> = ({
                 alt={banner.imageAlt}
                 loading={index === 0 ? "eager" : "lazy"}
                 decoding="async"
-                className="w-full h-full object-cover filter brightness-[1.02] contrast-[1.03] pointer-events-none select-none"
+                className="w-full h-full object-cover object-[center_35%] filter brightness-[1.02] contrast-[1.03] pointer-events-none select-none"
               />
             </div>
           ))}
