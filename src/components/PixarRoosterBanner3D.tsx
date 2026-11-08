@@ -268,6 +268,16 @@ export const PixarRoosterBanner3D: React.FC<PixarRoosterBanner3DProps> = () => {
           );
         })}
 
+        {/* CINEMATIC "JP FARMS" ENVIRONMENTAL SKY TYPOGRAPHY (BLEND WITH BANNER) */}
+        <div className="absolute top-5 sm:top-8 md:top-12 lg:top-14 inset-x-0 flex flex-col items-center justify-center pointer-events-none select-none z-10 px-4 text-center">
+          <span className="text-4xl sm:text-6xl md:text-7xl lg:text-8xl xl:text-9xl font-black tracking-[0.18em] sm:tracking-[0.25em] md:tracking-[0.3em] text-white/30 mix-blend-overlay uppercase leading-none filter drop-shadow-[0_2px_16px_rgba(0,0,0,0.3)]">
+            JP FARMS
+          </span>
+          <span className="tracking-[0.35em] sm:tracking-[0.55em] text-[9px] sm:text-xs md:text-sm font-extrabold uppercase text-white/40 mix-blend-overlay mt-1 sm:mt-2 drop-shadow-[0_1px_8px_rgba(0,0,0,0.25)]">
+            HERITAGE AVIAN ESTATE • EST. 2016
+          </span>
+        </div>
+
         {/* AMAZON-STYLE SOFT BOTTOM GRADIENT BLEND INTO SKY-BLUE BACKGROUND */}
         <div className="absolute inset-x-0 bottom-0 h-20 sm:h-28 bg-gradient-to-t from-[#f4f9fd] via-[#f4f9fd]/30 to-transparent pointer-events-none z-10" />
 
