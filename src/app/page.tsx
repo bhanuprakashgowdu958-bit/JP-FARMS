@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { Header } from '@/components/Header';
-import { InteractiveEstateHero } from '@/components/InteractiveEstateHero';
+import { ZomatoBannerCarousel } from '@/components/ZomatoBannerCarousel';
 import { RoosterCatalog } from '@/components/RoosterCatalog';
 import { BreedsGuide } from '@/components/BreedsGuide';
 import { FarmBioSecurity } from '@/components/FarmBioSecurity';
@@ -55,8 +55,8 @@ export default function HomePage() {
 
       {/* Main Content Area */}
       <main className="flex-1">
-        {/* World-Class Interactive Estate Hero & Bento Feature Grid (Replaces Traditional Banners) */}
-        <InteractiveEstateHero 
+        {/* Zomato-Style Featured Banner Carousel & Fast Feature Strip */}
+        <ZomatoBannerCarousel 
           roosters={roosters}
           onOpenReels={() => setIsReelsOpen(true)}
           onScheduleVisit={() => setInquiryRooster(roosters[0] || null)}
