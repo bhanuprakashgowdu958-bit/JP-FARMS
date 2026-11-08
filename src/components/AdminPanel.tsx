@@ -31,7 +31,12 @@ import {
   ShieldCheck,
   FileText,
   X,
-  ExternalLink
+  ExternalLink,
+  Lock,
+  Unlock,
+  KeyRound,
+  EyeOff,
+  LogOut
 } from 'lucide-react';
 import { Rooster, RoosterCategory, RoosterBadge, CustomerInquiry, RoosterOrder } from '@/types/rooster';
 import { useRoosters, useInquiries, useOrders } from '@/lib/roosterStore';
@@ -62,8 +67,21 @@ export const AdminPanel: React.FC = () => {
   const [uploadingField, setUploadingField] = useState<string | null>(null);
   const [uploadProgress, setUploadProgress] = useState<number>(0);
 
+  // Owner Authentication Gate (Security Lock)
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+  const [authChecking, setAuthChecking] = useState<boolean>(true);
+  const [enteredPin, setEnteredPin] = useState('');
+  const [authError, setAuthError] = useState('');
+  const [showPin, setShowPin] = useState(false);
+
   useEffect(() => {
     if (typeof window !== 'undefined') {
+      const storedAuth = sessionStorage.getItem('jp_farms_admin_auth');
+      if (storedAuth === 'granted') {
+        setIsAuthenticated(true);
+      }
+      setAuthChecking(false);
+
       const params = new URLSearchParams(window.location.search);
       const tabParam = params.get('tab');
       if (tabParam === 'orders' || tabParam === 'roosters' || tabParam === 'inquiries' || tabParam === 'add') {
@@ -71,6 +89,28 @@ export const AdminPanel: React.FC = () => {
       }
     }
   }, []);
+
+  const handleLogin = (e: React.FormEvent) => {
+    e.preventDefault();
+    const cleanPin = enteredPin.trim().toLowerCase();
+    // Master Keys: 778899, jpfarms777, jpfarms
+    if (cleanPin === '778899' || cleanPin === 'jpfarms777' || cleanPin === 'jpfarms') {
+      sessionStorage.setItem('jp_farms_admin_auth', 'granted');
+      setIsAuthenticated(true);
+      setAuthError('');
+    } else {
+      setAuthError('Access Denied: Incorrect Master PIN. Authorized personnel only.');
+      setEnteredPin('');
+    }
+  };
+
+  const handleLogout = () => {
+    if (typeof window !== 'undefined') {
+      sessionStorage.removeItem('jp_farms_admin_auth');
+    }
+    setIsAuthenticated(false);
+    setEnteredPin('');
+  };
 
   // Form State for Adding / Editing Rooster
   const [formData, setFormData] = useState({
@@ -324,6 +364,96 @@ export const AdminPanel: React.FC = () => {
     document.body.removeChild(link);
   };
 
+  // If verifying authentication on first mount
+  if (authChecking) {
+    return (
+      <div className="min-h-screen bg-stone-950 flex items-center justify-center">
+        <div className="w-8 h-8 border-2 border-amber-500 border-t-transparent rounded-full animate-spin"></div>
+      </div>
+    );
+  }
+
+  // RESTRICTED ACCESS SCREEN (If user is not authenticated)
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-stone-950 via-stone-900 to-black text-white flex items-center justify-center p-4">
+        <div className="max-w-md w-full bg-stone-900/95 border border-stone-800 rounded-3xl p-8 shadow-2xl backdrop-blur-xl relative space-y-6">
+          
+          <div className="text-center space-y-2">
+            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-amber-500 to-amber-600 p-0.5 mx-auto shadow-lg shadow-amber-500/20 flex items-center justify-center">
+              <div className="w-full h-full bg-stone-950 rounded-[14px] flex items-center justify-center">
+                <Lock className="w-7 h-7 text-amber-500" />
+              </div>
+            </div>
+
+            <h2 className="text-xl font-extrabold text-white tracking-tight">
+              JP Farms • Owner Access Only
+            </h2>
+            <p className="text-xs text-stone-400">
+              Restricted administrative portal. Enter your Master Security PIN to view orders, revenue, and customer dispatches.
+            </p>
+          </div>
+
+          <form onSubmit={handleLogin} className="space-y-4">
+            <div className="space-y-1.5">
+              <label className="block text-xs font-bold uppercase tracking-wider text-stone-400">
+                Master Security PIN
+              </label>
+              <div className="relative">
+                <KeyRound className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-stone-500" />
+                <input
+                  type={showPin ? 'text' : 'password'}
+                  placeholder="Enter Master PIN"
+                  value={enteredPin}
+                  onChange={(e) => {
+                    setEnteredPin(e.target.value);
+                    if (authError) setAuthError('');
+                  }}
+                  autoFocus
+                  className="w-full pl-10 pr-10 py-3 bg-stone-950 border border-stone-700 rounded-xl text-sm font-mono tracking-widest text-amber-400 placeholder:text-stone-600 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPin(!showPin)}
+                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-stone-500 hover:text-stone-300 transition"
+                  tabIndex={-1}
+                >
+                  {showPin ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
+            </div>
+
+            {authError && (
+              <div className="p-3 rounded-xl bg-red-950/60 border border-red-800/80 text-red-300 text-xs flex items-center space-x-2">
+                <AlertCircle className="w-4 h-4 text-red-400 shrink-0" />
+                <span>{authError}</span>
+              </div>
+            )}
+
+            <button
+              type="submit"
+              className="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-stone-950 font-black py-3 rounded-xl text-xs uppercase tracking-wider shadow-lg shadow-amber-500/10 transition flex items-center justify-center space-x-2"
+            >
+              <Unlock className="w-4 h-4" />
+              <span>Unlock Admin Portal</span>
+            </button>
+          </form>
+
+          <div className="pt-4 border-t border-stone-800 text-center">
+            <Link
+              href="/"
+              className="text-xs text-stone-400 hover:text-amber-400 font-semibold transition inline-flex items-center space-x-1"
+            >
+              <ArrowLeft className="w-3.5 h-3.5" />
+              <span>Return to Public Showcase</span>
+            </Link>
+          </div>
+
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-stone-100 text-stone-900 pb-20">
       
@@ -332,24 +462,33 @@ export const AdminPanel: React.FC = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-20">
             
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-3">
               <Link 
                 href="/" 
                 className="flex items-center space-x-1.5 text-xs font-semibold text-stone-400 hover:text-amber-400 transition bg-stone-800 px-3 py-1.5 rounded-lg border border-stone-700"
               >
                 <ArrowLeft className="w-4 h-4" />
-                <span>View Public Site</span>
+                <span>Public Site</span>
               </Link>
 
-              <div>
-                <h1 className="text-xl font-extrabold text-white flex items-center space-x-2">
-                  <span>JP Farms • Farm Owner Control Panel</span>
-                  <span className="text-[10px] bg-amber-500 text-stone-950 font-bold px-2 py-0.5 rounded">
-                    Showcase Admin
+              <button
+                onClick={handleLogout}
+                className="flex items-center space-x-1.5 text-xs font-semibold text-red-400 hover:text-red-300 transition bg-red-950/40 hover:bg-red-950/70 px-3 py-1.5 rounded-lg border border-red-900/60"
+                title="Lock portal and sign out"
+              >
+                <LogOut className="w-3.5 h-3.5" />
+                <span>Lock & Sign Out</span>
+              </button>
+
+              <div className="hidden sm:block pl-3 border-l border-stone-700">
+                <h1 className="text-base font-extrabold text-white flex items-center space-x-2">
+                  <span>JP Farms • Owner Control Panel</span>
+                  <span className="text-[10px] bg-amber-500 text-stone-950 font-black px-2 py-0.5 rounded">
+                    Admin
                   </span>
                 </h1>
-                <p className="text-xs text-stone-400">
-                  Manage heritage roosters, upload photos & walking reels, and review visit requests
+                <p className="text-[11px] text-stone-400">
+                  Manage roosters, live crate customer orders, and visitor requests
                 </p>
               </div>
             </div>

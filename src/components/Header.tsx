@@ -6,7 +6,6 @@ import { Phone, MessageCircle, PlayCircle, ShieldCheck, Menu, X, Settings, Feath
 import { FARM_INFO } from '@/lib/data';
 import { generateWhatsAppLink } from '@/lib/utils';
 import { useCart } from '@/lib/cartStore';
-import { useOrders } from '@/lib/roosterStore';
 
 interface HeaderProps {
   onOpenReels?: () => void;
@@ -16,8 +15,6 @@ interface HeaderProps {
 export const Header: React.FC<HeaderProps> = ({ onOpenReels, birdsCount = 7 }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { cartCount, openCart } = useCart();
-  const { orders } = useOrders();
-  const pendingOrdersCount = orders.filter((o) => o.status === 'confirmed').length;
 
   const generalWhatsAppUrl = generateWhatsAppLink({
     phone: FARM_INFO.whatsapp,
@@ -45,19 +42,6 @@ export const Header: React.FC<HeaderProps> = ({ onOpenReels, birdsCount = 7 }) =
               <Phone className="w-3 h-3 mr-1 text-sky-600" />
               <span>Farm Helpline: {FARM_INFO.phone}</span>
             </a>
-            <Link
-              href="/admin?tab=orders"
-              className="text-sky-700 hover:text-amber-700 transition flex items-center space-x-1 pl-2 border-l border-sky-200"
-              title="Farm Owner Admin & Orders Portal"
-            >
-              <Settings className="w-3 h-3 text-sky-600" />
-              <span className="hidden md:inline font-semibold">Admin</span>
-              {pendingOrdersCount > 0 && (
-                <span className="bg-amber-500 text-stone-950 font-black text-[9px] px-1.5 py-0.2 rounded-full shadow-xs animate-pulse">
-                  {pendingOrdersCount}
-                </span>
-              )}
-            </Link>
           </div>
         </div>
       </div>
@@ -234,21 +218,6 @@ export const Header: React.FC<HeaderProps> = ({ onOpenReels, birdsCount = 7 }) =
             >
               📍 Schedule a Farm Visit
             </a>
-            <Link
-              href="/admin?tab=orders"
-              onClick={() => setMobileMenuOpen(false)}
-              className="p-2 text-slate-700 hover:text-amber-700 rounded-lg flex items-center justify-between"
-            >
-              <span className="flex items-center space-x-2">
-                <Settings className="w-4 h-4 text-sky-600" />
-                <span className="font-semibold">Farm Admin & Orders</span>
-              </span>
-              {pendingOrdersCount > 0 && (
-                <span className="bg-amber-500 text-stone-950 font-black text-[10px] px-2 py-0.5 rounded-full">
-                  {pendingOrdersCount} New
-                </span>
-              )}
-            </Link>
           </nav>
 
           <div className="pt-3 border-t border-sky-100 flex flex-col gap-2">

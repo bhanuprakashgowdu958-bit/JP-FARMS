@@ -1,7 +1,6 @@
 'use client';
 
 import React from 'react';
-import Link from 'next/link';
 import { Feather, Phone, MessageCircle, Mail, MapPin, Clock, ShieldCheck, Heart } from 'lucide-react';
 import { FARM_INFO } from '@/lib/data';
 import { generateWhatsAppLink } from '@/lib/utils';
@@ -59,11 +58,6 @@ export const Footer: React.FC = () => {
               </li>
               <li>
                 <a href="#reviews" className="hover:text-sky-400 transition">Breeder & Visitor Reviews</a>
-              </li>
-              <li>
-                <Link href="/admin" className="text-sky-400 hover:text-sky-300 font-semibold transition">
-                  Farm Owner / Admin Portal &rarr;
-                </Link>
               </li>
             </ul>
           </div>
@@ -123,8 +117,6 @@ export const Footer: React.FC = () => {
             <a href="#showcase" className="hover:text-white transition">Showcase</a>
             <span>•</span>
             <a href="#visit-guide" className="hover:text-white transition">Plan Visit</a>
-            <span>•</span>
-            <Link href="/admin" className="hover:text-sky-400 transition">Farm Admin</Link>
           </div>
         </div>
 
