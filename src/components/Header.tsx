@@ -366,27 +366,6 @@ export const Header: React.FC<HeaderProps> = ({
                   </button>
                 </div>
 
-                {/* 2. Quick Shopping Cart Action */}
-                <button
-                  type="button"
-                  onClick={() => {
-                    setSideMenuOpen(false);
-                    openCart();
-                  }}
-                  className="w-full flex items-center justify-between p-3 rounded-xl bg-amber-50 hover:bg-amber-100/70 border border-amber-200/80 font-bold text-slate-900 transition text-left cursor-pointer"
-                >
-                  <span className="flex items-center space-x-2.5">
-                    <ShoppingCart className="w-4 h-4 text-amber-600" />
-                    <span>View Shopping Cart</span>
-                  </span>
-                  {cartCount > 0 ? (
-                    <span className="text-[10px] bg-amber-500 text-stone-950 font-black px-2 py-0.5 rounded-full">
-                      {cartCount} {cartCount === 1 ? 'item' : 'items'}
-                    </span>
-                  ) : (
-                    <span className="text-[10px] text-slate-400 font-normal">Empty</span>
-                  )}
-                </button>
 
                 {/* 3. Heritage Rooster Showcase Strains */}
                 <div>
