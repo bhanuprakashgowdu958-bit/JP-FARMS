@@ -72,38 +72,6 @@ export const Header: React.FC<HeaderProps> = ({ onOpenReels, birdsCount = 7 }) =
             </div>
           </Link>
 
-          {/* Desktop Nav Links */}
-          <nav className="hidden lg:flex items-center space-x-3 xl:space-x-5 text-sm font-medium text-slate-600 shrink-0">
-            <a href="#showcase" className="text-amber-800 font-extrabold hover:text-amber-900 transition py-1 flex items-center space-x-1 whitespace-nowrap">
-              <span>Buy Roosters</span>
-              <span className="bg-amber-100 text-amber-950 text-[10px] font-black px-1.5 py-0.5 rounded-full border border-amber-300">
-                Store
-              </span>
-            </a>
-            <a href="#breeds" className="hover:text-sky-600 transition py-1 whitespace-nowrap">
-              Pure Breeds
-            </a>
-            <button
-              onClick={onOpenReels}
-              className="flex items-center space-x-1.5 text-sky-700 hover:text-sky-800 font-semibold bg-sky-50 hover:bg-sky-100/80 border border-sky-200 px-3 py-1.5 rounded-full transition group shadow-xs whitespace-nowrap"
-            >
-              <PlayCircle className="w-4 h-4 text-sky-600 group-hover:scale-110 transition" />
-              <span>Rooster TV (Videos)</span>
-              <span className="bg-sky-600 text-white text-[9px] font-extrabold px-1.5 py-0.5 rounded-full uppercase tracking-wider">
-                HD
-              </span>
-            </button>
-            <a href="#biosecurity" className="hover:text-sky-600 transition py-1 whitespace-nowrap">
-              Diet & Care
-            </a>
-            <a href="#visit-guide" className="hover:text-sky-600 transition py-1 whitespace-nowrap">
-              Farm Visit
-            </a>
-            <a href="#reviews" className="hover:text-sky-600 transition py-1 whitespace-nowrap hidden xl:inline-block">
-              Breeder Community
-            </a>
-          </nav>
-
           {/* Quick Actions */}
           <div className="hidden sm:flex items-center space-x-2 shrink-0">
             {/* Live Shopping Cart Button (Amazon/Flipkart Style) */}
