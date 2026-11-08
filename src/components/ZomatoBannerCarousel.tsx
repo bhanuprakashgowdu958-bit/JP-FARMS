@@ -123,11 +123,11 @@ export const ZomatoBannerCarousel: React.FC<ZomatoBannerCarouselProps> = ({
   };
 
   return (
-    <section className="relative w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 sm:py-5">
+    <section className="relative w-full overflow-hidden bg-[#f4f9fd]">
       
-      {/* 100% Full-Bleed Clean Banner Container (Zero Text Overlap, Pure Master Artwork) */}
+      {/* 100% Full-Screen Edge-to-Edge Banner (Zero Gaps, Zero Side Margins, Pure Master Artwork) */}
       <div 
-        className="group relative w-full aspect-[16/9] sm:aspect-[16/8] lg:aspect-[16/7.5] min-h-[220px] sm:min-h-[320px] lg:min-h-[420px] max-h-[520px] rounded-2xl sm:rounded-3xl border border-sky-200/90 shadow-xl shadow-sky-950/5 overflow-hidden bg-slate-900 transition-all duration-300 cursor-pointer"
+        className="group relative w-full h-[260px] sm:h-[380px] lg:h-[460px] xl:h-[500px] overflow-hidden bg-slate-900 transition-all duration-300 cursor-pointer"
         onMouseEnter={() => setIsPaused(true)}
         onMouseLeave={() => setIsPaused(false)}
         onTouchStart={handleTouchStart}
@@ -136,18 +136,21 @@ export const ZomatoBannerCarousel: React.FC<ZomatoBannerCarouselProps> = ({
         onClick={handleBannerClick}
       >
         
-        {/* Full-Bleed Artwork Banner Image */}
+        {/* Full-Bleed Edge-to-Edge Artwork Banner Image */}
         <div className="relative w-full h-full overflow-hidden">
           <img
             key={current.id}
             src={current.image}
             alt={current.imageAlt}
             style={{ objectPosition: current.objectPosition || 'center' }}
-            className="w-full h-full object-cover filter brightness-[1.02] contrast-[1.03] transition-all duration-700 ease-out group-hover:scale-[1.02]"
+            className="w-full h-full object-cover filter brightness-[1.02] contrast-[1.03] transition-all duration-700 ease-out group-hover:scale-[1.01]"
           />
         </div>
 
-        {/* Clean Hover-Activated Left Arrow */}
+        {/* Amazon-Style Smooth Bottom Gradient Blend Into Page */}
+        <div className="absolute inset-x-0 bottom-0 h-16 sm:h-24 bg-gradient-to-t from-[#f4f9fd] to-transparent pointer-events-none" />
+
+        {/* Clean Hover-Activated Left Arrow (Only Visible on Hover) */}
         <button
           type="button"
           onClick={(e) => {
@@ -155,12 +158,12 @@ export const ZomatoBannerCarousel: React.FC<ZomatoBannerCarouselProps> = ({
             handlePrev();
           }}
           aria-label="Previous Banner"
-          className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 z-20 w-9 h-9 sm:w-11 sm:h-11 rounded-full bg-white/95 hover:bg-white text-slate-800 shadow-xl border border-slate-200/90 hidden sm:flex items-center justify-center transition-all opacity-0 group-hover:opacity-100 hover:scale-110 active:scale-90"
+          className="absolute left-4 sm:left-6 top-1/2 -translate-y-1/2 z-20 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-white/90 hover:bg-white text-slate-800 shadow-xl border border-slate-200/90 hidden sm:flex items-center justify-center transition-all opacity-0 group-hover:opacity-100 hover:scale-110 active:scale-90"
         >
-          <ChevronLeft className="w-5 h-5 sm:w-6 sm:h-6" />
+          <ChevronLeft className="w-6 h-6" />
         </button>
 
-        {/* Clean Hover-Activated Right Arrow */}
+        {/* Clean Hover-Activated Right Arrow (Only Visible on Hover) */}
         <button
           type="button"
           onClick={(e) => {
@@ -168,38 +171,16 @@ export const ZomatoBannerCarousel: React.FC<ZomatoBannerCarouselProps> = ({
             handleNext();
           }}
           aria-label="Next Banner"
-          className="absolute right-3 sm:right-4 top-1/2 -translate-y-1/2 z-20 w-9 h-9 sm:w-11 sm:h-11 rounded-full bg-white/95 hover:bg-white text-slate-800 shadow-xl border border-slate-200/90 hidden sm:flex items-center justify-center transition-all opacity-0 group-hover:opacity-100 hover:scale-110 active:scale-90"
+          className="absolute right-4 sm:right-6 top-1/2 -translate-y-1/2 z-20 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-white/90 hover:bg-white text-slate-800 shadow-xl border border-slate-200/90 hidden sm:flex items-center justify-center transition-all opacity-0 group-hover:opacity-100 hover:scale-110 active:scale-90"
         >
-          <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6" />
+          <ChevronRight className="w-6 h-6" />
         </button>
-
-        {/* Minimalist Bottom Indicator Dash/Dots */}
-        <div 
-          className="absolute bottom-3.5 left-1/2 -translate-x-1/2 z-20 flex items-center space-x-1.5 bg-white/90 backdrop-blur-md px-3.5 py-1.5 rounded-full border border-sky-200/80 shadow-md"
-          onClick={(e) => e.stopPropagation()}
-        >
-          {BANNERS.map((banner, index) => {
-            const isActive = index === currentIndex;
-            return (
-              <button
-                key={banner.id}
-                type="button"
-                onClick={() => setCurrentIndex(index)}
-                aria-label={`Go to banner ${index + 1}`}
-                className={`transition-all duration-300 rounded-full ${
-                  isActive 
-                    ? 'w-7 h-2 bg-sky-600' 
-                    : 'w-2 h-2 bg-slate-300 hover:bg-slate-400'
-                }`}
-              />
-            );
-          })}
-        </div>
 
       </div>
 
       {/* Quick Feature Ticker Below Banner (4 Clean Value Badges) */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-4 mt-3">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-4">
         
         <div className="flex items-center space-x-2.5 px-3 py-2 rounded-xl bg-white border border-sky-100 shadow-xs">
           <div className="w-7 h-7 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
@@ -241,6 +222,7 @@ export const ZomatoBannerCarousel: React.FC<ZomatoBannerCarouselProps> = ({
           </div>
         </div>
 
+        </div>
       </div>
 
     </section>
