@@ -45,12 +45,31 @@ const PERSISTENT_PROFILES_KEY = 'jp_farms_user_profiles_v2';
 const DEVICE_PHONE_KEY = 'jp_farms_device_phone_v1';
 const DEVICE_ADDRESS_KEY = 'jp_farms_device_address_v1';
 
+export function isBhanuEmail(email?: string | null): boolean {
+  if (!email) return false;
+  const e = email.toLowerCase().trim();
+  return (
+    e === 'bhanuprakashgowdu958@gmail.com' ||
+    e === 'bhanuprakashgowdu87@gmail.com' ||
+    e.startsWith('bhanuprakashgowdu')
+  );
+}
+
 // Initial registered users list for admin directory demo
 const INITIAL_REGISTERED_USERS: RegisteredCustomer[] = [
   {
-    uid: 'bhanu-owner',
+    uid: 'bhanu-owner-958',
     name: 'Bhanu Prakash',
     email: 'bhanuprakashgowdu958@gmail.com',
+    phone: '+91 97012 34567',
+    photoURL: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=120&q=80',
+    joinedAt: '2026-11-08 10:00 AM',
+    lastLoginAt: '2026-11-09 12:00 AM',
+  },
+  {
+    uid: 'bhanu-owner-87',
+    name: 'Bhanu prakash Gowdu',
+    email: 'bhanuprakashgowdu87@gmail.com',
     phone: '+91 97012 34567',
     photoURL: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=120&q=80',
     joinedAt: '2026-11-08 10:00 AM',
@@ -179,8 +198,8 @@ export function getSavedProfile(identifier?: { email?: string | null; uid?: stri
       }
     }
 
-    // 6. Default for owner/breeder Bhanu Prakash (sync real phone & address everywhere)
-    if (identifier?.email?.toLowerCase() === 'bhanuprakashgowdu958@gmail.com') {
+    // 6. Default for owner/breeder Bhanu Prakash (sync real phone & address everywhere across all accounts)
+    if (isBhanuEmail(identifier?.email)) {
       if (!profile?.phoneNumber || isDummyValue(profile.phoneNumber)) {
         profile = {
           ...(profile || {}),
@@ -285,8 +304,8 @@ export function getStoredUser(): AppUser | null {
       return null;
     }
 
-    // Auto-purge dummy test data and set verified profile details
-    if (parsed.phoneNumber === '1478963258' || parsed.deliveryAddress === 'bhdhjjdh' || parsed.email?.toLowerCase() === 'bhanuprakashgowdu958@gmail.com') {
+    // Auto-purge dummy test data and set verified profile details for all Bhanu accounts
+    if (parsed.phoneNumber === '1478963258' || parsed.deliveryAddress === 'bhdhjjdh' || isBhanuEmail(parsed.email)) {
       if (parsed.phoneNumber === '1478963258' || !parsed.phoneNumber) {
         parsed.phoneNumber = '+91 97012 34567';
       }

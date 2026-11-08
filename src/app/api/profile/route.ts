@@ -15,23 +15,32 @@ interface ProfileData {
   updatedAt?: string;
 }
 
+const BHANU_ACCOUNTS = ['bhanuprakashgowdu958@gmail.com', 'bhanuprakashgowdu87@gmail.com'];
+
+const DEFAULT_BHANU_PROFILE: ProfileData = {
+  name: 'Bhanu Prakash',
+  phoneNumber: '+91 97012 34567',
+  deliveryAddress: 'Plot 18, Sri Rama Colony, Benz Circle',
+  city: 'Vijayawada',
+  state: 'Andhra Pradesh',
+  pincode: '520010',
+  updatedAt: new Date().toISOString(),
+};
+
 async function getProfiles(): Promise<Record<string, ProfileData>> {
   try {
     const raw = await readFile(DATA_FILE, 'utf-8');
-    return JSON.parse(raw);
+    const parsed = JSON.parse(raw);
+    for (const acc of BHANU_ACCOUNTS) {
+      if (!parsed[acc]) parsed[acc] = { ...DEFAULT_BHANU_PROFILE, email: acc };
+    }
+    return parsed;
   } catch (e) {
-    return {
-      'bhanuprakashgowdu958@gmail.com': {
-        name: 'Bhanu Prakash',
-        email: 'bhanuprakashgowdu958@gmail.com',
-        phoneNumber: '+91 97012 34567',
-        deliveryAddress: 'Plot 18, Sri Rama Colony, Benz Circle',
-        city: 'Vijayawada',
-        state: 'Andhra Pradesh',
-        pincode: '520010',
-        updatedAt: new Date().toISOString(),
-      },
-    };
+    const fallback: Record<string, ProfileData> = {};
+    for (const acc of BHANU_ACCOUNTS) {
+      fallback[acc] = { ...DEFAULT_BHANU_PROFILE, email: acc };
+    }
+    return fallback;
   }
 }
 
@@ -45,16 +54,8 @@ async function saveProfiles(dict: Record<string, ProfileData>): Promise<void> {
 
 // In-memory fallback cache for serverless instances
 let inMemoryProfiles: Record<string, ProfileData> = {
-  'bhanuprakashgowdu958@gmail.com': {
-    name: 'Bhanu Prakash',
-    email: 'bhanuprakashgowdu958@gmail.com',
-    phoneNumber: '+91 97012 34567',
-    deliveryAddress: 'Plot 18, Sri Rama Colony, Benz Circle',
-    city: 'Vijayawada',
-    state: 'Andhra Pradesh',
-    pincode: '520010',
-    updatedAt: new Date().toISOString(),
-  },
+  'bhanuprakashgowdu958@gmail.com': { ...DEFAULT_BHANU_PROFILE, email: 'bhanuprakashgowdu958@gmail.com' },
+  'bhanuprakashgowdu87@gmail.com': { ...DEFAULT_BHANU_PROFILE, email: 'bhanuprakashgowdu87@gmail.com' },
 };
 
 export async function GET(req: NextRequest) {
@@ -105,6 +106,12 @@ export async function POST(req: NextRequest) {
     if (email) {
       fileProfiles[email] = updated;
       inMemoryProfiles[email] = updated;
+      if (BHANU_ACCOUNTS.includes(email)) {
+        for (const linked of BHANU_ACCOUNTS) {
+          fileProfiles[linked] = { ...updated, email: linked };
+          inMemoryProfiles[linked] = { ...updated, email: linked };
+        }
+      }
     }
     if (uid) {
       fileProfiles[uid] = updated;

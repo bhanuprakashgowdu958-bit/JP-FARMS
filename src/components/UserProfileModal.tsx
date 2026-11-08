@@ -47,7 +47,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
   onOpenOrders,
   onOpenCart,
 }) => {
-  const { user, isAuthenticated, signOut, updatePhone, updateAddress } = useAuth();
+  const { user, isAuthenticated, signInWithGoogle, signOut, updatePhone, updateAddress } = useAuth();
 
   const [mounted, setMounted] = useState(false);
   const [isEditingPhone, setIsEditingPhone] = useState(false);
@@ -231,10 +231,23 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                 <p className="text-xs text-slate-500 font-mono mt-0.5 truncate">
                   Member ID: #{memberCode}
                 </p>
-                <p className="text-[11px] text-slate-600 truncate flex items-center space-x-1 mt-0.5">
-                  <Mail className="w-3 h-3 text-slate-400 shrink-0" />
-                  <span className="truncate">{user.email || 'Google Account'}</span>
-                </p>
+                <div className="flex items-center justify-between gap-1 mt-0.5">
+                  <p className="text-[11px] text-slate-600 truncate flex items-center space-x-1 min-w-0">
+                    <Mail className="w-3 h-3 text-slate-400 shrink-0" />
+                    <span className="truncate">{user.email || 'Google Account'}</span>
+                  </p>
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      await signOut();
+                      signInWithGoogle();
+                    }}
+                    className="text-[10px] text-amber-700 hover:text-amber-900 font-bold underline cursor-pointer shrink-0"
+                    title="Switch Google Account"
+                  >
+                    Switch Account
+                  </button>
+                </div>
               </div>
             </div>
 
@@ -412,17 +425,31 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                 <span>VIP WhatsApp Desk</span>
               </a>
 
-              <button
-                type="button"
-                onClick={() => {
-                  onClose();
-                  signOut();
-                }}
-                className="inline-flex items-center space-x-1.5 text-xs font-bold text-red-600 hover:text-red-700 bg-red-50 hover:bg-red-100 px-3.5 py-2 rounded-xl transition cursor-pointer"
-              >
-                <LogOut className="w-4 h-4" />
-                <span>Sign Out</span>
-              </button>
+              <div className="flex items-center space-x-2">
+                <button
+                  type="button"
+                  onClick={async () => {
+                    await signOut();
+                    signInWithGoogle();
+                  }}
+                  className="inline-flex items-center space-x-1 text-xs font-bold text-slate-700 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 px-3 py-2 rounded-xl transition cursor-pointer"
+                  title="Switch Google Account"
+                >
+                  <span>Switch</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    onClose();
+                    signOut();
+                  }}
+                  className="inline-flex items-center space-x-1.5 text-xs font-bold text-red-600 hover:text-red-700 bg-red-50 hover:bg-red-100 px-3.5 py-2 rounded-xl transition cursor-pointer"
+                >
+                  <LogOut className="w-4 h-4" />
+                  <span>Sign Out</span>
+                </button>
+              </div>
             </div>
 
           </div>
