@@ -464,8 +464,8 @@ export const RoosterDetailModal: React.FC<RoosterDetailModalProps> = ({
             </div>
           </div>
 
-          <div className="flex items-center gap-2.5 w-full sm:w-auto">
-            {/* BUY NOW BUTTON (Amazon/Flipkart Style) */}
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto">
+            {/* BUY NOW BUTTON (Amazon/Flipkart Style - prominent full width on mobile) */}
             {onBuyNow && (
               <button
                 type="button"
@@ -473,46 +473,49 @@ export const RoosterDetailModal: React.FC<RoosterDetailModalProps> = ({
                   onClose();
                   onBuyNow(rooster);
                 }}
-                className="flex-1 sm:flex-none inline-flex items-center justify-center space-x-2 bg-gradient-to-r from-amber-500 via-amber-600 to-amber-500 hover:from-amber-400 hover:to-amber-500 text-stone-950 font-black px-6 py-3 rounded-xl text-sm shadow-xl shadow-amber-500/25 transition active:scale-95"
+                className="w-full sm:w-auto inline-flex items-center justify-center space-x-2 bg-gradient-to-r from-amber-500 via-amber-600 to-amber-500 hover:from-amber-400 hover:to-amber-500 text-stone-950 font-black px-6 py-3 rounded-xl text-sm shadow-xl shadow-amber-500/25 transition active:scale-95 cursor-pointer"
               >
                 <span>⚡ Buy Now</span>
               </button>
             )}
 
-            {/* Schedule Visit Button */}
-            {onInquire && (
-              <button
-                type="button"
-                onClick={() => {
-                  onClose();
-                  onInquire(rooster);
-                }}
-                className="flex-1 sm:flex-none inline-flex items-center justify-center space-x-2 bg-stone-800 hover:bg-stone-750 text-stone-200 font-bold px-4 py-3 rounded-xl text-sm transition"
+            <div className="grid grid-cols-3 sm:flex sm:items-center gap-2 w-full sm:w-auto">
+              {/* Schedule Visit Button */}
+              {onInquire && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    onClose();
+                    onInquire(rooster);
+                  }}
+                  className="inline-flex items-center justify-center space-x-1.5 bg-stone-800 hover:bg-stone-750 text-stone-200 font-bold px-3 py-2.5 sm:px-4 sm:py-3 rounded-xl text-xs sm:text-sm transition cursor-pointer"
+                >
+                  <Calendar className="w-4 h-4 text-amber-400 shrink-0" />
+                  <span className="truncate">Visit</span>
+                </button>
+              )}
+
+              {/* Direct WhatsApp Button */}
+              <a
+                href={whatsAppUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-center space-x-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-3 py-2.5 sm:px-4 sm:py-3 rounded-xl text-xs sm:text-sm shadow-lg transition active:scale-95"
               >
-                <Calendar className="w-4 h-4 text-amber-400" />
-                <span>Visit Farm</span>
-              </button>
-            )}
+                <MessageCircle className="w-4 h-4 shrink-0" />
+                <span className="truncate">WhatsApp</span>
+              </a>
 
-            {/* Direct WhatsApp Button */}
-            <a
-              href={whatsAppUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex-1 sm:flex-none flex items-center justify-center space-x-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-4 py-3 rounded-xl text-sm shadow-lg transition active:scale-95"
-            >
-              <MessageCircle className="w-4 h-4" />
-              <span>WhatsApp</span>
-            </a>
-
-            {/* Direct Call Button */}
-            <a
-              href={`tel:${FARM_INFO.phone}`}
-              className="p-3 bg-stone-800 hover:bg-stone-700 text-stone-300 hover:text-white rounded-xl transition border border-stone-700"
-              title="Call Farm Manager"
-            >
-              <Phone className="w-4 h-4 text-emerald-400" />
-            </a>
+              {/* Direct Call Button */}
+              <a
+                href={`tel:${FARM_INFO.phone}`}
+                className="inline-flex items-center justify-center space-x-1 bg-stone-800 hover:bg-stone-700 text-stone-300 hover:text-white p-2.5 sm:p-3 rounded-xl transition border border-stone-700 text-xs sm:text-sm"
+                title="Call Farm Manager"
+              >
+                <Phone className="w-4 h-4 text-emerald-400 shrink-0" />
+                <span className="sm:hidden text-xs">Call</span>
+              </a>
+            </div>
           </div>
 
         </div>

@@ -136,8 +136,8 @@ export default function HomePage() {
       {/* Footer */}
       <Footer />
 
-      {/* Floating Action Buttons (Mobile / Quick Access) */}
-      <div className="fixed bottom-5 right-5 z-40 flex flex-col space-y-2.5">
+      {/* Floating Action Buttons (Mobile / Quick Access) - auto-lifts on mobile when cart banner appears */}
+      <div className={`fixed right-3.5 sm:right-5 z-40 flex flex-col space-y-2.5 transition-all duration-300 ${cartCount > 0 ? 'bottom-20 sm:bottom-5' : 'bottom-4 sm:bottom-5'}`}>
         
         {/* Watch Reels Floating Trigger */}
         <button

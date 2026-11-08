@@ -244,10 +244,9 @@ export const PixarRoosterBanner3D: React.FC<PixarRoosterBanner3DProps> = () => {
       className="relative w-full overflow-hidden select-none bg-slate-950 group"
       aria-label={`JP Farms ${currentSlot.title} Rooster Showcase`}
     >
-      {/* 100% FULL-BLEED EDGE-TO-EDGE BANNERS (2.7:1 RATIO, ZERO SIDE GAPS) */}
+      {/* 100% FULL-BLEED EDGE-TO-EDGE BANNERS (Auto-adjusting ratio: 16:10 on Mobile, 2.7:1 on Desktop) */}
       <div 
-        className="relative w-full overflow-hidden"
-        style={{ aspectRatio: '2.7 / 1' }}
+        className="relative w-full overflow-hidden aspect-[16/10] sm:aspect-[2.7/1] min-h-[220px] sm:min-h-0"
       >
         {banners.map((banner, index) => {
           const isActive = index === slideIndex;
@@ -272,25 +271,25 @@ export const PixarRoosterBanner3D: React.FC<PixarRoosterBanner3DProps> = () => {
         })}
 
         {/* AMAZON-STYLE SOFT BOTTOM GRADIENT BLEND INTO SKY-BLUE BACKGROUND */}
-        <div className="absolute inset-x-0 bottom-0 h-20 sm:h-28 bg-gradient-to-t from-[#f4f9fd] via-[#f4f9fd]/30 to-transparent pointer-events-none z-10" />
+        <div className="absolute inset-x-0 bottom-0 h-16 sm:h-28 bg-gradient-to-t from-[#f4f9fd] via-[#f4f9fd]/30 to-transparent pointer-events-none z-10" />
 
         {/* FULL-BLEED EDGE NAVIGATION ARROWS (AMAZON STYLE) */}
         <button
           type="button"
           onClick={prevBanner}
           aria-label="Previous Banner"
-          className="absolute left-2.5 sm:left-5 top-1/2 -translate-y-1/2 z-20 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-white/80 hover:bg-white text-slate-800 shadow-xl border border-sky-100/80 flex items-center justify-center opacity-80 sm:opacity-0 group-hover:opacity-100 transition-all duration-200 hover:scale-110 active:scale-95 backdrop-blur-sm"
+          className="absolute left-2 sm:left-5 top-1/2 -translate-y-1/2 z-20 w-8 h-8 sm:w-12 sm:h-12 rounded-full bg-white/85 hover:bg-white text-slate-800 shadow-lg sm:shadow-xl border border-sky-100/80 flex items-center justify-center opacity-85 sm:opacity-0 group-hover:opacity-100 transition-all duration-200 hover:scale-110 active:scale-95 backdrop-blur-sm"
         >
-          <ChevronLeft className="w-6 h-6 text-slate-700" />
+          <ChevronLeft className="w-4 h-4 sm:w-6 sm:h-6 text-slate-700" />
         </button>
 
         <button
           type="button"
           onClick={nextBanner}
           aria-label="Next Banner"
-          className="absolute right-2.5 sm:right-5 top-1/2 -translate-y-1/2 z-20 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-white/80 hover:bg-white text-slate-800 shadow-xl border border-sky-100/80 flex items-center justify-center opacity-80 sm:opacity-0 group-hover:opacity-100 transition-all duration-200 hover:scale-110 active:scale-95 backdrop-blur-sm"
+          className="absolute right-2 sm:right-5 top-1/2 -translate-y-1/2 z-20 w-8 h-8 sm:w-12 sm:h-12 rounded-full bg-white/85 hover:bg-white text-slate-800 shadow-lg sm:shadow-xl border border-sky-100/80 flex items-center justify-center opacity-85 sm:opacity-0 group-hover:opacity-100 transition-all duration-200 hover:scale-110 active:scale-95 backdrop-blur-sm"
         >
-          <ChevronRight className="w-6 h-6 text-slate-700" />
+          <ChevronRight className="w-4 h-4 sm:w-6 sm:h-6 text-slate-700" />
         </button>
 
       </div>

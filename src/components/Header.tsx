@@ -122,22 +122,22 @@ export const Header: React.FC<HeaderProps> = ({
       </div>
 
       {/* Main Navigation Bar */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-20">
           
           {/* Logo */}
-          <Link href="/" className="flex items-center space-x-3 group shrink-0">
-            <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-amber-500 to-amber-600 p-0.5 shadow-md shadow-amber-500/20 group-hover:scale-105 transition duration-200 shrink-0">
+          <Link href="/" className="flex items-center space-x-2.5 sm:space-x-3 group shrink-0">
+            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-amber-500 to-amber-600 p-0.5 shadow-md shadow-amber-500/20 group-hover:scale-105 transition duration-200 shrink-0">
               <div className="w-full h-full bg-white rounded-[10px] flex items-center justify-center">
                 <Feather className="w-5 h-5 sm:w-6 sm:h-6 text-amber-600 transform -rotate-12" />
               </div>
             </div>
             <div className="shrink-0">
-              <div className="flex items-center space-x-2 whitespace-nowrap">
-                <span className="font-extrabold text-xl sm:text-2xl tracking-tight text-slate-900 group-hover:text-sky-700 transition whitespace-nowrap">
+              <div className="flex items-center space-x-1.5 sm:space-x-2 whitespace-nowrap">
+                <span className="font-extrabold text-lg sm:text-2xl tracking-tight text-slate-900 group-hover:text-sky-700 transition whitespace-nowrap">
                   JP FARMS
                 </span>
-                <span className="text-[10px] uppercase font-bold tracking-widest px-1.5 py-0.5 rounded bg-sky-100 text-sky-800 border border-sky-200 whitespace-nowrap">
+                <span className="text-[9px] sm:text-[10px] uppercase font-bold tracking-widest px-1.5 py-0.5 rounded bg-sky-100 text-sky-800 border border-sky-200 whitespace-nowrap hidden min-[360px]:inline-block">
                   Est. 2016
                 </span>
               </div>
@@ -228,7 +228,7 @@ export const Header: React.FC<HeaderProps> = ({
           </div>
 
           {/* Mobile Right Actions: Profile, Orders, Cart & Menu Button */}
-          <div className="flex items-center sm:hidden space-x-1.5">
+          <div className="flex items-center sm:hidden space-x-1 sm:space-x-1.5 shrink-0">
             {/* Mobile Google Sign In */}
             <GoogleSignInButton variant="compact" />
 
@@ -236,11 +236,11 @@ export const Header: React.FC<HeaderProps> = ({
             <button
               type="button"
               onClick={onOpenOrders}
-              className="relative p-2.5 rounded-xl bg-slate-900 text-amber-400 font-bold flex items-center justify-center border border-amber-500/30 shadow-xs transition active:scale-95 cursor-pointer"
+              className="relative p-2 rounded-xl bg-slate-900 text-amber-400 font-bold flex items-center justify-center border border-amber-500/30 shadow-xs transition active:scale-95 cursor-pointer"
               aria-label="Track orders"
               title="My Orders"
             >
-              <Package className="w-5 h-5 text-amber-400" />
+              <Package className="w-4 h-4 sm:w-5 sm:h-5 text-amber-400" />
               {activeOrdersCount > 0 && (
                 <span className="absolute -top-1 -right-1 bg-amber-500 text-stone-950 text-[9px] font-black w-4 h-4 rounded-full flex items-center justify-center border border-slate-900">
                   {activeOrdersCount}
@@ -252,11 +252,11 @@ export const Header: React.FC<HeaderProps> = ({
             <button
               type="button"
               onClick={openCart}
-              className="relative p-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-stone-950 font-bold flex items-center justify-center shadow-xs transition active:scale-95 cursor-pointer"
+              className="relative p-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-stone-950 font-bold flex items-center justify-center shadow-xs transition active:scale-95 cursor-pointer"
               aria-label="Open cart"
               title="Cart"
             >
-              <ShoppingCart className="w-5 h-5 text-stone-950" />
+              <ShoppingCart className="w-4 h-4 sm:w-5 sm:h-5 text-stone-950" />
               {cartCount > 0 && (
                 <span className="absolute -top-1.5 -right-1.5 bg-stone-950 text-amber-300 text-[9px] font-black w-4 h-4 rounded-full flex items-center justify-center border border-white">
                   {cartCount}
@@ -271,11 +271,11 @@ export const Header: React.FC<HeaderProps> = ({
                 e.stopPropagation();
                 setSideMenuOpen(true);
               }}
-              className="p-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-amber-400 border border-amber-500/30 transition active:scale-95 flex items-center justify-center shadow-xs cursor-pointer"
+              className="p-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-amber-400 border border-amber-500/30 transition active:scale-95 flex items-center justify-center shadow-xs cursor-pointer"
               aria-label="Open menu"
               title="Menu"
             >
-              <Menu className="w-5 h-5 text-amber-400" />
+              <Menu className="w-4 h-4 sm:w-5 sm:h-5 text-amber-400" />
             </button>
           </div>
         </div>
