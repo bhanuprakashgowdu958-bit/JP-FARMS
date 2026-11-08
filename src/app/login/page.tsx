@@ -106,10 +106,18 @@ export default function LoginPage() {
             </div>
           </div>
 
-          {/* Privacy Note */}
-          <p className="text-[11px] text-center text-stone-400 leading-relaxed">
-            By signing in, you agree to JP Farms bio-secure live animal transit and visitor care policies.
-          </p>
+          {/* Privacy Note & Sign Up Link */}
+          <div className="space-y-2 text-center">
+            <p className="text-[11px] text-stone-500">
+              New to JP Farms?{' '}
+              <Link href="/signup" className="font-bold text-amber-600 hover:text-amber-700 underline">
+                Join Breeder Circle (Sign Up)
+              </Link>
+            </p>
+            <p className="text-[11px] text-stone-400 leading-relaxed">
+              By signing in, you agree to JP Farms bio-secure live animal transit and visitor care policies.
+            </p>
+          </div>
 
         </div>
       </div>
