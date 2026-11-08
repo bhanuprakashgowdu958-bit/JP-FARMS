@@ -127,10 +127,9 @@ export const ZomatoBannerCarousel: React.FC<ZomatoBannerCarouselProps> = ({
   return (
     <section className="relative w-full overflow-hidden bg-[#f4f9fd]">
       
-      {/* 100% Full-Screen Edge-to-Edge Banner (Zero Gaps, Zero Cuts, Smooth 10s Auto-Slide Track) */}
+      {/* 100% Full Viewport Hero Banner (Zero Gaps, Zero Cuts, Ambient Edge-to-Edge Framing, Smooth 10s Auto-Slide) */}
       <div 
-        className="group relative w-full overflow-hidden bg-slate-950 transition-all duration-300 cursor-pointer"
-        style={{ aspectRatio: '1376 / 768' }}
+        className="group relative w-full h-[46vh] sm:h-[52vh] lg:h-[58vh] min-h-[300px] sm:min-h-[380px] max-h-[520px] overflow-hidden bg-slate-950 transition-all duration-300 cursor-pointer shadow-md"
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
@@ -145,16 +144,44 @@ export const ZomatoBannerCarousel: React.FC<ZomatoBannerCarouselProps> = ({
           {BANNERS.map((banner, index) => (
             <div 
               key={banner.id}
-              className="w-full h-full shrink-0 relative select-none"
+              className="w-full h-full shrink-0 relative overflow-hidden select-none flex items-center justify-center bg-slate-950"
             >
+              {/* Layer 1: Ambient edge-to-edge backdrop (eliminates side gaps with rich matching atmospheric colors) */}
+              <div 
+                className="absolute inset-0 w-full h-full bg-cover bg-center filter blur-2xl scale-110 opacity-55 pointer-events-none transform -translate-y-1"
+                style={{ backgroundImage: `url(${banner.image})` }}
+              />
+              <div className="absolute inset-0 bg-slate-950/25 pointer-events-none" />
+
+              {/* Layer 2: 100% Complete Uncut Artwork (Zero cropping: comb, tail, body, and feet/claws are ALL fully visible) */}
               <img
                 src={banner.image}
                 alt={banner.imageAlt}
                 loading={index === 0 ? "eager" : "lazy"}
                 decoding="async"
-                className="w-full h-full object-cover filter brightness-[1.02] contrast-[1.03] pointer-events-none"
+                className="relative max-h-full max-w-full w-auto h-auto object-contain mx-auto filter drop-shadow-[0_12px_28px_rgba(0,0,0,0.5)] brightness-[1.02] contrast-[1.02] pointer-events-none select-none z-10"
               />
             </div>
+          ))}
+        </div>
+
+        {/* Carousel Slide Dots Indicator */}
+        <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-20 flex items-center space-x-2 bg-black/40 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/10 pointer-events-auto">
+          {BANNERS.map((banner, index) => (
+            <button
+              key={banner.id}
+              onClick={(e) => {
+                e.stopPropagation();
+                setCurrentIndex(index);
+                resetAutoSlideTimer();
+              }}
+              className={`transition-all duration-300 rounded-full ${
+                currentIndex === index 
+                  ? "w-6 h-1.5 bg-white shadow-xs" 
+                  : "w-1.5 h-1.5 bg-white/50 hover:bg-white/80"
+              }`}
+              aria-label={`Slide ${index + 1}`}
+            />
           ))}
         </div>
 

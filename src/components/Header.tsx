@@ -57,64 +57,64 @@ export const Header: React.FC<HeaderProps> = ({ onOpenReels, birdsCount = 7 }) =
         <div className="flex items-center justify-between h-20">
           
           {/* Logo */}
-          <Link href="/" className="flex items-center space-x-3 group">
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-amber-500 to-amber-600 p-0.5 shadow-md shadow-amber-500/20 group-hover:scale-105 transition duration-200">
+          <Link href="/" className="flex items-center space-x-3 group shrink-0">
+            <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-amber-500 to-amber-600 p-0.5 shadow-md shadow-amber-500/20 group-hover:scale-105 transition duration-200 shrink-0">
               <div className="w-full h-full bg-white rounded-[10px] flex items-center justify-center">
-                <Feather className="w-6 h-6 text-amber-600 transform -rotate-12" />
+                <Feather className="w-5 h-5 sm:w-6 sm:h-6 text-amber-600 transform -rotate-12" />
               </div>
             </div>
-            <div>
-              <div className="flex items-center space-x-1.5">
-                <span className="font-extrabold text-2xl tracking-tight text-slate-900 group-hover:text-sky-700 transition">
+            <div className="shrink-0">
+              <div className="flex items-center space-x-2 whitespace-nowrap">
+                <span className="font-extrabold text-xl sm:text-2xl tracking-tight text-slate-900 group-hover:text-sky-700 transition whitespace-nowrap">
                   JP FARMS
                 </span>
-                <span className="text-[10px] uppercase font-bold tracking-widest px-1.5 py-0.5 rounded bg-sky-100 text-sky-800 border border-sky-200">
+                <span className="text-[10px] uppercase font-bold tracking-widest px-1.5 py-0.5 rounded bg-sky-100 text-sky-800 border border-sky-200 whitespace-nowrap">
                   Est. 2016
                 </span>
               </div>
-              <p className="text-[11px] text-slate-500 tracking-wide">
+              <p className="text-[11px] text-slate-500 tracking-wide whitespace-nowrap hidden sm:block">
                 Heritage Desi Rooster Showcase Estate
               </p>
             </div>
           </Link>
 
           {/* Desktop Nav Links */}
-          <nav className="hidden lg:flex items-center space-x-6 text-sm font-medium text-slate-600">
-            <a href="#showcase" className="text-amber-800 font-extrabold hover:text-amber-900 transition py-1 flex items-center space-x-1">
+          <nav className="hidden lg:flex items-center space-x-3 xl:space-x-5 text-sm font-medium text-slate-600 shrink-0">
+            <a href="#showcase" className="text-amber-800 font-extrabold hover:text-amber-900 transition py-1 flex items-center space-x-1 whitespace-nowrap">
               <span>Buy Roosters</span>
-              <span className="bg-amber-100 text-amber-950 text-[10px] font-black px-1.5 py-0.2 rounded-full border border-amber-300">
+              <span className="bg-amber-100 text-amber-950 text-[10px] font-black px-1.5 py-0.5 rounded-full border border-amber-300">
                 Store
               </span>
             </a>
-            <a href="#breeds" className="hover:text-sky-600 transition py-1">
+            <a href="#breeds" className="hover:text-sky-600 transition py-1 whitespace-nowrap">
               Pure Breeds
             </a>
             <button
               onClick={onOpenReels}
-              className="flex items-center space-x-1.5 text-sky-700 hover:text-sky-800 font-semibold bg-sky-50 hover:bg-sky-100/80 border border-sky-200 px-3 py-1.5 rounded-full transition group shadow-xs"
+              className="flex items-center space-x-1.5 text-sky-700 hover:text-sky-800 font-semibold bg-sky-50 hover:bg-sky-100/80 border border-sky-200 px-3 py-1.5 rounded-full transition group shadow-xs whitespace-nowrap"
             >
               <PlayCircle className="w-4 h-4 text-sky-600 group-hover:scale-110 transition" />
               <span>Rooster TV (Videos)</span>
-              <span className="bg-sky-600 text-white text-[9px] font-extrabold px-1.5 py-0.2 rounded-full uppercase tracking-wider">
+              <span className="bg-sky-600 text-white text-[9px] font-extrabold px-1.5 py-0.5 rounded-full uppercase tracking-wider">
                 HD
               </span>
             </button>
-            <a href="#biosecurity" className="hover:text-sky-600 transition py-1">
+            <a href="#biosecurity" className="hover:text-sky-600 transition py-1 whitespace-nowrap">
               Diet & Care
             </a>
-            <a href="#visit-guide" className="hover:text-sky-600 transition py-1">
+            <a href="#visit-guide" className="hover:text-sky-600 transition py-1 whitespace-nowrap">
               Farm Visit
             </a>
-            <a href="#reviews" className="hover:text-sky-600 transition py-1">
+            <a href="#reviews" className="hover:text-sky-600 transition py-1 whitespace-nowrap hidden xl:inline-block">
               Breeder Community
             </a>
           </nav>
 
           {/* Quick Actions */}
-          <div className="hidden sm:flex items-center space-x-2.5">
+          <div className="hidden sm:flex items-center space-x-2 shrink-0">
             <a
               href="#showcase"
-              className="flex items-center space-x-1.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-stone-950 text-xs font-black px-3.5 py-2.5 rounded-xl shadow-md shadow-amber-500/20 transition active:scale-95"
+              className="flex items-center space-x-1.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-stone-950 text-xs font-black px-3.5 py-2.5 rounded-xl shadow-md shadow-amber-500/20 transition active:scale-95 whitespace-nowrap"
             >
               <span>⚡ Buy Now</span>
             </a>
@@ -123,7 +123,7 @@ export const Header: React.FC<HeaderProps> = ({ onOpenReels, birdsCount = 7 }) =
               href={generalWhatsAppUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center space-x-2 bg-gradient-to-r from-sky-600 to-sky-700 hover:from-sky-500 hover:to-sky-600 text-white text-xs font-semibold px-3.5 py-2.5 rounded-xl shadow-md shadow-sky-600/20 transition active:scale-95"
+              className="flex items-center space-x-2 bg-gradient-to-r from-sky-600 to-sky-700 hover:from-sky-500 hover:to-sky-600 text-white text-xs font-semibold px-3.5 py-2.5 rounded-xl shadow-md shadow-sky-600/20 transition active:scale-95 whitespace-nowrap"
             >
               <MessageCircle className="w-4 h-4" />
               <span>Connect with Farm</span>
