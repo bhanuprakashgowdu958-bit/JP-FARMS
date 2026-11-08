@@ -28,6 +28,19 @@ interface UserProfileModalProps {
   onOpenCart?: () => void;
 }
 
+const formatDisplayPhone = (raw?: string | null): string => {
+  if (!raw) return '';
+  const digits = raw.replace(/\D/g, '');
+  if (digits.length === 10) {
+    return `+91 ${digits.slice(0, 5)} ${digits.slice(5, 10)}`;
+  }
+  if (digits.length === 12 && digits.startsWith('91')) {
+    const last10 = digits.slice(2);
+    return `+91 ${last10.slice(0, 5)} ${last10.slice(5, 10)}`;
+  }
+  return raw;
+};
+
 export const UserProfileModal: React.FC<UserProfileModalProps> = ({
   isOpen,
   onClose,
@@ -153,6 +166,10 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                 </span>
               </div>
               <p className="text-[11px] sm:text-xs text-slate-300">JP Farms Official Member Sanctuary</p>
+              <p className="text-[10px] sm:text-[11px] text-emerald-400 font-medium flex items-center space-x-1 mt-0.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                <span>Live Sync (Desktop & Mobile)</span>
+              </p>
             </div>
           </div>
 
@@ -276,7 +293,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                 <div className="pt-1 flex items-center justify-between text-xs">
                   {user.phoneNumber ? (
                     <span className="font-mono font-bold text-slate-800 bg-slate-50 px-2.5 py-1 rounded-lg border border-slate-200">
-                      {user.phoneNumber}
+                      {formatDisplayPhone(user.phoneNumber)}
                     </span>
                   ) : (
                     <span className="text-slate-400 italic">No phone number added yet</span>

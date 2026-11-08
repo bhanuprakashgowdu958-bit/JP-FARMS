@@ -306,33 +306,54 @@ async function syncProfileToFirestore(user: AppUser) {
   if (!db || !user?.uid) return;
   try {
     const { doc, setDoc }: any = await import('firebase/firestore');
-    await setDoc(doc(db, 'users', user.uid), {
+    const payload: any = {
       uid: user.uid,
-      displayName: user.displayName,
-      email: user.email,
-      photoURL: user.photoURL,
-      phoneNumber: user.phoneNumber,
+      displayName: user.displayName || null,
+      email: user.email || null,
+      photoURL: user.photoURL || null,
+      phoneNumber: user.phoneNumber || null,
       deliveryAddress: user.deliveryAddress || null,
       city: user.city || null,
       state: user.state || null,
       pincode: user.pincode || null,
       lastUpdated: new Date().toISOString(),
-    }, { merge: true });
+    };
+    await setDoc(doc(db, 'users', user.uid), payload, { merge: true });
+    if (user.email) {
+      const emailDocId = user.email.toLowerCase().replace(/[^a-z0-9_.-]/g, '_');
+      await setDoc(doc(db, 'profiles_by_email', emailDocId), payload, { merge: true });
+    }
   } catch (e) {
-    // Non-blocking: fail gracefully if Firestore rules or offline
+    console.warn('[Firestore Sync Profile Error]', e);
   }
 }
 
-async function fetchFirestoreProfile(uid: string): Promise<PersistentProfileData | null> {
-  if (!db || !uid) return null;
+async function fetchFirestoreProfile(identifier: { uid?: string; email?: string | null }): Promise<PersistentProfileData | null> {
+  if (!db) return null;
   try {
     const { doc, getDoc }: any = await import('firebase/firestore');
-    const snap = await getDoc(doc(db, 'users', uid));
-    if (snap.exists()) {
-      return snap.data() as PersistentProfileData;
+    if (identifier.uid) {
+      const snap = await getDoc(doc(db, 'users', identifier.uid));
+      if (snap.exists()) {
+        const data = snap.data();
+        if (data && (data.phoneNumber || data.deliveryAddress)) {
+          return data as PersistentProfileData;
+        }
+      }
+    }
+    if (identifier.email) {
+      const emailDocId = identifier.email.toLowerCase().replace(/[^a-z0-9_.-]/g, '_');
+      const snap = await getDoc(doc(db, 'profiles_by_email', emailDocId));
+      if (snap.exists()) {
+        const data = snap.data();
+        if (data && (data.phoneNumber || data.deliveryAddress)) {
+          return data as PersistentProfileData;
+        }
+      }
     }
     return null;
   } catch (e) {
+    console.warn('[Firestore Fetch Profile Error]', e);
     return null;
   }
 }
@@ -412,36 +433,66 @@ export function useAuth() {
     setUser(getStoredUser());
     setIsLoading(false);
 
-    // Sync with Firebase Auth state if configured
-    let unsubscribe = () => {};
+    // Sync with Firebase Auth state and Firestore cloud across all devices
+    let unsubscribeAuth = () => {};
+    let unsubscribeSnapshot = () => {};
+
     if (auth && isFirebaseConfigured) {
       import('firebase/auth').then((authMod: any) => {
         if (authMod?.onAuthStateChanged) {
-          unsubscribe = authMod.onAuthStateChanged(auth, async (fbUser: any) => {
+          unsubscribeAuth = authMod.onAuthStateChanged(auth, async (fbUser: any) => {
             if (fbUser) {
-              const appUser = buildAppUser(fbUser);
+              // 1. Initial build from local session
+              let appUser = buildAppUser(fbUser);
               saveStoredUser(appUser);
               setUser(appUser);
 
-              // If phone was missing locally, try checking Firestore cloud doc
-              if (!appUser.phoneNumber) {
+              // 2. Fetch authoritative cloud document from Firestore (source of truth across devices)
+              try {
+                const remote = await fetchFirestoreProfile({ uid: fbUser.uid, email: fbUser.email });
+                if (remote && (remote.phoneNumber || remote.deliveryAddress)) {
+                  appUser = {
+                    ...appUser,
+                    phoneNumber: remote.phoneNumber || appUser.phoneNumber,
+                    deliveryAddress: remote.deliveryAddress || appUser.deliveryAddress,
+                    city: remote.city || appUser.city,
+                    state: remote.state || appUser.state,
+                    pincode: remote.pincode || appUser.pincode,
+                  };
+                  saveStoredUser(appUser);
+                  savePersistentProfile({ email: fbUser.email, uid: fbUser.uid }, remote);
+                  setUser(appUser);
+                }
+              } catch (e) {}
+
+              // 3. Real-time live snapshot listener: instant multi-device sync
+              if (db) {
                 try {
-                  const remote = await fetchFirestoreProfile(fbUser.uid);
-                  if (remote?.phoneNumber) {
-                    savePersistentProfile({ email: fbUser.email, uid: fbUser.uid }, remote);
-                    const enriched: AppUser = {
-                      ...appUser,
-                      phoneNumber: remote.phoneNumber,
-                      deliveryAddress: remote.deliveryAddress || appUser.deliveryAddress,
-                      city: remote.city || appUser.city,
-                      state: remote.state || appUser.state,
-                      pincode: remote.pincode || appUser.pincode,
-                    };
-                    saveStoredUser(enriched);
-                    setUser(enriched);
-                  }
+                  const { doc, onSnapshot }: any = await import('firebase/firestore');
+                  unsubscribeSnapshot = onSnapshot(doc(db, 'users', fbUser.uid), (docSnap: any) => {
+                    if (docSnap.exists()) {
+                      const data = docSnap.data();
+                      if (data && (data.phoneNumber || data.deliveryAddress)) {
+                        const current = getStoredUser() || appUser;
+                        const merged: AppUser = {
+                          ...current,
+                          displayName: data.displayName || current.displayName,
+                          phoneNumber: data.phoneNumber || current.phoneNumber,
+                          deliveryAddress: data.deliveryAddress || current.deliveryAddress,
+                          city: data.city || current.city,
+                          state: data.state || current.state,
+                          pincode: data.pincode || current.pincode,
+                        };
+                        saveStoredUser(merged);
+                        savePersistentProfile({ email: fbUser.email, uid: fbUser.uid }, data);
+                        setUser(merged);
+                      }
+                    }
+                  });
                 } catch (e) {}
               }
+            } else {
+              unsubscribeSnapshot();
             }
           });
         }
@@ -455,7 +506,8 @@ export function useAuth() {
 
     window.addEventListener('auth-state-changed', handleAuthEvent);
     return () => {
-      unsubscribe();
+      unsubscribeAuth();
+      unsubscribeSnapshot();
       window.removeEventListener('auth-state-changed', handleAuthEvent);
     };
   }, []);
@@ -479,22 +531,23 @@ export function useAuth() {
       const result = await authMod.signInWithPopup(auth, provider);
       const fbUser = result.user;
 
-      const appUser = buildAppUser(fbUser);
+      let appUser = buildAppUser(fbUser);
 
-      // If phone was missing locally, try checking Firestore cloud doc
-      if (!appUser.phoneNumber) {
-        try {
-          const remote = await fetchFirestoreProfile(fbUser.uid);
-          if (remote?.phoneNumber) {
-            savePersistentProfile({ email: fbUser.email, uid: fbUser.uid }, remote);
-            appUser.phoneNumber = remote.phoneNumber;
-            if (remote.deliveryAddress) appUser.deliveryAddress = remote.deliveryAddress;
-            if (remote.city) appUser.city = remote.city;
-            if (remote.state) appUser.state = remote.state;
-            if (remote.pincode) appUser.pincode = remote.pincode;
-          }
-        } catch (e) {}
-      }
+      // Unconditionally sync the authoritative profile from Firestore cloud
+      try {
+        const remote = await fetchFirestoreProfile({ uid: fbUser.uid, email: fbUser.email });
+        if (remote && (remote.phoneNumber || remote.deliveryAddress)) {
+          appUser = {
+            ...appUser,
+            phoneNumber: remote.phoneNumber || appUser.phoneNumber,
+            deliveryAddress: remote.deliveryAddress || appUser.deliveryAddress,
+            city: remote.city || appUser.city,
+            state: remote.state || appUser.state,
+            pincode: remote.pincode || appUser.pincode,
+          };
+          savePersistentProfile({ email: fbUser.email, uid: fbUser.uid }, remote);
+        }
+      } catch (e) {}
 
       saveStoredUser(appUser);
       setUser(appUser);
