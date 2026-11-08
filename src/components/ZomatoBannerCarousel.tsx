@@ -22,7 +22,6 @@ interface BannerSlide {
   id: string;
   image: string;
   imageAlt: string;
-  objectPosition?: string;
 }
 
 export const ZomatoBannerCarousel: React.FC<ZomatoBannerCarouselProps> = ({
@@ -41,31 +40,26 @@ export const ZomatoBannerCarousel: React.FC<ZomatoBannerCarouselProps> = ({
       id: 'commercial-grain-ad',
       image: '/banners/ad_rooster_golden_grains_commercial.jpg',
       imageAlt: '3D Commercial Advertisement: Champion Rooster Feeding on Golden Grains at JP Farms',
-      objectPosition: 'center 42%',
     },
     {
       id: 'winter-storybook',
       image: '/banners/winter_storybook_rooster_snow.jpg',
       imageAlt: 'Winter Storybook 3D Illustration: Magnificent Rooster on Snowy Fence at JP Farms',
-      objectPosition: 'center 40%',
     },
     {
       id: 'peela-aseel',
       image: '/banners/banner_rainbow_wings_crow.jpg',
       imageAlt: 'Royal Peela Aseel Rooster with Rainbow Wings Crowing at JP Farms',
-      objectPosition: 'center 38%',
     },
     {
       id: 'alpha-staredown',
       image: '/banners/banner_alpha_warrior_staredown.jpg',
       imageAlt: 'Alpha Warrior Staredown: Purebred Champion Sire at JP Farms',
-      objectPosition: 'center 45%',
     },
     {
       id: 'farm-stream',
       image: '/banners/midday_4_farm_stream.jpg',
       imageAlt: 'JP Farms Green Pastures and Natural Stream Paddocks',
-      objectPosition: 'center 45%',
     },
   ];
 
@@ -125,9 +119,10 @@ export const ZomatoBannerCarousel: React.FC<ZomatoBannerCarouselProps> = ({
   return (
     <section className="relative w-full overflow-hidden bg-[#f4f9fd]">
       
-      {/* 100% Full-Screen Edge-to-Edge Banner (Zero Gaps, Zero Haze, 100% Crystal-Clear Master Artwork) */}
+      {/* 100% Full-Screen Edge-to-Edge Banner (Zero Gaps, Zero Cuts, 100% Complete Master Artwork) */}
       <div 
-        className="group relative w-full aspect-[16/9] max-h-[80vh] overflow-hidden bg-slate-900 transition-all duration-300 cursor-pointer"
+        className="group relative w-full overflow-hidden bg-slate-950 transition-all duration-300 cursor-pointer"
+        style={{ aspectRatio: '1376 / 768' }}
         onMouseEnter={() => setIsPaused(true)}
         onMouseLeave={() => setIsPaused(false)}
         onTouchStart={handleTouchStart}
@@ -136,14 +131,13 @@ export const ZomatoBannerCarousel: React.FC<ZomatoBannerCarouselProps> = ({
         onClick={handleBannerClick}
       >
         
-        {/* Full-Bleed Edge-to-Edge Artwork Banner Image */}
-        <div className="relative w-full h-full overflow-hidden">
+        {/* Full-Bleed Edge-to-Edge Artwork Banner Image (Zero Crop, 100% Full Picture) */}
+        <div className="relative w-full h-full">
           <img
             key={current.id}
             src={current.image}
             alt={current.imageAlt}
-            style={{ objectPosition: current.objectPosition || 'center' }}
-            className="w-full h-full object-cover filter brightness-[1.02] contrast-[1.03] transition-all duration-700 ease-out group-hover:scale-[1.01]"
+            className="w-full h-full object-cover filter brightness-[1.02] contrast-[1.03] transition-opacity duration-700 ease-out group-hover:brightness-105"
           />
         </div>
 
