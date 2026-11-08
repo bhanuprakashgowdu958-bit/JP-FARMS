@@ -5,9 +5,7 @@ import confetti from 'canvas-confetti';
 import { 
   Phone, 
   CheckCircle2, 
-  X, 
-  Award, 
-  Feather
+  X
 } from 'lucide-react';
 import { useAuth } from '@/lib/authStore';
 
@@ -21,8 +19,6 @@ interface PhoneCaptureModalProps {
 export const PhoneCaptureModal: React.FC<PhoneCaptureModalProps> = ({
   isOpen,
   onClose,
-  title = 'Complete Your Breeder Profile',
-  subtitle = 'Add your WhatsApp / Mobile Number for live climate crate delivery tracking & order dispatch updates.',
 }) => {
   const { user, updatePhone } = useAuth();
   const [phoneNumber, setPhoneNumber] = useState(user?.phoneNumber ? user.phoneNumber.replace(/^\+91\s*/, '') : '');
@@ -60,73 +56,61 @@ export const PhoneCaptureModal: React.FC<PhoneCaptureModalProps> = ({
     setTimeout(() => {
       setIsSuccess(false);
       onClose();
-    }, 1400);
+    }, 1300);
   };
 
-  const firstName = user?.displayName ? user.displayName.split(' ')[0] : 'Breeder';
+  const displayName = user?.displayName || 'Customer';
+  const email = user?.email || 'Google User';
+  const photo = user?.photoURL || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=120&q=80';
 
   return (
-    <div className="fixed inset-0 z-50 bg-stone-950/80 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in duration-300">
+    <div 
+      className="fixed inset-0 z-50 bg-stone-950/80 backdrop-blur-md overflow-y-auto flex items-center justify-center p-4 sm:p-6 animate-in fade-in duration-200"
+      onClick={onClose}
+    >
       <div 
-        className="bg-white text-stone-900 rounded-3xl max-w-md w-full shadow-2xl border-2 border-amber-500/30 overflow-hidden relative animate-in zoom-in-95 duration-200 transform transition-all"
+        className="bg-white text-stone-900 rounded-3xl max-w-sm sm:max-w-md w-full shadow-2xl border border-stone-200/80 overflow-hidden relative my-auto animate-in zoom-in-95 duration-200 transform transition-all"
         onClick={(e) => e.stopPropagation()}
       >
         
-        {/* TOP VISUAL BANNER: Majestic 3D Rooster Artwork */}
-        <div className="relative h-28 sm:h-32 w-full overflow-hidden bg-stone-950">
-          <img
-            src="/banners/ad_rooster_golden_grains_commercial.jpg"
-            alt="JP Farms 3D Rooster"
-            className="w-full h-full object-cover object-center opacity-85 scale-105 hover:scale-100 transition-transform duration-700"
-          />
+        {/* Top Amber Accent Bar */}
+        <div className="h-2 bg-gradient-to-r from-amber-500 via-amber-400 to-sky-500 w-full"></div>
+
+        {/* Close Button */}
+        <button
+          onClick={onClose}
+          className="absolute top-4 right-4 text-stone-400 hover:text-stone-700 p-2 rounded-full hover:bg-stone-100 transition"
+          aria-label="Close"
+        >
+          <X className="w-4 h-4" />
+        </button>
+
+        <div className="p-6 sm:p-7 space-y-5">
           
-          {/* Subtle Gradients */}
-          <div className="absolute inset-0 bg-gradient-to-t from-stone-950 via-stone-950/40 to-transparent"></div>
-          <div className="absolute inset-0 bg-gradient-to-r from-amber-500/20 to-transparent"></div>
+          {/* USER PROFILE SECTION (Clearly Visible & Perfectly Centered) */}
+          <div className="text-center space-y-2 pt-1">
+            <div className="relative inline-block">
+              <img
+                src={photo}
+                alt={displayName}
+                className="w-16 h-16 rounded-2xl object-cover border-2 border-amber-400 shadow-md shadow-amber-500/20 mx-auto"
+              />
+              <span className="absolute -bottom-1 -right-1 w-5 h-5 bg-emerald-500 rounded-full border-2 border-white flex items-center justify-center shadow-xs" title="Google Verified">
+                <CheckCircle2 className="w-3 h-3 text-white" />
+              </span>
+            </div>
 
-          {/* Top Pill Badge */}
-          <div className="absolute top-3 left-3 z-10">
-            <span className="inline-flex items-center space-x-1.5 bg-stone-950/80 backdrop-blur-md text-amber-400 text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full border border-amber-400/40 shadow-md">
-              <Award className="w-3 h-3 text-amber-400" />
-              <span>VIP Breeder Verification</span>
-            </span>
-          </div>
-
-          {/* Close Button */}
-          <button
-            onClick={onClose}
-            className="absolute top-3 right-3 z-10 text-stone-300 hover:text-white bg-stone-950/60 hover:bg-stone-900/90 backdrop-blur-xs p-1.5 rounded-full border border-stone-700/80 transition"
-            aria-label="Close"
-          >
-            <X className="w-4 h-4" />
-          </button>
-        </div>
-
-        {/* Floating User Avatar */}
-        <div className="relative z-10 flex justify-center -mt-8">
-          <div className="relative">
-            <img
-              src={user?.photoURL || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=120&q=80'}
-              alt={user?.displayName || 'User Avatar'}
-              className="w-16 h-16 rounded-2xl object-cover border-4 border-white shadow-xl ring-2 ring-amber-400/60 bg-white"
-            />
-            <span className="absolute -bottom-1 -right-1 w-5 h-5 bg-emerald-500 rounded-full border-2 border-white flex items-center justify-center shadow-xs">
-              <CheckCircle2 className="w-3 h-3 text-white" />
-            </span>
-          </div>
-        </div>
-
-        {/* Modal Body */}
-        <div className="p-6 pt-2">
-          
-          {/* Header Title */}
-          <div className="text-center space-y-1 mb-5">
-            <h3 className="text-lg font-black text-stone-950 tracking-tight">
-              Namaste, {firstName}! 🐓
-            </h3>
-            <p className="text-xs text-stone-500 max-w-xs mx-auto leading-relaxed">
-              Add your mobile number for order tracking and live dispatch updates.
-            </p>
+            <div>
+              <h3 className="text-base sm:text-lg font-black text-stone-900 tracking-tight">
+                {displayName}
+              </h3>
+              <p className="text-xs text-stone-500 font-mono mt-0.5 truncate max-w-[280px] mx-auto">
+                {email}
+              </p>
+              <div className="inline-flex items-center space-x-1 text-[10px] text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full font-bold mt-1">
+                <span>✓ Google Verified Account</span>
+              </div>
+            </div>
           </div>
 
           {isSuccess ? (
@@ -135,9 +119,9 @@ export const PhoneCaptureModal: React.FC<PhoneCaptureModalProps> = ({
               <div className="w-12 h-12 bg-emerald-100 rounded-full flex items-center justify-center mx-auto text-emerald-600 shadow-md">
                 <CheckCircle2 className="w-7 h-7" />
               </div>
-              <h4 className="text-base font-black text-emerald-950">Mobile Verified!</h4>
+              <h4 className="text-base font-black text-emerald-950">Mobile Saved!</h4>
               <p className="text-xs text-emerald-700 leading-relaxed font-medium">
-                Your profile is synchronized with JP Farms Admin. Priority dispatch alerts are now active.
+                Your profile is verified and synchronized with JP Farms Admin.
               </p>
             </div>
           ) : (
