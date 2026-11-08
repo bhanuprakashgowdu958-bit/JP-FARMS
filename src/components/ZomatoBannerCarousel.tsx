@@ -59,6 +59,21 @@ export const ZomatoBannerCarousel: React.FC<ZomatoBannerCarouselProps> = ({
 
   const BANNERS: BannerSlide[] = [
     {
+      id: 'commercial-grain-ad',
+      tag: '🌾 100% ORGANIC GRAIN NUTRITION • AYURVEDIC CARE',
+      tagIcon: <Sun className="w-3.5 h-3.5 text-amber-500" />,
+      tagStyle: 'bg-amber-50 text-amber-900 border-amber-200',
+      headline: 'Nurtured Naturally on',
+      highlightText: 'Golden Farm Grains',
+      subhead: 'Champion Indian Desi roosters raised on sprouted bajra, whole wheat, and cracked golden corn. 0% commercial steroids or growth hormones.',
+      ctaText: 'Explore Nutrition & Farm Care',
+      ctaAction: 'biosecurity',
+      ctaStyle: 'bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white shadow-amber-500/25',
+      bgGradient: 'from-amber-50 via-sky-50/60 to-white',
+      image: '/banners/ad_rooster_golden_grains_commercial.jpg',
+      imageAlt: '3D Commercial Ad: Champion Rooster Feeding on Golden Grains at JP Farms',
+    },
+    {
       id: 'peela-aseel',
       tag: 'ROYAL HERITAGE LINEAGE • EST. 2016',
       tagIcon: <Award className="w-3.5 h-3.5 text-amber-500" />,
@@ -68,8 +83,8 @@ export const ZomatoBannerCarousel: React.FC<ZomatoBannerCarouselProps> = ({
       subhead: 'Direct Deccan royal bloodlines preserved for 7 generations. Distinct upright warrior stance & dense bone density.',
       ctaText: 'Explore Available Roosters',
       ctaAction: 'catalog',
-      ctaStyle: 'bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white shadow-amber-500/25',
-      bgGradient: 'from-amber-50 via-sky-50/60 to-white',
+      ctaStyle: 'bg-gradient-to-r from-sky-600 to-sky-700 hover:from-sky-700 hover:to-sky-800 text-white shadow-sky-600/25',
+      bgGradient: 'from-sky-50 via-sky-50/60 to-white',
       image: '/banners/banner_rainbow_wings_crow.jpg',
       imageAlt: 'Royal Peela Aseel Rooster with Rainbow Wings at JP Farms',
     },
@@ -128,10 +143,10 @@ export const ZomatoBannerCarousel: React.FC<ZomatoBannerCarouselProps> = ({
     setCurrentIndex((prev) => (prev - 1 + BANNERS.length) % BANNERS.length);
   }, [BANNERS.length]);
 
-  // Auto-advance timer (5.5s), pauses on hover
+  // Auto-advance timer (8s), pauses on hover
   useEffect(() => {
     if (isPaused) return;
-    const interval = setInterval(handleNext, 5500);
+    const interval = setInterval(handleNext, 8000);
     return () => clearInterval(interval);
   }, [isPaused, handleNext]);
 
