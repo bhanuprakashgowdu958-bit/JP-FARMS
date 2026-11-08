@@ -63,6 +63,12 @@ export const TIME_SLOTS: Record<TimeSlotKey, TimeSlotConfig> = {
         alt: 'Morning Farm Pasture at First Light',
         title: 'First Light Over the Farm Pastures',
       },
+      {
+        id: 'morning-4',
+        src: '/banners/banner_alpha_warrior_staredown.jpg',
+        alt: 'Alpha Warrior Staredown: Golden Peela vs Emerald Kagar Aseel',
+        title: 'Alpha Warrior Staredown & Morning Sunbeams',
+      },
     ],
   },
   midday: {
@@ -84,15 +90,15 @@ export const TIME_SLOTS: Record<TimeSlotKey, TimeSlotConfig> = {
       },
       {
         id: 'midday-2',
-        src: '/banners/midday_1_chicks_pasture.jpg',
-        alt: 'Rooster Guiding Fluffy Chicks Across Clover Meadow',
-        title: 'Free-Range Clover Pasture with Chicks',
+        src: '/banners/banner_alpha_warrior_staredown.jpg',
+        alt: 'Alpha Warrior Staredown: Golden Peela vs Emerald Kagar Aseel in Sunlit Pasture',
+        title: 'Alpha Warrior Staredown Face-Off',
       },
       {
         id: 'midday-3',
-        src: '/banners/midday_3_peela_champion.jpg',
-        alt: 'Champion Peela Aseel on Ancient Stone Gate in Noon Sun',
-        title: 'Alpha Champion on Ancient Stone Gate',
+        src: '/banners/midday_1_chicks_pasture.jpg',
+        alt: 'Rooster Guiding Fluffy Chicks Across Clover Meadow',
+        title: 'Free-Range Clover Pasture with Chicks',
       },
       {
         id: 'midday-4',
