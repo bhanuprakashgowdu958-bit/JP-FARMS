@@ -1,3 +1,7 @@
+/**
+ * JP Farms Authentication & Persistent Profile Store
+ * Synchronized across Desktop and Mobile devices
+ */
 'use client';
 
 import { useState, useEffect } from 'react';
