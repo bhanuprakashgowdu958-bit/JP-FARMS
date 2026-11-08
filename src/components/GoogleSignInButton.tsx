@@ -2,7 +2,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { useAuth } from '@/lib/authStore';
-import { LogOut, ChevronDown, User, CheckCircle2, Phone, Edit3 } from 'lucide-react';
+import { LogOut, ChevronDown, CheckCircle2, Phone } from 'lucide-react';
 import { PhoneCaptureModal } from './PhoneCaptureModal';
 
 export const GoogleIcon: React.FC<{ className?: string }> = ({ className = 'w-4 h-4' }) => (
@@ -126,41 +126,14 @@ export const GoogleSignInButton: React.FC<GoogleSignInButtonProps> = ({
               </div>
             </div>
 
-            {/* Dropdown Navigation Actions */}
-            <div className="pt-1.5 space-y-0.5">
-              <button
-                onClick={() => {
-                  setDropdownOpen(false);
-                  const hub = document.querySelector('[aria-label="Customer Profile Hub"]');
-                  if (hub) {
-                    hub.scrollIntoView({ behavior: 'smooth' });
-                  } else {
-                    window.location.href = '/#profile-hub';
-                  }
-                }}
-                className="w-full text-left flex items-center space-x-2 px-3 py-2 text-xs font-semibold text-stone-700 hover:bg-stone-50 rounded-xl transition"
-              >
-                <User className="w-3.5 h-3.5 text-amber-600" />
-                <span>My Breeder Profile</span>
-              </button>
-
-              <button
-                onClick={() => {
-                  setDropdownOpen(false);
-                  setIsPhoneModalOpen(true);
-                }}
-                className="w-full text-left flex items-center space-x-2 px-3 py-2 text-xs font-semibold text-stone-700 hover:bg-stone-50 rounded-xl transition"
-              >
-                <Edit3 className="w-3.5 h-3.5 text-sky-600" />
-                <span>Update Contact Phone</span>
-              </button>
-
+            {/* Dropdown Action: Sign Out */}
+            <div className="pt-2">
               <button
                 onClick={() => {
                   setDropdownOpen(false);
                   signOut();
                 }}
-                className="w-full text-left flex items-center space-x-2 px-3 py-2 text-xs font-semibold text-red-600 hover:bg-red-50 rounded-xl transition border-t border-stone-100 mt-1 pt-2"
+                className="w-full text-left flex items-center space-x-2 px-3 py-2 text-xs font-bold text-red-600 hover:bg-red-50 rounded-xl transition"
               >
                 <LogOut className="w-3.5 h-3.5" />
                 <span>Sign Out</span>
