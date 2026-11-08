@@ -24,6 +24,7 @@ import { Rooster, RoosterOrder } from '@/types/rooster';
 import { FARM_INFO } from '@/lib/data';
 import { generateWhatsAppLink } from '@/lib/utils';
 import { useOrders } from '@/lib/roosterStore';
+import { useAuth } from '@/lib/authStore';
 
 interface CheckoutModalProps {
   rooster: Rooster | null;
@@ -39,12 +40,13 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
   onOrderSuccess,
 }) => {
   const { addOrder } = useOrders();
+  const { user, updatePhone } = useAuth();
 
   const [deliveryType, setDeliveryType] = useState<'doorstep_live_crate' | 'farm_pickup'>('doorstep_live_crate');
   const [paymentMethod, setPaymentMethod] = useState<'cod' | 'upi' | 'advance_token'>('cod');
   
-  const [customerName, setCustomerName] = useState('');
-  const [phoneNumber, setPhoneNumber] = useState('');
+  const [customerName, setCustomerName] = useState(user?.displayName || '');
+  const [phoneNumber, setPhoneNumber] = useState(user?.phoneNumber || '');
   const [deliveryAddress, setDeliveryAddress] = useState('');
   const [city, setCity] = useState('');
   const [state, setState] = useState('Andhra Pradesh');
@@ -110,6 +112,12 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
         spread: 80,
         origin: { y: 0.5 },
       });
+
+      if (phoneNumber.trim()) {
+        try {
+          updatePhone(phoneNumber.trim());
+        } catch (e) {}
+      }
 
       setPlacedOrder(newOrder);
       onOrderSuccess?.(newOrder);

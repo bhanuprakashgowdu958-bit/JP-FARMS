@@ -16,6 +16,7 @@ export interface RegisteredCustomer {
   uid: string;
   name: string;
   email: string;
+  phone?: string | null;
   photoURL?: string;
   joinedAt: string;
   lastLoginAt: string;
@@ -30,6 +31,7 @@ const INITIAL_REGISTERED_USERS: RegisteredCustomer[] = [
     uid: 'google-usr-01',
     name: 'Kishore Varma',
     email: 'kishore.varma.agri@gmail.com',
+    phone: '+91 98450 12345',
     photoURL: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=120&q=80',
     joinedAt: '2026-11-05 10:15 AM',
     lastLoginAt: '2026-11-08 11:20 AM',
@@ -38,6 +40,7 @@ const INITIAL_REGISTERED_USERS: RegisteredCustomer[] = [
     uid: 'google-usr-02',
     name: 'Anil Kumar Reddy',
     email: 'anilkumar.breeder@gmail.com',
+    phone: '+91 97312 88990',
     photoURL: 'https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?auto=format&fit=crop&w=120&q=80',
     joinedAt: '2026-11-06 02:40 PM',
     lastLoginAt: '2026-11-08 04:45 PM',
@@ -102,6 +105,7 @@ function recordRegisteredCustomer(user: AppUser): void {
         ...list[existingIndex],
         name: user.displayName || list[existingIndex].name,
         photoURL: user.photoURL || list[existingIndex].photoURL,
+        phone: user.phoneNumber || list[existingIndex].phone || '',
         lastLoginAt: now,
       };
     } else {
@@ -109,6 +113,7 @@ function recordRegisteredCustomer(user: AppUser): void {
         uid: user.uid,
         name: user.displayName || 'Google User',
         email: user.email || '',
+        phone: user.phoneNumber || '',
         photoURL: user.photoURL || '',
         joinedAt: now,
         lastLoginAt: now,
@@ -119,6 +124,24 @@ function recordRegisteredCustomer(user: AppUser): void {
     window.dispatchEvent(new Event('customers-updated'));
   } catch (e) {
     console.error('Failed to record customer', e);
+  }
+}
+
+export function updateUserPhone(phone: string): AppUser | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    const user = getStoredUser();
+    if (!user) return null;
+    const cleanPhone = phone.trim();
+    const updatedUser: AppUser = {
+      ...user,
+      phoneNumber: cleanPhone,
+    };
+    saveStoredUser(updatedUser);
+    return updatedUser;
+  } catch (e) {
+    console.error('Failed to update phone number', e);
+    return null;
   }
 }
 
@@ -271,5 +294,10 @@ export function useAuth() {
     error,
     signInWithGoogle,
     signOut,
+    updatePhone: (phone: string) => {
+      const updated = updateUserPhone(phone);
+      if (updated) setUser(updated);
+      return updated;
+    },
   };
 }

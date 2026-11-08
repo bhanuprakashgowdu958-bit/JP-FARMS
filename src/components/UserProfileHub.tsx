@@ -15,11 +15,14 @@ import {
   ChevronRight,
   PhoneCall,
   Calendar,
-  FileText
+  FileText,
+  Phone,
+  Edit3
 } from 'lucide-react';
 import { useAuth } from '@/lib/authStore';
 import { useCart } from '@/lib/cartStore';
 import { GoogleSignInButton } from './GoogleSignInButton';
+import { PhoneCaptureModal } from './PhoneCaptureModal';
 import { FARM_INFO } from '@/lib/data';
 import { generateWhatsAppLink } from '@/lib/utils';
 
@@ -31,6 +34,7 @@ export const UserProfileHub: React.FC<UserProfileHubProps> = ({ onOpenCart }) =>
   const { user, isAuthenticated, signOut } = useAuth();
   const { cartCount, cartTotal } = useCart();
   const [activeTabModal, setActiveTabModal] = useState<'health' | 'delivery' | null>(null);
+  const [isPhoneModalOpen, setIsPhoneModalOpen] = useState(false);
 
   // Time-based Indian greeting
   const getGreeting = () => {
@@ -87,10 +91,30 @@ export const UserProfileHub: React.FC<UserProfileHubProps> = ({ onOpenCart }) =>
                   </span>
                 </div>
                 
-                <div className="flex items-center space-x-3 text-xs text-stone-400 mt-1 flex-wrap">
+                <div className="flex items-center space-x-3 text-xs text-stone-400 mt-1.5 flex-wrap gap-y-1">
                   <span className="font-mono text-stone-300">ID: #{memberCode}</span>
                   <span className="text-stone-600">•</span>
-                  <span className="text-stone-400 truncate max-w-[200px] sm:max-w-none">{user.email}</span>
+                  <span className="text-stone-400 truncate max-w-[180px] sm:max-w-none">{user.email}</span>
+                  <span className="text-stone-600">•</span>
+                  {user.phoneNumber ? (
+                    <button
+                      onClick={() => setIsPhoneModalOpen(true)}
+                      className="inline-flex items-center space-x-1 text-amber-300 hover:text-amber-200 bg-amber-400/10 px-2 py-0.5 rounded-lg border border-amber-400/20 font-mono transition group"
+                      title="Click to edit phone number"
+                    >
+                      <Phone className="w-3 h-3 text-amber-400" />
+                      <span>{user.phoneNumber}</span>
+                      <Edit3 className="w-2.5 h-2.5 text-stone-400 group-hover:text-white ml-0.5" />
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => setIsPhoneModalOpen(true)}
+                      className="inline-flex items-center space-x-1 text-amber-400 hover:text-amber-300 bg-amber-500/20 hover:bg-amber-500/30 px-2.5 py-0.5 rounded-lg border border-amber-400/40 text-[11px] font-bold transition animate-pulse"
+                    >
+                      <Phone className="w-3 h-3" />
+                      <span>+ Add WhatsApp / Phone</span>
+                    </button>
+                  )}
                 </div>
               </div>
             </div>
@@ -329,6 +353,12 @@ export const UserProfileHub: React.FC<UserProfileHubProps> = ({ onOpenCart }) =>
             </div>
           </div>
         )}
+
+        {/* Phone Capture / Edit Modal */}
+        <PhoneCaptureModal
+          isOpen={isPhoneModalOpen}
+          onClose={() => setIsPhoneModalOpen(false)}
+        />
 
       </section>
     );

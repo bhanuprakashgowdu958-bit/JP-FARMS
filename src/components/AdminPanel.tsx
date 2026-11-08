@@ -1264,12 +1264,47 @@ Our live transport driver will call you 2 hours prior to arrival. Thank you for 
                   </span>
                 </h3>
                 <p className="text-xs text-stone-500 mt-0.5">
-                  View customers who signed in via Google. Track user engagement, account details, and orders placed.
+                  Automatically captured customer leads with Google Email & Phone numbers. Reach buyers directly via WhatsApp or phone.
                 </p>
               </div>
 
-              <div className="text-xs font-bold bg-amber-50 border border-amber-200 text-amber-900 px-3 py-1.5 rounded-xl">
-                Google OAuth Active
+              <div className="flex items-center space-x-2 self-start sm:self-auto">
+                <button
+                  onClick={() => {
+                    const headers = ['Customer Name', 'Google Email', 'Mobile Phone', 'Joined Date', 'Last Active', 'Total Orders'];
+                    const rows = customers.map((c) => {
+                      const userOrders = orders.filter(
+                        (o) => o.customerName.toLowerCase() === c.name.toLowerCase() || (c.email && o.notes?.includes(c.email))
+                      );
+                      return [
+                        `"${c.name}"`,
+                        `"${c.email}"`,
+                        `"${c.phone || 'N/A'}"`,
+                        `"${c.joinedAt}"`,
+                        `"${c.lastLoginAt}"`,
+                        userOrders.length,
+                      ];
+                    });
+                    const csvContent = [headers.join(','), ...rows.map((r) => r.join(','))].join('\n');
+                    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+                    const url = URL.createObjectURL(blob);
+                    const link = document.createElement('a');
+                    link.href = url;
+                    link.setAttribute('download', `jp_farms_customers_${new Date().toISOString().slice(0, 10)}.csv`);
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                  }}
+                  className="inline-flex items-center space-x-1.5 bg-stone-900 hover:bg-stone-800 text-white text-xs font-bold px-3.5 py-2 rounded-xl transition shadow-xs"
+                  title="Download all customer phone numbers and emails to CSV"
+                >
+                  <Download className="w-3.5 h-3.5" />
+                  <span>Export Leads (CSV)</span>
+                </button>
+
+                <div className="text-xs font-bold bg-amber-50 border border-amber-200 text-amber-900 px-3 py-2 rounded-xl">
+                  Google OAuth Active
+                </div>
               </div>
             </div>
 
@@ -1281,10 +1316,11 @@ Our live transport driver will call you 2 hours prior to arrival. Thank you for 
                     <tr>
                       <th className="py-3.5 px-4">Customer</th>
                       <th className="py-3.5 px-4">Google Email</th>
+                      <th className="py-3.5 px-4">Mobile / WhatsApp</th>
                       <th className="py-3.5 px-4">Joined Date</th>
                       <th className="py-3.5 px-4">Last Active</th>
                       <th className="py-3.5 px-4 text-center">Orders Placed</th>
-                      <th className="py-3.5 px-4 text-right">Actions</th>
+                      <th className="py-3.5 px-4 text-right">Instant Contact</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-stone-200">
@@ -1317,6 +1353,19 @@ Our live transport driver will call you 2 hours prior to arrival. Thank you for 
                             {cust.email}
                           </td>
 
+                          <td className="py-3.5 px-4">
+                            {cust.phone ? (
+                              <div className="flex items-center space-x-1.5 font-mono font-bold text-stone-900">
+                                <Phone className="w-3.5 h-3.5 text-amber-600 shrink-0" />
+                                <span>{cust.phone}</span>
+                              </div>
+                            ) : (
+                              <span className="text-[11px] text-stone-400 italic">
+                                Pending input
+                              </span>
+                            )}
+                          </td>
+
                           <td className="py-3.5 px-4 text-stone-500">
                             {cust.joinedAt}
                           </td>
@@ -1335,14 +1384,38 @@ Our live transport driver will call you 2 hours prior to arrival. Thank you for 
                             )}
                           </td>
 
-                          <td className="py-3.5 px-4 text-right">
-                            <a
-                              href={`mailto:${cust.email}?subject=Welcome%20to%20JP%20Farms%20Heritage%20Roosters`}
-                              className="inline-flex items-center space-x-1 text-stone-600 hover:text-amber-800 bg-stone-100 hover:bg-stone-200 px-3 py-1.5 rounded-xl font-bold transition text-xs"
-                            >
-                              <Mail className="w-3.5 h-3.5 text-stone-500" />
-                              <span>Email</span>
-                            </a>
+                          <td className="py-3.5 px-4 text-right space-x-1.5 whitespace-nowrap">
+                            {cust.phone ? (
+                              <>
+                                <a
+                                  href={`https://wa.me/${cust.phone.replace(/\D/g, '')}?text=${encodeURIComponent(`Hello ${cust.name}! Thank you for registering at JP Farms. How can we assist you with our champion roosters today?`)}`}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="inline-flex items-center space-x-1 text-white bg-emerald-600 hover:bg-emerald-700 px-3 py-1.5 rounded-xl font-bold transition text-xs shadow-xs"
+                                  title="Chat on WhatsApp"
+                                >
+                                  <MessageCircle className="w-3.5 h-3.5" />
+                                  <span>WhatsApp</span>
+                                </a>
+
+                                <a
+                                  href={`tel:${cust.phone.replace(/\s+/g, '')}`}
+                                  className="inline-flex items-center space-x-1 text-stone-700 hover:text-stone-900 bg-stone-100 hover:bg-stone-200 px-2.5 py-1.5 rounded-xl font-bold transition text-xs"
+                                  title="Call Customer"
+                                >
+                                  <Phone className="w-3.5 h-3.5 text-stone-600" />
+                                  <span>Call</span>
+                                </a>
+                              </>
+                            ) : (
+                              <a
+                                href={`mailto:${cust.email}?subject=Welcome%20to%20JP%20Farms%20Heritage%20Roosters`}
+                                className="inline-flex items-center space-x-1 text-stone-600 hover:text-amber-800 bg-stone-100 hover:bg-stone-200 px-3 py-1.5 rounded-xl font-bold transition text-xs"
+                              >
+                                <Mail className="w-3.5 h-3.5 text-stone-500" />
+                                <span>Email</span>
+                              </a>
+                            )}
                           </td>
                         </tr>
                       );

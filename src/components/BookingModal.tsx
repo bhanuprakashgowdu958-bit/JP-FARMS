@@ -17,6 +17,7 @@ import { Rooster } from '@/types/rooster';
 import { FARM_INFO } from '@/lib/data';
 import { generateWhatsAppLink } from '@/lib/utils';
 import { useInquiries } from '@/lib/roosterStore';
+import { useAuth } from '@/lib/authStore';
 
 interface BookingModalProps {
   rooster: Rooster | null;
@@ -30,10 +31,11 @@ export const BookingModal: React.FC<BookingModalProps> = ({
   onSuccess,
 }) => {
   const { addInquiry } = useInquiries();
+  const { user } = useAuth();
 
   const [inquiryType, setInquiryType] = useState<'farm_visit' | 'breed_info' | 'general'>('farm_visit');
-  const [name, setName] = useState('');
-  const [phone, setPhone] = useState('');
+  const [name, setName] = useState(user?.displayName || '');
+  const [phone, setPhone] = useState(user?.phoneNumber || '');
   const [city, setCity] = useState('');
   const [preferredDate, setPreferredDate] = useState('');
   const [message, setMessage] = useState('');
