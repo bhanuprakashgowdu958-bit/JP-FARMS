@@ -190,7 +190,7 @@ export const ZomatoBannerCarousel: React.FC<ZomatoBannerCarouselProps> = ({
       
       {/* Zomato-Style Featured Banner Container */}
       <div 
-        className="relative rounded-2xl sm:rounded-3xl border border-sky-200/90 shadow-lg shadow-sky-950/5 overflow-hidden transition-all duration-300"
+        className="group relative rounded-2xl sm:rounded-3xl border border-sky-200/90 shadow-lg shadow-sky-950/5 overflow-hidden transition-all duration-300"
         onMouseEnter={() => setIsPaused(true)}
         onMouseLeave={() => setIsPaused(false)}
         onTouchStart={handleTouchStart}
@@ -200,10 +200,10 @@ export const ZomatoBannerCarousel: React.FC<ZomatoBannerCarouselProps> = ({
         
         {/* Active Banner Slide */}
         <div className={`relative w-full bg-gradient-to-r ${current.bgGradient} transition-colors duration-500`}>
-          <div className="grid grid-cols-1 lg:grid-cols-12 min-h-[280px] sm:min-h-[320px] lg:min-h-[340px] items-center">
+          <div className="grid grid-cols-1 lg:grid-cols-12 min-h-[300px] sm:min-h-[340px] lg:min-h-[360px] items-center">
             
             {/* LEFT 58%: Zomato-Style Punchy Editorial & CTA */}
-            <div className="lg:col-span-7 p-6 sm:p-8 lg:p-10 flex flex-col justify-center space-y-3 sm:space-y-4 z-10">
+            <div className="lg:col-span-7 p-6 sm:p-8 lg:p-10 lg:pl-14 flex flex-col justify-center space-y-3 sm:space-y-4 z-10">
               
               {/* Category Pill Tag */}
               <div className="flex items-center space-x-2">
@@ -252,8 +252,8 @@ export const ZomatoBannerCarousel: React.FC<ZomatoBannerCarouselProps> = ({
             </div>
 
             {/* RIGHT 42%: 100% Unobstructed Vibrant 3D Artwork Showcase */}
-            <div className="lg:col-span-5 h-[200px] sm:h-[260px] lg:h-full relative overflow-hidden flex items-center justify-center p-3 sm:p-5">
-              <div className="relative w-full h-full rounded-xl sm:rounded-2xl overflow-hidden border border-sky-100/80 shadow-md bg-slate-900 group">
+            <div className="lg:col-span-5 h-[220px] sm:h-[280px] lg:h-[320px] relative overflow-hidden flex items-center justify-center p-3 sm:p-5 lg:pr-8">
+              <div className="relative w-full h-full rounded-xl sm:rounded-2xl overflow-hidden border border-sky-200/80 shadow-md bg-slate-900">
                 <img
                   key={current.id}
                   src={current.image}
@@ -266,22 +266,22 @@ export const ZomatoBannerCarousel: React.FC<ZomatoBannerCarouselProps> = ({
           </div>
         </div>
 
-        {/* Zomato-Style Left Arrow Button */}
+        {/* Zomato-Style Left Arrow Button (Appears on Hover, No Text Overlap) */}
         <button
           type="button"
           onClick={handlePrev}
           aria-label="Previous Slide"
-          className="absolute left-3 top-1/2 -translate-y-1/2 z-20 w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white/95 hover:bg-white text-slate-700 hover:text-slate-900 shadow-md border border-slate-200/90 flex items-center justify-center transition-all hover:scale-105 active:scale-90"
+          className="absolute left-3 top-1/2 -translate-y-1/2 z-20 w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white/95 hover:bg-white text-slate-700 hover:text-slate-900 shadow-lg border border-slate-200/90 hidden sm:flex items-center justify-center transition-all opacity-0 group-hover:opacity-100 hover:scale-110 active:scale-95"
         >
           <ChevronLeft className="w-5 h-5" />
         </button>
 
-        {/* Zomato-Style Right Arrow Button */}
+        {/* Zomato-Style Right Arrow Button (Appears on Hover, No Image Overlap) */}
         <button
           type="button"
           onClick={handleNext}
           aria-label="Next Slide"
-          className="absolute right-3 top-1/2 -translate-y-1/2 z-20 w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white/95 hover:bg-white text-slate-700 hover:text-slate-900 shadow-md border border-slate-200/90 flex items-center justify-center transition-all hover:scale-105 active:scale-90"
+          className="absolute right-3 top-1/2 -translate-y-1/2 z-20 w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white/95 hover:bg-white text-slate-700 hover:text-slate-900 shadow-lg border border-slate-200/90 hidden sm:flex items-center justify-center transition-all opacity-0 group-hover:opacity-100 hover:scale-110 active:scale-95"
         >
           <ChevronRight className="w-5 h-5" />
         </button>
@@ -356,3 +356,4 @@ export const ZomatoBannerCarousel: React.FC<ZomatoBannerCarouselProps> = ({
     </section>
   );
 };
+
