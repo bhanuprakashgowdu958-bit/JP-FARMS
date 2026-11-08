@@ -4,7 +4,7 @@ import { getStorage, FirebaseStorage } from 'firebase/storage';
 import { getAuth, Auth } from 'firebase/auth';
 
 const firebaseConfig = {
-  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY || 'AIzaSyDpluHJpRCBW01oV6u98ZW0931ky_2GubQ',
+  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY || 'AIzaSyDpluHJpRCBW01oV6u98ZWO931ky_2GubQ',
   authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN || 'jp-farms.firebaseapp.com',
   projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || 'jp-farms',
   storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET || 'jp-farms.firebasestorage.app',
