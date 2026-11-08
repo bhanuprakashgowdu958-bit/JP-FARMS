@@ -36,10 +36,13 @@ import {
   Unlock,
   KeyRound,
   EyeOff,
-  LogOut
+  LogOut,
+  Users,
+  Mail
 } from 'lucide-react';
 import { Rooster, RoosterCategory, RoosterBadge, CustomerInquiry, RoosterOrder } from '@/types/rooster';
 import { useRoosters, useInquiries, useOrders } from '@/lib/roosterStore';
+import { getRegisteredCustomers, RegisteredCustomer } from '@/lib/authStore';
 import { generateWhatsAppLink } from '@/lib/utils';
 import { FARM_INFO } from '@/lib/data';
 import { isFirebaseConfigured } from '@/lib/firebase';
@@ -57,8 +60,9 @@ export const AdminPanel: React.FC = () => {
 
   const { inquiries, updateInquiryStatus } = useInquiries();
   const { orders, updateOrderStatus, deleteOrder } = useOrders();
+  const [customers, setCustomers] = useState<RegisteredCustomer[]>([]);
 
-  const [activeTab, setActiveTab] = useState<'roosters' | 'orders' | 'inquiries' | 'add'>('roosters');
+  const [activeTab, setActiveTab] = useState<'roosters' | 'orders' | 'customers' | 'inquiries' | 'add'>('roosters');
   const [searchFilter, setSearchFilter] = useState('');
   const [orderStatusFilter, setOrderStatusFilter] = useState<'all' | 'confirmed' | 'dispatched' | 'delivered'>('all');
   const [orderSearchQuery, setOrderSearchQuery] = useState('');
@@ -82,11 +86,21 @@ export const AdminPanel: React.FC = () => {
       }
       setAuthChecking(false);
 
+      setCustomers(getRegisteredCustomers());
+      const handleCustomersUpdate = () => {
+        setCustomers(getRegisteredCustomers());
+      };
+      window.addEventListener('customers-updated', handleCustomersUpdate);
+
       const params = new URLSearchParams(window.location.search);
       const tabParam = params.get('tab');
-      if (tabParam === 'orders' || tabParam === 'roosters' || tabParam === 'inquiries' || tabParam === 'add') {
+      if (tabParam === 'orders' || tabParam === 'roosters' || tabParam === 'customers' || tabParam === 'inquiries' || tabParam === 'add') {
         setActiveTab(tabParam as any);
       }
+
+      return () => {
+        window.removeEventListener('customers-updated', handleCustomersUpdate);
+      };
     }
   }, []);
 
@@ -564,6 +578,18 @@ export const AdminPanel: React.FC = () => {
             {orders.some(o => o.status === 'confirmed') && (
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
             )}
+          </button>
+
+          <button
+            onClick={() => setActiveTab('customers')}
+            className={`px-4 py-2 rounded-xl text-xs font-bold transition flex items-center space-x-1.5 whitespace-nowrap ${
+              activeTab === 'customers'
+                ? 'bg-amber-500 text-stone-950 font-black shadow-sm'
+                : 'bg-white text-stone-600 hover:bg-stone-200'
+            }`}
+          >
+            <Users className="w-4 h-4" />
+            <span>Registered Users ({customers.length})</span>
           </button>
 
           <button
@@ -1221,6 +1247,109 @@ Our live transport driver will call you 2 hours prior to arrival. Thank you for 
                   </div>
                 );
               })}
+            </div>
+          </div>
+        )}
+
+        {/* TAB 4: REGISTERED CUSTOMERS DIRECTORY (Google Sign-In Accounts) */}
+        {activeTab === 'customers' && (
+          <div className="space-y-6">
+            <div className="bg-white p-5 rounded-2xl border border-stone-200 shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+              <div>
+                <h3 className="font-extrabold text-stone-900 text-lg flex items-center space-x-2">
+                  <Users className="w-5 h-5 text-amber-600" />
+                  <span>Registered Customers (Google Sign-In)</span>
+                  <span className="bg-amber-100 text-amber-950 text-xs px-2.5 py-0.5 rounded-full font-black border border-amber-300">
+                    {customers.length} Verified Users
+                  </span>
+                </h3>
+                <p className="text-xs text-stone-500 mt-0.5">
+                  View customers who signed in via Google. Track user engagement, account details, and orders placed.
+                </p>
+              </div>
+
+              <div className="text-xs font-bold bg-amber-50 border border-amber-200 text-amber-900 px-3 py-1.5 rounded-xl">
+                Google OAuth Active
+              </div>
+            </div>
+
+            {/* Customers Table / Grid */}
+            <div className="bg-white rounded-2xl border border-stone-200 shadow-sm overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs">
+                  <thead className="bg-stone-50 border-b border-stone-200 text-stone-600 font-bold uppercase tracking-wider text-[11px]">
+                    <tr>
+                      <th className="py-3.5 px-4">Customer</th>
+                      <th className="py-3.5 px-4">Google Email</th>
+                      <th className="py-3.5 px-4">Joined Date</th>
+                      <th className="py-3.5 px-4">Last Active</th>
+                      <th className="py-3.5 px-4 text-center">Orders Placed</th>
+                      <th className="py-3.5 px-4 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-stone-200">
+                    {customers.map((cust) => {
+                      // Match orders by customer name or email
+                      const userOrders = orders.filter(
+                        (o) => o.customerName.toLowerCase() === cust.name.toLowerCase() || (cust.email && o.notes?.includes(cust.email))
+                      );
+                      const totalCustomerSpent = userOrders.reduce((sum, o) => sum + o.price, 0);
+
+                      return (
+                        <tr key={cust.uid} className="hover:bg-stone-50/80 transition">
+                          <td className="py-3.5 px-4">
+                            <div className="flex items-center space-x-3">
+                              <img
+                                src={cust.photoURL || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=120&q=80'}
+                                alt=""
+                                className="w-10 h-10 rounded-full object-cover border border-stone-200"
+                              />
+                              <div>
+                                <p className="font-bold text-stone-900 text-sm">{cust.name}</p>
+                                <span className="text-[10px] text-emerald-700 bg-emerald-50 px-1.5 py-0.2 rounded font-semibold inline-flex items-center space-x-0.5">
+                                  <span>✓ Google Verified</span>
+                                </span>
+                              </div>
+                            </div>
+                          </td>
+
+                          <td className="py-3.5 px-4 font-mono text-stone-700">
+                            {cust.email}
+                          </td>
+
+                          <td className="py-3.5 px-4 text-stone-500">
+                            {cust.joinedAt}
+                          </td>
+
+                          <td className="py-3.5 px-4 text-stone-500">
+                            {cust.lastLoginAt}
+                          </td>
+
+                          <td className="py-3.5 px-4 text-center">
+                            {userOrders.length > 0 ? (
+                              <span className="font-bold text-emerald-800 bg-emerald-50 px-2.5 py-1 rounded-full text-xs border border-emerald-200">
+                                {userOrders.length} {userOrders.length === 1 ? 'Order' : 'Orders'} (₹{totalCustomerSpent.toLocaleString('en-IN')})
+                              </span>
+                            ) : (
+                              <span className="text-stone-400 font-medium text-[11px]">Browsing / 0 Orders</span>
+                            )}
+                          </td>
+
+                          <td className="py-3.5 px-4 text-right">
+                            <a
+                              href={`mailto:${cust.email}?subject=Welcome%20to%20JP%20Farms%20Heritage%20Roosters`}
+                              className="inline-flex items-center space-x-1 text-stone-600 hover:text-amber-800 bg-stone-100 hover:bg-stone-200 px-3 py-1.5 rounded-xl font-bold transition text-xs"
+                            >
+                              <Mail className="w-3.5 h-3.5 text-stone-500" />
+                              <span>Email</span>
+                            </a>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
         )}

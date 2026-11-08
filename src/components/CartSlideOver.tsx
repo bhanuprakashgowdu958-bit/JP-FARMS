@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   X, 
   Trash2, 
@@ -19,6 +19,8 @@ import {
 import confetti from 'canvas-confetti';
 import { useCart } from '@/lib/cartStore';
 import { useOrders } from '@/lib/roosterStore';
+import { useAuth } from '@/lib/authStore';
+import { GoogleIcon } from './GoogleSignInButton';
 import { FARM_INFO } from '@/lib/data';
 import { generateWhatsAppLink } from '@/lib/utils';
 import { RoosterOrder } from '@/types/rooster';
@@ -38,6 +40,7 @@ export const CartSlideOver: React.FC = () => {
   } = useCart();
 
   const { addOrder } = useOrders();
+  const { user, isAuthenticated, signInWithGoogle } = useAuth();
 
   const [step, setStep] = useState<'cart' | 'checkout'>('cart');
   const [deliveryType, setDeliveryType] = useState<'doorstep_live_crate' | 'farm_pickup'>('doorstep_live_crate');
@@ -52,6 +55,16 @@ export const CartSlideOver: React.FC = () => {
     pincode: '',
     notes: '',
   });
+
+  // Auto-fill customer name if signed in with Google
+  useEffect(() => {
+    if (user?.displayName && !formData.name) {
+      setFormData((prev) => ({
+        ...prev,
+        name: user.displayName || prev.name,
+      }));
+    }
+  }, [user]);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [orderCompleted, setOrderCompleted] = useState<RoosterOrder | null>(null);
@@ -485,6 +498,35 @@ Please confirm availability and dispatch schedule. Thank you!`;
                     </button>
                   </div>
                 </div>
+
+                {/* Google Sign In Helper in Checkout */}
+                {isAuthenticated && user ? (
+                  <div className="flex items-center justify-between bg-amber-50/70 border border-amber-200/80 rounded-xl p-2.5 text-xs">
+                    <div className="flex items-center space-x-2">
+                      <img
+                        src={user.photoURL || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=120&q=80'}
+                        alt=""
+                        className="w-6 h-6 rounded-full object-cover border border-amber-300"
+                      />
+                      <div>
+                        <p className="font-bold text-slate-900 leading-tight">{user.displayName}</p>
+                        <p className="text-[10px] text-slate-500 font-mono">{user.email}</p>
+                      </div>
+                    </div>
+                    <span className="text-[10px] font-extrabold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-full">
+                      ✓ Google Verified
+                    </span>
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => signInWithGoogle()}
+                    className="w-full flex items-center justify-center space-x-2 bg-white hover:bg-stone-50 text-slate-800 font-bold py-2.5 px-3 rounded-xl border border-slate-300 text-xs shadow-xs transition hover:border-amber-400 active:scale-[0.99]"
+                  >
+                    <GoogleIcon className="w-4 h-4 shrink-0" />
+                    <span>Sign in with Google to auto-fill details</span>
+                  </button>
+                )}
 
                 {/* Customer Information */}
                 <div className="space-y-2.5 text-xs">

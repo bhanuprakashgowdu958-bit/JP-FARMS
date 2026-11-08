@@ -6,6 +6,7 @@ import { Phone, MessageCircle, PlayCircle, ShieldCheck, Menu, X, Settings, Feath
 import { FARM_INFO } from '@/lib/data';
 import { generateWhatsAppLink } from '@/lib/utils';
 import { useCart } from '@/lib/cartStore';
+import { GoogleSignInButton } from './GoogleSignInButton';
 
 interface HeaderProps {
   onOpenReels?: () => void;
@@ -74,6 +75,9 @@ export const Header: React.FC<HeaderProps> = ({ onOpenReels, birdsCount = 7 }) =
 
           {/* Quick Actions */}
           <div className="hidden sm:flex items-center space-x-2 shrink-0">
+            {/* Google Sign In / Account Button */}
+            <GoogleSignInButton variant="header" />
+
             {/* Live Shopping Cart Button (Amazon/Flipkart Style) */}
             <button
               type="button"
@@ -101,8 +105,11 @@ export const Header: React.FC<HeaderProps> = ({ onOpenReels, birdsCount = 7 }) =
             </a>
           </div>
 
-          {/* Mobile Actions: Cart & Menu Button */}
+          {/* Mobile Actions: Google, Cart & Menu Button */}
           <div className="flex items-center lg:hidden space-x-2">
+            {/* Mobile Google Sign In */}
+            <GoogleSignInButton variant="compact" />
+
             {/* Mobile Cart Button */}
             <button
               type="button"
@@ -142,6 +149,11 @@ export const Header: React.FC<HeaderProps> = ({ onOpenReels, birdsCount = 7 }) =
       {/* Mobile Drawer */}
       {mobileMenuOpen && (
         <div className="lg:hidden bg-white border-b border-sky-200 px-4 pt-3 pb-6 space-y-3 shadow-lg">
+          {/* Mobile Google Sign In Banner */}
+          <div className="pb-2 border-b border-sky-100">
+            <GoogleSignInButton variant="page" />
+          </div>
+
           <nav className="flex flex-col space-y-3 text-base font-medium text-slate-700">
             <a
               href="#showcase"
