@@ -32,12 +32,14 @@ interface OrdersTrackingDrawerProps {
   isOpen: boolean;
   onClose: () => void;
   onExploreCatalog?: () => void;
+  onBack?: () => void;
 }
 
 export const OrdersTrackingDrawer: React.FC<OrdersTrackingDrawerProps> = ({
   isOpen,
   onClose,
   onExploreCatalog,
+  onBack,
 }) => {
   const { orders } = useOrders();
   const { user } = useAuth();
@@ -46,6 +48,17 @@ export const OrdersTrackingDrawer: React.FC<OrdersTrackingDrawerProps> = ({
   const [filterStatus, setFilterStatus] = useState<'all' | 'confirmed' | 'dispatched' | 'delivered'>('all');
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [selectedHealthPassOrder, setSelectedHealthPassOrder] = useState<RoosterOrder | null>(null);
+
+  const handleBack = () => {
+    onClose();
+    if (onBack) {
+      onBack();
+    } else {
+      setTimeout(() => {
+        window.dispatchEvent(new CustomEvent('open-side-menu'));
+      }, 50);
+    }
+  };
 
   if (!isOpen) return null;
 
@@ -116,10 +129,10 @@ Please share the live AC vehicle GPS transit location and a quick video update o
               {/* Back Button */}
               <button
                 type="button"
-                onClick={onClose}
+                onClick={handleBack}
                 className="p-2 -ml-1 text-amber-400 hover:text-amber-300 bg-white/5 hover:bg-white/10 active:scale-95 rounded-xl border border-white/10 transition flex items-center space-x-1 shrink-0 cursor-pointer group"
-                aria-label="Go back"
-                title="Go back"
+                aria-label="Go back to menu"
+                title="Go back to menu"
               >
                 <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5 group-hover:-translate-x-0.5 transition-transform" />
                 <span className="text-xs font-bold">Back</span>
@@ -248,11 +261,11 @@ Please share the live AC vehicle GPS transit location and a quick video update o
                   </button>
                   <button
                     type="button"
-                    onClick={onClose}
+                    onClick={handleBack}
                     className="inline-flex items-center space-x-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold px-4 py-2.5 rounded-xl text-xs active:scale-95 transition cursor-pointer"
                   >
                     <ArrowLeft className="w-4 h-4" />
-                    <span>Back to Store</span>
+                    <span>Back to Menu</span>
                   </button>
                 </div>
               </div>

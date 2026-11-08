@@ -207,6 +207,12 @@ export default function HomePage() {
       <OrdersTrackingDrawer
         isOpen={isOrdersOpen}
         onClose={() => setIsOrdersOpen(false)}
+        onBack={() => {
+          setIsOrdersOpen(false);
+          setTimeout(() => {
+            window.dispatchEvent(new CustomEvent('open-side-menu'));
+          }, 50);
+        }}
         onExploreCatalog={() => {
           setIsOrdersOpen(false);
           const el = document.getElementById('showcase');

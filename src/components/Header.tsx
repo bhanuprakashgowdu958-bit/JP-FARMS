@@ -51,6 +51,13 @@ export const Header: React.FC<HeaderProps> = ({
     return () => setMounted(false);
   }, []);
 
+  // Listen for programmatic side menu open events (e.g. Back from Orders Drawer)
+  useEffect(() => {
+    const handleOpenMenu = () => setSideMenuOpen(true);
+    window.addEventListener('open-side-menu', handleOpenMenu);
+    return () => window.removeEventListener('open-side-menu', handleOpenMenu);
+  }, []);
+
   // Lock body scroll when drawer is open
   useEffect(() => {
     if (!sideMenuOpen) return;
