@@ -234,6 +234,15 @@ export function useAuth() {
         return null;
       }
 
+      // 5. API key update propagating or invalid
+      if (err?.code === 'auth/api-key-not-valid') {
+        alert(
+          'Google Sign-In Notice:\n\nThe updated credentials are deploying to the live server.\nPlease press Ctrl + Shift + R (or Cmd + Shift + R on Mac) to refresh the browser cache and try again.'
+        );
+        setError('API key updating. Please hard-refresh the page.');
+        return null;
+      }
+
       alert(`Google Sign-In failed: ${err?.message || err?.code || 'Please check your connection and try again.'}`);
       setError(err?.message || 'Authentication failed');
       return null;
