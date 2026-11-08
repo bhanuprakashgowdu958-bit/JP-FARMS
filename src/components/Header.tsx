@@ -93,10 +93,31 @@ export const Header: React.FC<HeaderProps> = ({
             </div>
           </Link>
 
-          {/* Top Right Actions: User Profile & Shopping Cart ONLY */}
-          <div className="hidden sm:flex items-center space-x-3 shrink-0">
+          {/* Top Right Actions: User Profile, My Orders & Shopping Cart */}
+          <div className="hidden sm:flex items-center space-x-2.5 shrink-0">
             {/* Google Sign In / Account Avatar Button */}
             <GoogleSignInButton variant="header" />
+
+            {/* My Orders Button - Placed Next to Cart */}
+            <button
+              type="button"
+              onClick={onOpenOrders}
+              className="flex items-center space-x-2 bg-slate-900 hover:bg-slate-800 text-amber-300 hover:text-white text-xs font-bold px-3.5 py-2.5 rounded-xl border border-amber-500/40 shadow-sm transition active:scale-95 whitespace-nowrap group"
+              title="Track Your Orders & Live Transit"
+            >
+              <Package className="w-4 h-4 text-amber-400 group-hover:scale-110 transition" />
+              <span>My Orders</span>
+              {activeOrdersCount > 0 ? (
+                <span className="bg-amber-500 text-stone-950 text-[10px] font-black px-2 py-0.5 rounded-full min-w-[18px] text-center flex items-center space-x-1 shadow-xs">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-pulse"></span>
+                  <span>{activeOrdersCount}</span>
+                </span>
+              ) : totalOrdersCount > 0 ? (
+                <span className="bg-slate-800 text-slate-300 text-[10px] font-bold px-1.5 py-0.5 rounded-full min-w-[16px] text-center border border-slate-700">
+                  {totalOrdersCount}
+                </span>
+              ) : null}
+            </button>
 
             {/* Shopping Cart Button */}
             <button
@@ -115,10 +136,26 @@ export const Header: React.FC<HeaderProps> = ({
             </button>
           </div>
 
-          {/* Mobile Right Actions: Google Profile, Cart & Menu Toggle */}
-          <div className="flex items-center lg:hidden space-x-2">
+          {/* Mobile Right Actions: Google Profile, My Orders, Cart & Menu Toggle */}
+          <div className="flex items-center lg:hidden space-x-1.5">
             {/* Mobile Google Sign In */}
             <GoogleSignInButton variant="compact" />
+
+            {/* Mobile Orders Button Next to Cart */}
+            <button
+              type="button"
+              onClick={onOpenOrders}
+              className="relative p-2.5 rounded-xl bg-slate-900 text-amber-400 font-bold flex items-center justify-center border border-amber-500/30 shadow-xs transition active:scale-95"
+              aria-label="Track orders"
+              title="My Orders"
+            >
+              <Package className="w-5 h-5 text-amber-400" />
+              {activeOrdersCount > 0 && (
+                <span className="absolute -top-1 -right-1 bg-amber-500 text-stone-950 text-[9px] font-black w-4 h-4 rounded-full flex items-center justify-center border border-slate-900">
+                  {activeOrdersCount}
+                </span>
+              )}
+            </button>
 
             {/* Mobile Cart Button */}
             <button
@@ -160,28 +197,7 @@ export const Header: React.FC<HeaderProps> = ({
               className="flex items-center space-x-1.5 bg-slate-800 hover:bg-slate-700 text-amber-400 hover:text-white px-2.5 py-1.5 rounded-lg border border-slate-700/80 transition active:scale-95 shrink-0"
             >
               <Menu className="w-3.5 h-3.5" />
-              <span>All ({birdsCount})</span>
-            </button>
-
-            {/* My Orders & Live Tracking (Placed in Menu Bar) */}
-            <button
-              type="button"
-              onClick={onOpenOrders}
-              className="flex items-center space-x-1.5 bg-gradient-to-r from-amber-500/20 to-orange-500/20 hover:from-amber-500/30 hover:to-orange-500/30 text-amber-300 hover:text-white px-3 py-1.5 rounded-lg border border-amber-500/40 transition active:scale-95 shrink-0 shadow-xs"
-              title="Track Your Orders & Live Transit"
-            >
-              <Package className="w-3.5 h-3.5 text-amber-400" />
-              <span>My Orders</span>
-              {activeOrdersCount > 0 ? (
-                <span className="bg-amber-500 text-stone-950 text-[10px] font-black px-1.5 py-0.5 rounded-full min-w-[16px] text-center flex items-center space-x-1 shadow-xs">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-pulse"></span>
-                  <span>{activeOrdersCount}</span>
-                </span>
-              ) : totalOrdersCount > 0 ? (
-                <span className="bg-slate-700 text-slate-300 text-[10px] font-bold px-1.5 py-0.5 rounded-full min-w-[16px] text-center">
-                  {totalOrdersCount}
-                </span>
-              ) : null}
+              <span>All Strains ({birdsCount})</span>
             </button>
 
             <span className="text-slate-700 hidden sm:inline">•</span>
