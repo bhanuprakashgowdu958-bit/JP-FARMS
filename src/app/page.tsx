@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/authStore';
 import { Header } from '@/components/Header';
 import { ZomatoBannerCarousel } from '@/components/ZomatoBannerCarousel';
-import { UserProfileHub } from '@/components/UserProfileHub';
 import { RoosterCatalog } from '@/components/RoosterCatalog';
 import { BreedsGuide } from '@/components/BreedsGuide';
 import { FarmBioSecurity } from '@/components/FarmBioSecurity';
@@ -102,9 +101,6 @@ export default function HomePage() {
           onScheduleVisit={() => setInquiryRooster(roosters[0] || null)}
           onSelectRooster={(rooster) => setSelectedRooster(rooster)}
         />
-
-        {/* Customer Profile Hub & Breeder Member Dashboard */}
-        <UserProfileHub onOpenCart={openCart} />
 
         {/* Heritage Rooster Living Gallery */}
         <RoosterCatalog
