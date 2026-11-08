@@ -31,9 +31,9 @@ export const ZomatoBannerCarousel: React.FC<ZomatoBannerCarouselProps> = ({
   roosters = [],
 }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [isPaused, setIsPaused] = useState(false);
   const touchStartX = useRef<number | null>(null);
   const touchEndX = useRef<number | null>(null);
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   const BANNERS: BannerSlide[] = [
     {
@@ -63,22 +63,33 @@ export const ZomatoBannerCarousel: React.FC<ZomatoBannerCarouselProps> = ({
     },
   ];
 
+  // Reset/start the 10-second auto-slide interval
+  const resetAutoSlideTimer = useCallback(() => {
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+    }
+    timerRef.current = setInterval(() => {
+      setCurrentIndex((prev) => (prev + 1) % BANNERS.length);
+    }, 10000);
+  }, [BANNERS.length]);
+
+  // Start auto-slide on mount, clean up on unmount
+  useEffect(() => {
+    resetAutoSlideTimer();
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current);
+    };
+  }, [resetAutoSlideTimer]);
+
   const handleNext = useCallback(() => {
     setCurrentIndex((prev) => (prev + 1) % BANNERS.length);
-  }, [BANNERS.length]);
+    resetAutoSlideTimer();
+  }, [BANNERS.length, resetAutoSlideTimer]);
 
   const handlePrev = useCallback(() => {
     setCurrentIndex((prev) => (prev - 1 + BANNERS.length) % BANNERS.length);
-  }, [BANNERS.length]);
-
-  // Auto-advance timer: Slides every 10 seconds automatically, smoothly resets on click, pauses on hover
-  useEffect(() => {
-    if (isPaused) return;
-    const timer = setInterval(() => {
-      setCurrentIndex((prev) => (prev + 1) % BANNERS.length);
-    }, 10000);
-    return () => clearInterval(timer);
-  }, [isPaused, currentIndex, BANNERS.length]);
+    resetAutoSlideTimer();
+  }, [BANNERS.length, resetAutoSlideTimer]);
 
   // Touch swipe support for mobile
   const handleTouchStart = (e: React.TouchEvent) => {
@@ -101,12 +112,11 @@ export const ZomatoBannerCarousel: React.FC<ZomatoBannerCarouselProps> = ({
     touchEndX.current = null;
   };
 
-  const current = BANNERS[currentIndex];
-
   const handleBannerClick = () => {
-    if (current.id === 'alpha-staredown' && onOpenReels) {
+    const activeBanner = BANNERS[currentIndex];
+    if (activeBanner.id === 'alpha-staredown' && onOpenReels) {
       onOpenReels();
-    } else if (current.id === 'farm-stream' && onScheduleVisit) {
+    } else if (activeBanner.id === 'farm-stream' && onScheduleVisit) {
       onScheduleVisit();
     } else {
       const catalogEl = document.getElementById('catalog');
@@ -119,26 +129,35 @@ export const ZomatoBannerCarousel: React.FC<ZomatoBannerCarouselProps> = ({
   return (
     <section className="relative w-full overflow-hidden bg-[#f4f9fd]">
       
-      {/* 100% Full-Screen Edge-to-Edge Banner (Zero Gaps, Zero Cuts, 100% Complete Master Artwork) */}
+      {/* 100% Full-Screen Edge-to-Edge Banner (Zero Gaps, Zero Cuts, Smooth 10s Auto-Slide Track) */}
       <div 
         className="group relative w-full overflow-hidden bg-slate-950 transition-all duration-300 cursor-pointer"
         style={{ aspectRatio: '1376 / 768' }}
-        onMouseEnter={() => setIsPaused(true)}
-        onMouseLeave={() => setIsPaused(false)}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
         onClick={handleBannerClick}
       >
         
-        {/* Full-Bleed Edge-to-Edge Artwork Banner Image (Zero Crop, 100% Full Picture) */}
-        <div className="relative w-full h-full">
-          <img
-            key={current.id}
-            src={current.image}
-            alt={current.imageAlt}
-            className="w-full h-full object-cover filter brightness-[1.02] contrast-[1.03] transition-opacity duration-700 ease-out group-hover:brightness-105"
-          />
+        {/* Hardware-Accelerated Sliding Track (Slides horizontally every 10s smoothly) */}
+        <div 
+          className="flex w-full h-full transition-transform duration-700 ease-in-out will-change-transform"
+          style={{ transform: `translateX(-${currentIndex * 100}%)` }}
+        >
+          {BANNERS.map((banner, index) => (
+            <div 
+              key={banner.id}
+              className="w-full h-full shrink-0 relative select-none"
+            >
+              <img
+                src={banner.image}
+                alt={banner.imageAlt}
+                loading={index === 0 ? "eager" : "lazy"}
+                decoding="async"
+                className="w-full h-full object-cover filter brightness-[1.02] contrast-[1.03] pointer-events-none"
+              />
+            </div>
+          ))}
         </div>
 
         {/* Clean Hover-Activated Left Arrow (Only Visible on Hover) */}
