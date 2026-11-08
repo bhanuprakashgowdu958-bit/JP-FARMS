@@ -2,8 +2,6 @@
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { 
-  ChevronLeft, 
-  ChevronRight, 
   Award, 
   MapPin, 
   PlayCircle, 
@@ -159,32 +157,6 @@ export const ZomatoBannerCarousel: React.FC<ZomatoBannerCarouselProps> = ({
             </div>
           ))}
         </div>
-
-        {/* Clean Hover-Activated Left Arrow (Only Visible on Hover) */}
-        <button
-          type="button"
-          onClick={(e) => {
-            e.stopPropagation();
-            handlePrev();
-          }}
-          aria-label="Previous Banner"
-          className="absolute left-4 sm:left-6 top-1/2 -translate-y-1/2 z-20 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-white/90 hover:bg-white text-slate-800 shadow-xl border border-slate-200/90 hidden sm:flex items-center justify-center transition-all opacity-0 group-hover:opacity-100 hover:scale-110 active:scale-90"
-        >
-          <ChevronLeft className="w-6 h-6" />
-        </button>
-
-        {/* Clean Hover-Activated Right Arrow (Only Visible on Hover) */}
-        <button
-          type="button"
-          onClick={(e) => {
-            e.stopPropagation();
-            handleNext();
-          }}
-          aria-label="Next Banner"
-          className="absolute right-4 sm:right-6 top-1/2 -translate-y-1/2 z-20 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-white/90 hover:bg-white text-slate-800 shadow-xl border border-slate-200/90 hidden sm:flex items-center justify-center transition-all opacity-0 group-hover:opacity-100 hover:scale-110 active:scale-90"
-        >
-          <ChevronRight className="w-6 h-6" />
-        </button>
 
       </div>
 
