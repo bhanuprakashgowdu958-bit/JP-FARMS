@@ -235,86 +235,89 @@ export const PixarRoosterBanner3D: React.FC<PixarRoosterBanner3DProps> = () => {
 
   return (
     <section 
-      className="w-full bg-[#f4f9fd] pt-3 sm:pt-5 pb-3 border-b border-sky-100"
+      className="relative w-full overflow-hidden select-none bg-slate-950 group"
       aria-label={`JP Farms ${currentSlot.title} Rooster Showcase`}
     >
-      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
-        
-        {/* AMAZON / FLIPKART STYLE HERO BANNER CONTAINER */}
-        <div className="relative w-full h-[220px] sm:h-[320px] md:h-[390px] lg:h-[450px] xl:h-[480px] rounded-2xl sm:rounded-3xl overflow-hidden select-none border border-sky-200/80 shadow-lg shadow-sky-950/5 bg-slate-900 group">
-          
-          {/* 100% UNIQUE HIGH-RESOLUTION CROSSFADE BANNERS */}
-          {banners.map((banner, index) => {
-            const isActive = index === slideIndex;
-            return (
-              <div
-                key={banner.id}
-                className={`absolute inset-0 w-full h-full transition-opacity duration-1000 ease-in-out ${
-                  isActive ? 'opacity-100 z-10 pointer-events-auto' : 'opacity-0 z-0 pointer-events-none'
+      {/* 100% FULL-BLEED EDGE-TO-EDGE BANNERS (ZERO SIDE GAPS - AMAZON STYLE) */}
+      <div className="relative w-full h-[280px] sm:h-[380px] md:h-[460px] lg:h-[540px] xl:h-[600px] overflow-hidden">
+        {banners.map((banner, index) => {
+          const isActive = index === slideIndex;
+          return (
+            <div
+              key={banner.id}
+              className={`absolute inset-0 w-full h-full transition-opacity duration-1000 ease-in-out ${
+                isActive ? 'opacity-100 z-10 pointer-events-auto' : 'opacity-0 z-0 pointer-events-none'
+              }`}
+            >
+              <img
+                src={banner.src}
+                alt={banner.alt}
+                loading="eager"
+                decoding="async"
+                className={`w-full h-full object-cover object-[center_35%] filter brightness-[1.02] contrast-[1.04] transition-transform duration-[15000ms] ease-out ${
+                  isActive ? 'scale-105' : 'scale-100'
                 }`}
-              >
-                <img
-                  src={banner.src}
-                  alt={banner.alt}
-                  loading="eager"
-                  decoding="async"
-                  className={`w-full h-full object-cover object-[center_35%] filter brightness-[1.02] contrast-[1.04] transition-transform duration-[15000ms] ease-out ${
-                    isActive ? 'scale-105' : 'scale-100'
-                  }`}
-                />
-              </div>
-            );
-          })}
-
-          {/* TOP-LEFT AMBIENT REAL-TIME BADGE */}
-          <div className="absolute top-3 left-3 sm:top-4 sm:left-4 z-20 flex items-center space-x-2 bg-white/90 hover:bg-white backdrop-blur-md px-3 py-1 rounded-full border border-sky-200/80 text-[11px] text-slate-800 shadow-md transition duration-300">
-            {isLiveMode ? (
-              <span className="flex items-center space-x-1.5">
-                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_#10b981]" />
-                <span className="text-emerald-700 font-bold uppercase tracking-wider text-[9px]">LIVE</span>
-              </span>
-            ) : (
-              <button 
-                type="button" 
-                onClick={handleSnapToLive}
-                className="flex items-center space-x-1 text-sky-700 hover:text-sky-900 font-semibold transition"
-                title="Click to snap back to real-time"
-              >
-                <Clock className="w-3 h-3 text-sky-600" />
-                <span className="text-[9px] uppercase font-bold underline">Return to Live</span>
-              </button>
-            )}
-
-            <div className="h-2.5 w-px bg-slate-200" />
-
-            <div className="flex items-center space-x-1.5 font-medium">
-              <ActiveIcon className="w-3.5 h-3.5 text-amber-500" />
-              <span className="text-slate-900 font-bold">{currentSlot.title}</span>
-              <span className="text-sky-700 text-[10px] font-mono font-bold">({slideIndex + 1}/{banners.length})</span>
+              />
             </div>
+          );
+        })}
+
+        {/* AMAZON-STYLE SOFT BOTTOM GRADIENT BLEND INTO SKY-BLUE BACKGROUND */}
+        <div className="absolute inset-x-0 bottom-0 h-24 sm:h-32 bg-gradient-to-t from-[#f4f9fd] via-[#f4f9fd]/30 to-transparent pointer-events-none z-10" />
+
+        {/* TOP-LEFT AMBIENT REAL-TIME BADGE */}
+        <div className="absolute top-3.5 left-3.5 sm:top-5 sm:left-6 z-20 flex items-center space-x-2 bg-white/90 hover:bg-white backdrop-blur-md px-3.5 py-1.5 rounded-full border border-sky-200/80 text-xs text-slate-800 shadow-lg transition duration-300">
+          {isLiveMode ? (
+            <span className="flex items-center space-x-1.5">
+              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_#10b981]" />
+              <span className="text-emerald-700 font-bold uppercase tracking-wider text-[10px]">LIVE FARM TIME</span>
+            </span>
+          ) : (
+            <button 
+              type="button" 
+              onClick={handleSnapToLive}
+              className="flex items-center space-x-1 text-sky-700 hover:text-sky-900 font-semibold transition"
+              title="Click to snap back to real-time"
+            >
+              <Clock className="w-3.5 h-3.5 text-sky-600" />
+              <span className="text-[10px] uppercase font-bold underline">Return to Live</span>
+            </button>
+          )}
+
+          <div className="h-3 w-px bg-slate-200" />
+
+          <div className="flex items-center space-x-1.5 font-medium">
+            <ActiveIcon className="w-3.5 h-3.5 text-amber-500" />
+            <span className="text-slate-900 font-bold">{currentSlot.title}</span>
+            <span className="text-sky-700 text-[11px] font-mono font-bold">({slideIndex + 1}/{banners.length})</span>
+            <span className="hidden sm:inline text-slate-500 text-[11px]">({currentSlot.hoursLabel})</span>
           </div>
+        </div>
 
-          {/* FLIPKART / AMAZON STYLE CIRCULAR NAVIGATION ARROWS */}
-          <button
-            type="button"
-            onClick={prevBanner}
-            aria-label="Previous Banner"
-            className="absolute left-2.5 sm:left-4 top-1/2 -translate-y-1/2 z-20 w-9 h-9 sm:w-11 sm:h-11 rounded-full bg-white/90 hover:bg-white text-slate-800 shadow-xl border border-sky-100 flex items-center justify-center opacity-80 sm:opacity-0 group-hover:opacity-100 transition-all duration-200 hover:scale-110 active:scale-95 backdrop-blur-sm"
-          >
-            <ChevronLeft className="w-5 h-5 sm:w-6 sm:h-6 text-slate-700" />
-          </button>
+        {/* FULL-BLEED EDGE NAVIGATION ARROWS (AMAZON STYLE) */}
+        <button
+          type="button"
+          onClick={prevBanner}
+          aria-label="Previous Banner"
+          className="absolute left-2.5 sm:left-5 top-1/2 -translate-y-1/2 z-20 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-white/90 hover:bg-white text-slate-800 shadow-xl border border-sky-100 flex items-center justify-center opacity-80 sm:opacity-0 group-hover:opacity-100 transition-all duration-200 hover:scale-110 active:scale-95 backdrop-blur-sm"
+        >
+          <ChevronLeft className="w-6 h-6 text-slate-700" />
+        </button>
 
-          <button
-            type="button"
-            onClick={nextBanner}
-            aria-label="Next Banner"
-            className="absolute right-2.5 sm:right-4 top-1/2 -translate-y-1/2 z-20 w-9 h-9 sm:w-11 sm:h-11 rounded-full bg-white/90 hover:bg-white text-slate-800 shadow-xl border border-sky-100 flex items-center justify-center opacity-80 sm:opacity-0 group-hover:opacity-100 transition-all duration-200 hover:scale-110 active:scale-95 backdrop-blur-sm"
-          >
-            <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6 text-slate-700" />
-          </button>
+        <button
+          type="button"
+          onClick={nextBanner}
+          aria-label="Next Banner"
+          className="absolute right-2.5 sm:right-5 top-1/2 -translate-y-1/2 z-20 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-white/90 hover:bg-white text-slate-800 shadow-xl border border-sky-100 flex items-center justify-center opacity-80 sm:opacity-0 group-hover:opacity-100 transition-all duration-200 hover:scale-110 active:scale-95 backdrop-blur-sm"
+        >
+          <ChevronRight className="w-6 h-6 text-slate-700" />
+        </button>
 
-          {/* BOTTOM-CENTER SLIDE DOTS (Amazon / Flipkart Style) */}
-          <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-20 flex items-center space-x-1.5 px-3 py-1 rounded-full bg-black/40 backdrop-blur-md border border-white/20 shadow-md">
+        {/* BOTTOM CONTROLLER: TIME SLOTS + SLIDE DOTS OVER BOTTOM BLEND */}
+        <div className="absolute bottom-3 sm:bottom-5 left-1/2 -translate-x-1/2 z-20 flex flex-col items-center space-y-2">
+          
+          {/* Active Slot's Slide Dots */}
+          <div className="flex items-center space-x-1.5 px-3 py-1 rounded-full bg-white/80 backdrop-blur-md border border-sky-200/80 shadow-md">
             {banners.map((banner, index) => {
               const isActive = index === slideIndex;
               return (
@@ -326,20 +329,17 @@ export const PixarRoosterBanner3D: React.FC<PixarRoosterBanner3DProps> = () => {
                   title={banner.title}
                   className={`h-1.5 rounded-full transition-all duration-300 ${
                     isActive 
-                      ? 'w-5 sm:w-6 bg-white shadow-sm' 
-                      : 'w-1.5 bg-white/50 hover:bg-white/80'
+                      ? 'w-5 sm:w-6 bg-sky-600 shadow-sm' 
+                      : 'w-1.5 bg-slate-300 hover:bg-slate-400'
                   }`}
                 />
               );
             })}
-            <span className="text-[9px] font-mono text-white/90 pl-1">15s auto</span>
+            <span className="text-[9px] font-mono text-slate-500 pl-1">15s auto</span>
           </div>
 
-        </div>
-
-        {/* TIME OF DAY SWITCHER PILL BAR (Flipkart Category Rail Style - Below Banner) */}
-        <div className="flex items-center justify-center mt-3">
-          <div className="flex items-center space-x-1 sm:space-x-1.5 p-1 rounded-full bg-white border border-sky-200/90 shadow-sm max-w-full overflow-x-auto">
+          {/* 4 Time Slot Selection Pills */}
+          <div className="flex items-center space-x-1 sm:space-x-1.5 p-1 rounded-full bg-white/95 backdrop-blur-md border border-sky-200/90 shadow-xl max-w-[95vw] overflow-x-auto">
             
             {/* Real-Time Live Button */}
             <button
