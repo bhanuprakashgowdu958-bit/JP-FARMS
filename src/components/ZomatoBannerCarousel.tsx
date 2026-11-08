@@ -127,9 +127,10 @@ export const ZomatoBannerCarousel: React.FC<ZomatoBannerCarouselProps> = ({
   return (
     <section className="relative w-full overflow-hidden bg-[#f4f9fd]">
       
-      {/* 100% Full-Screen Edge-to-Edge Banner (Zero Gaps, Zero Cuts, Responsive Viewport Height, Smooth 10s Auto-Slide) */}
+      {/* 100% Full-Screen Edge-to-Edge Banner (2.7:1 Aspect Ratio, Zero Side Gaps, Zero Cuts, Smooth 10s Auto-Slide) */}
       <div 
-        className="group relative w-full h-[48vh] sm:h-[54vh] lg:h-[58vh] min-h-[340px] sm:min-h-[400px] max-h-[500px] overflow-hidden bg-slate-950 transition-all duration-300 cursor-pointer shadow-md"
+        className="group relative w-full overflow-hidden bg-slate-950 transition-all duration-300 cursor-pointer shadow-md"
+        style={{ aspectRatio: '2.7 / 1' }}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}

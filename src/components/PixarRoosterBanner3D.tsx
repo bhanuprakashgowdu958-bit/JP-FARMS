@@ -244,8 +244,11 @@ export const PixarRoosterBanner3D: React.FC<PixarRoosterBanner3DProps> = () => {
       className="relative w-full overflow-hidden select-none bg-slate-950 group"
       aria-label={`JP Farms ${currentSlot.title} Rooster Showcase`}
     >
-      {/* 100% FULL-BLEED EDGE-TO-EDGE BANNERS (ZERO SIDE GAPS - AMAZON STYLE) */}
-      <div className="relative w-full h-[280px] sm:h-[380px] md:h-[460px] lg:h-[540px] xl:h-[600px] overflow-hidden">
+      {/* 100% FULL-BLEED EDGE-TO-EDGE BANNERS (2.7:1 RATIO, ZERO SIDE GAPS) */}
+      <div 
+        className="relative w-full overflow-hidden"
+        style={{ aspectRatio: '2.7 / 1' }}
+      >
         {banners.map((banner, index) => {
           const isActive = index === slideIndex;
           return (
