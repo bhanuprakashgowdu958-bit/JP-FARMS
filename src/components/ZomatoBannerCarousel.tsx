@@ -125,9 +125,9 @@ export const ZomatoBannerCarousel: React.FC<ZomatoBannerCarouselProps> = ({
   return (
     <section className="relative w-full overflow-hidden bg-[#f4f9fd]">
       
-      {/* 100% Full-Screen Edge-to-Edge Banner (Zero Gaps, Zero Side Margins, Pure Master Artwork) */}
+      {/* 100% Full-Screen Edge-to-Edge Banner (Zero Gaps, Zero Haze, 100% Crystal-Clear Master Artwork) */}
       <div 
-        className="group relative w-full h-[260px] sm:h-[380px] lg:h-[460px] xl:h-[500px] overflow-hidden bg-slate-900 transition-all duration-300 cursor-pointer"
+        className="group relative w-full aspect-[16/9] max-h-[80vh] overflow-hidden bg-slate-900 transition-all duration-300 cursor-pointer"
         onMouseEnter={() => setIsPaused(true)}
         onMouseLeave={() => setIsPaused(false)}
         onTouchStart={handleTouchStart}
@@ -146,9 +146,6 @@ export const ZomatoBannerCarousel: React.FC<ZomatoBannerCarouselProps> = ({
             className="w-full h-full object-cover filter brightness-[1.02] contrast-[1.03] transition-all duration-700 ease-out group-hover:scale-[1.01]"
           />
         </div>
-
-        {/* Amazon-Style Smooth Bottom Gradient Blend Into Page */}
-        <div className="absolute inset-x-0 bottom-0 h-16 sm:h-24 bg-gradient-to-t from-[#f4f9fd] to-transparent pointer-events-none" />
 
         {/* Clean Hover-Activated Left Arrow (Only Visible on Hover) */}
         <button
