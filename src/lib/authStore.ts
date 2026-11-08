@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { auth, isFirebaseConfigured } from './firebase';
+import { auth, db, isFirebaseConfigured } from './firebase';
 
 export interface AppUser {
   uid: string;
@@ -26,8 +26,18 @@ export interface RegisteredCustomer {
   lastLoginAt: string;
 }
 
+export interface PersistentProfileData {
+  phoneNumber?: string | null;
+  deliveryAddress?: string;
+  city?: string;
+  state?: string;
+  pincode?: string;
+  updatedAt?: string;
+}
+
 const USER_STORAGE_KEY = 'jp_farms_user_v1';
 const REGISTERED_USERS_KEY = 'jp_farms_registered_users_v1';
+const PERSISTENT_PROFILES_KEY = 'jp_farms_user_profiles_v2';
 
 // Initial registered users list for admin directory demo
 const INITIAL_REGISTERED_USERS: RegisteredCustomer[] = [
@@ -50,6 +60,95 @@ const INITIAL_REGISTERED_USERS: RegisteredCustomer[] = [
     lastLoginAt: '2026-11-08 04:45 PM',
   },
 ];
+
+/**
+ * Retrieve saved profile data across sessions (never deleted on logout)
+ */
+export function getSavedProfile(identifier: { email?: string | null; uid?: string }): PersistentProfileData | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    // 1. Check persistent profiles dictionary
+    const raw = localStorage.getItem(PERSISTENT_PROFILES_KEY);
+    const dict: Record<string, PersistentProfileData> = raw ? JSON.parse(raw) : {};
+    
+    let profile: PersistentProfileData | null = null;
+    if (identifier.email && dict[identifier.email.toLowerCase()]) {
+      profile = { ...dict[identifier.email.toLowerCase()] };
+    } else if (identifier.uid && dict[identifier.uid]) {
+      profile = { ...dict[identifier.uid] };
+    }
+
+    // 2. Fallback: Check registered customers list
+    if (!profile?.phoneNumber) {
+      const customers = getRegisteredCustomers();
+      const matched = customers.find(c =>
+        (identifier.email && c.email?.toLowerCase() === identifier.email.toLowerCase()) ||
+        (identifier.uid && c.uid === identifier.uid)
+      );
+      if (matched?.phone) {
+        profile = {
+          ...profile,
+          phoneNumber: matched.phone,
+        };
+      }
+    }
+
+    return profile;
+  } catch (e) {
+    return null;
+  }
+}
+
+/**
+ * Save persistent profile data keyed by user's email and uid
+ */
+export function savePersistentProfile(identifier: { email?: string | null; uid: string }, data: Partial<PersistentProfileData>): void {
+  if (typeof window === 'undefined') return;
+  try {
+    const raw = localStorage.getItem(PERSISTENT_PROFILES_KEY);
+    const dict: Record<string, PersistentProfileData> = raw ? JSON.parse(raw) : {};
+    const existing = getSavedProfile(identifier) || {};
+
+    const merged: PersistentProfileData = {
+      ...existing,
+      ...data,
+      updatedAt: new Date().toISOString(),
+    };
+
+    if (identifier.email) {
+      dict[identifier.email.toLowerCase()] = merged;
+    }
+    dict[identifier.uid] = merged;
+
+    localStorage.setItem(PERSISTENT_PROFILES_KEY, JSON.stringify(dict));
+  } catch (e) {
+    console.error('Failed to save persistent profile', e);
+  }
+}
+
+/**
+ * Construct an AppUser from Firebase User while preserving their saved phone & address
+ */
+export function buildAppUser(fbUser: any): AppUser {
+  const saved = getSavedProfile({ email: fbUser.email, uid: fbUser.uid });
+  const currentSession = getStoredUser();
+  const currentMatchingPhone = (currentSession && (currentSession.uid === fbUser.uid || currentSession.email === fbUser.email)) 
+    ? currentSession.phoneNumber 
+    : null;
+
+  return {
+    uid: fbUser.uid,
+    displayName: fbUser.displayName,
+    email: fbUser.email,
+    photoURL: fbUser.photoURL,
+    phoneNumber: saved?.phoneNumber || currentMatchingPhone || fbUser.phoneNumber || null,
+    deliveryAddress: saved?.deliveryAddress || currentSession?.deliveryAddress,
+    city: saved?.city || currentSession?.city,
+    state: saved?.state || currentSession?.state,
+    pincode: saved?.pincode || currentSession?.pincode,
+    createdAt: currentSession?.createdAt || new Date().toISOString(),
+  };
+}
 
 export function getStoredUser(): AppUser | null {
   if (typeof window === 'undefined') return null;
@@ -131,17 +230,61 @@ function recordRegisteredCustomer(user: AppUser): void {
   }
 }
 
+async function syncProfileToFirestore(user: AppUser) {
+  if (!db || !user?.uid) return;
+  try {
+    const { doc, setDoc }: any = await import('firebase/firestore');
+    await setDoc(doc(db, 'users', user.uid), {
+      uid: user.uid,
+      displayName: user.displayName,
+      email: user.email,
+      photoURL: user.photoURL,
+      phoneNumber: user.phoneNumber,
+      deliveryAddress: user.deliveryAddress || null,
+      city: user.city || null,
+      state: user.state || null,
+      pincode: user.pincode || null,
+      lastUpdated: new Date().toISOString(),
+    }, { merge: true });
+  } catch (e) {
+    // Non-blocking: fail gracefully if Firestore rules or offline
+  }
+}
+
+async function fetchFirestoreProfile(uid: string): Promise<PersistentProfileData | null> {
+  if (!db || !uid) return null;
+  try {
+    const { doc, getDoc }: any = await import('firebase/firestore');
+    const snap = await getDoc(doc(db, 'users', uid));
+    if (snap.exists()) {
+      return snap.data() as PersistentProfileData;
+    }
+    return null;
+  } catch (e) {
+    return null;
+  }
+}
+
 export function updateUserPhone(phone: string): AppUser | null {
   if (typeof window === 'undefined') return null;
   try {
     const user = getStoredUser();
     if (!user) return null;
     const cleanPhone = phone.trim();
+
+    // 1. Permanently remember this phone for this user (never lost on sign-out)
+    savePersistentProfile({ email: user.email, uid: user.uid }, { phoneNumber: cleanPhone });
+
+    // 2. Update active session user
     const updatedUser: AppUser = {
       ...user,
       phoneNumber: cleanPhone,
     };
     saveStoredUser(updatedUser);
+
+    // 3. Asynchronously sync to Firestore cloud
+    syncProfileToFirestore(updatedUser);
+
     return updatedUser;
   } catch (e) {
     console.error('Failed to update phone number', e);
@@ -154,6 +297,11 @@ export function updateUserAddress(addr: { deliveryAddress?: string; city?: strin
   try {
     const user = getStoredUser();
     if (!user) return null;
+
+    // 1. Permanently remember address for this user
+    savePersistentProfile({ email: user.email, uid: user.uid }, addr);
+
+    // 2. Update active session user
     const updatedUser: AppUser = {
       ...user,
       ...(addr.deliveryAddress !== undefined ? { deliveryAddress: addr.deliveryAddress.trim() } : {}),
@@ -162,6 +310,10 @@ export function updateUserAddress(addr: { deliveryAddress?: string; city?: strin
       ...(addr.pincode !== undefined ? { pincode: addr.pincode.trim() } : {}),
     };
     saveStoredUser(updatedUser);
+
+    // 3. Asynchronously sync to Firestore cloud
+    syncProfileToFirestore(updatedUser);
+
     return updatedUser;
   } catch (e) {
     console.error('Failed to update address', e);
@@ -175,7 +327,7 @@ export function useAuth() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // Initial load from localStorage
+    // Initial load from localStorage active session
     setUser(getStoredUser());
     setIsLoading(false);
 
@@ -184,18 +336,31 @@ export function useAuth() {
     if (auth && isFirebaseConfigured) {
       import('firebase/auth').then((authMod: any) => {
         if (authMod?.onAuthStateChanged) {
-          unsubscribe = authMod.onAuthStateChanged(auth, (fbUser: any) => {
+          unsubscribe = authMod.onAuthStateChanged(auth, async (fbUser: any) => {
             if (fbUser) {
-              const appUser: AppUser = {
-                uid: fbUser.uid,
-                displayName: fbUser.displayName,
-                email: fbUser.email,
-                photoURL: fbUser.photoURL,
-                phoneNumber: fbUser.phoneNumber,
-                createdAt: new Date().toISOString(),
-              };
+              const appUser = buildAppUser(fbUser);
               saveStoredUser(appUser);
               setUser(appUser);
+
+              // If phone was missing locally, try checking Firestore cloud doc
+              if (!appUser.phoneNumber) {
+                try {
+                  const remote = await fetchFirestoreProfile(fbUser.uid);
+                  if (remote?.phoneNumber) {
+                    savePersistentProfile({ email: fbUser.email, uid: fbUser.uid }, remote);
+                    const enriched: AppUser = {
+                      ...appUser,
+                      phoneNumber: remote.phoneNumber,
+                      deliveryAddress: remote.deliveryAddress || appUser.deliveryAddress,
+                      city: remote.city || appUser.city,
+                      state: remote.state || appUser.state,
+                      pincode: remote.pincode || appUser.pincode,
+                    };
+                    saveStoredUser(enriched);
+                    setUser(enriched);
+                  }
+                } catch (e) {}
+              }
             }
           });
         }
@@ -233,14 +398,22 @@ export function useAuth() {
       const result = await authMod.signInWithPopup(auth, provider);
       const fbUser = result.user;
 
-      const appUser: AppUser = {
-        uid: fbUser.uid,
-        displayName: fbUser.displayName,
-        email: fbUser.email,
-        photoURL: fbUser.photoURL,
-        phoneNumber: fbUser.phoneNumber,
-        createdAt: new Date().toISOString(),
-      };
+      const appUser = buildAppUser(fbUser);
+
+      // If phone was missing locally, try checking Firestore cloud doc
+      if (!appUser.phoneNumber) {
+        try {
+          const remote = await fetchFirestoreProfile(fbUser.uid);
+          if (remote?.phoneNumber) {
+            savePersistentProfile({ email: fbUser.email, uid: fbUser.uid }, remote);
+            appUser.phoneNumber = remote.phoneNumber;
+            if (remote.deliveryAddress) appUser.deliveryAddress = remote.deliveryAddress;
+            if (remote.city) appUser.city = remote.city;
+            if (remote.state) appUser.state = remote.state;
+            if (remote.pincode) appUser.pincode = remote.pincode;
+          }
+        } catch (e) {}
+      }
 
       saveStoredUser(appUser);
       setUser(appUser);
