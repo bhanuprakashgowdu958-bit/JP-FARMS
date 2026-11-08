@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import Link from 'next/link';
 import { 
   Phone, 
@@ -40,9 +41,45 @@ export const Header: React.FC<HeaderProps> = ({
   birdsCount = 7 
 }) => {
   const [sideMenuOpen, setSideMenuOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const { cartCount, openCart } = useCart();
   const { orders } = useOrders();
   const { user, signOut } = useAuth();
+
+  useEffect(() => {
+    setMounted(true);
+    return () => setMounted(false);
+  }, []);
+
+  // Lock body scroll when drawer is open
+  useEffect(() => {
+    if (!sideMenuOpen) return;
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = originalOverflow;
+    };
+  }, [sideMenuOpen]);
+
+  // Close drawer on Escape key press
+  useEffect(() => {
+    if (!sideMenuOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setSideMenuOpen(false);
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [sideMenuOpen]);
+
+  const handleNavClick = (sectionId: string) => {
+    setSideMenuOpen(false);
+    setTimeout(() => {
+      const el = document.getElementById(sectionId);
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth' });
+      }
+    }, 150);
+  };
 
   const activeOrdersCount = orders.filter(o => o.status === 'confirmed' || o.status === 'dispatched').length;
   const totalOrdersCount = orders.length;
@@ -131,7 +168,7 @@ export const Header: React.FC<HeaderProps> = ({
             <button
               type="button"
               onClick={onOpenOrders}
-              className="flex items-center space-x-2 bg-slate-900 hover:bg-slate-800 text-amber-300 hover:text-white text-xs font-bold px-3.5 py-2.5 rounded-xl border border-amber-500/40 shadow-sm transition active:scale-95 whitespace-nowrap group"
+              className="flex items-center space-x-2 bg-slate-900 hover:bg-slate-800 text-amber-300 hover:text-white text-xs font-bold px-3.5 py-2.5 rounded-xl border border-amber-500/40 shadow-sm transition active:scale-95 whitespace-nowrap group cursor-pointer"
               title="Track Your Orders & Live Transit"
             >
               <Package className="w-4 h-4 text-amber-400 group-hover:scale-110 transition" />
@@ -152,7 +189,7 @@ export const Header: React.FC<HeaderProps> = ({
             <button
               type="button"
               onClick={openCart}
-              className="relative flex items-center space-x-1.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-stone-950 text-xs font-black px-4 py-2.5 rounded-xl shadow-md shadow-amber-500/20 transition active:scale-95 whitespace-nowrap group"
+              className="relative flex items-center space-x-1.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-stone-950 text-xs font-black px-4 py-2.5 rounded-xl shadow-md shadow-amber-500/20 transition active:scale-95 whitespace-nowrap group cursor-pointer"
               title="View Shopping Cart"
             >
               <ShoppingCart className="w-4 h-4 text-stone-950 group-hover:scale-110 transition" />
@@ -167,13 +204,19 @@ export const Header: React.FC<HeaderProps> = ({
             {/* Menu Bar Button - Placed RIGHT NEXT TO CART */}
             <button
               type="button"
-              onClick={() => setSideMenuOpen(true)}
-              className="flex items-center space-x-1.5 bg-slate-900 hover:bg-slate-800 text-amber-400 hover:text-white px-3.5 py-2.5 rounded-xl border border-slate-700/80 transition active:scale-95 text-xs font-extrabold shadow-xs whitespace-nowrap group"
+              onClick={(e) => {
+                e.stopPropagation();
+                setSideMenuOpen(true);
+              }}
+              className="flex items-center space-x-1.5 bg-slate-900 hover:bg-slate-800 text-amber-400 hover:text-white px-3.5 py-2.5 rounded-xl border border-amber-500/30 hover:border-amber-400 transition active:scale-95 text-xs font-extrabold shadow-xs whitespace-nowrap group cursor-pointer"
               title="Open Navigation Menu"
               aria-label="Open menu"
             >
               <Menu className="w-4 h-4 text-amber-400 group-hover:scale-110 transition duration-200" />
               <span>Menu</span>
+              <span className="text-[10px] bg-amber-400/20 text-amber-300 px-1.5 py-0.5 rounded-md font-bold">
+                {birdsCount}
+              </span>
             </button>
           </div>
 
@@ -186,7 +229,7 @@ export const Header: React.FC<HeaderProps> = ({
             <button
               type="button"
               onClick={onOpenOrders}
-              className="relative p-2.5 rounded-xl bg-slate-900 text-amber-400 font-bold flex items-center justify-center border border-amber-500/30 shadow-xs transition active:scale-95"
+              className="relative p-2.5 rounded-xl bg-slate-900 text-amber-400 font-bold flex items-center justify-center border border-amber-500/30 shadow-xs transition active:scale-95 cursor-pointer"
               aria-label="Track orders"
               title="My Orders"
             >
@@ -202,7 +245,7 @@ export const Header: React.FC<HeaderProps> = ({
             <button
               type="button"
               onClick={openCart}
-              className="relative p-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-stone-950 font-bold flex items-center justify-center shadow-xs transition active:scale-95"
+              className="relative p-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-stone-950 font-bold flex items-center justify-center shadow-xs transition active:scale-95 cursor-pointer"
               aria-label="Open cart"
               title="Cart"
             >
@@ -216,8 +259,12 @@ export const Header: React.FC<HeaderProps> = ({
 
             {/* Mobile Menu Bar Button - Placed RIGHT NEXT TO CART */}
             <button
-              onClick={() => setSideMenuOpen(true)}
-              className="p-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-amber-400 border border-slate-700/80 transition active:scale-95 flex items-center justify-center shadow-xs"
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                setSideMenuOpen(true);
+              }}
+              className="p-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-amber-400 border border-amber-500/30 transition active:scale-95 flex items-center justify-center shadow-xs cursor-pointer"
               aria-label="Open menu"
               title="Menu"
             >
@@ -227,30 +274,36 @@ export const Header: React.FC<HeaderProps> = ({
         </div>
       </div>
 
-      {/* Amazon / Flipkart Style Slide-Over Side Menu Drawer (Desktop & Mobile) */}
-      {sideMenuOpen && (
-        <div className="fixed inset-0 z-50 overflow-hidden">
-          {/* Backdrop */}
+      {/* Amazon / Flipkart Style Slide-Over Side Menu Drawer (Desktop & Mobile) via Portal */}
+      {mounted && sideMenuOpen && typeof document !== 'undefined' && createPortal(
+        <div 
+          className="fixed inset-0 z-[99999] overflow-hidden"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Navigation Menu"
+        >
+          {/* Backdrop with fade-in */}
           <div 
-            className="absolute inset-0 bg-slate-950/60 backdrop-blur-xs transition-opacity animate-in fade-in duration-200"
+            className="fixed inset-0 bg-slate-950/70 backdrop-blur-xs transition-opacity duration-300 animate-in fade-in"
             onClick={() => setSideMenuOpen(false)}
+            aria-hidden="true"
           />
 
-          {/* Drawer Box */}
-          <div className="fixed inset-y-0 right-0 max-w-full flex pl-10">
-            <div className="w-screen max-w-md bg-white shadow-2xl flex flex-col animate-in slide-in-from-right duration-300">
+          {/* Drawer Box sliding in from the right */}
+          <div className="fixed inset-y-0 right-0 max-w-full flex pl-8 sm:pl-16">
+            <div className="w-screen max-w-md bg-white shadow-2xl flex flex-col h-full overflow-hidden animate-in slide-in-from-right duration-300">
               
               {/* Drawer Top Header (Amazon Hello User Style) */}
-              <div className="p-5 bg-gradient-to-r from-slate-900 via-stone-900 to-slate-950 text-white flex items-center justify-between border-b border-stone-800">
+              <div className="shrink-0 p-5 bg-gradient-to-r from-slate-900 via-stone-900 to-slate-950 text-white flex items-center justify-between border-b border-stone-800">
                 <div className="flex items-center space-x-3">
                   {user ? (
                     <img
                       src={user.photoURL || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=120&q=80'}
                       alt=""
-                      className="w-10 h-10 rounded-full object-cover border-2 border-amber-400"
+                      className="w-10 h-10 rounded-full object-cover border-2 border-amber-400 shrink-0"
                     />
                   ) : (
-                    <div className="w-10 h-10 rounded-full bg-slate-800 text-amber-400 flex items-center justify-center border border-slate-700 font-bold">
+                    <div className="w-10 h-10 rounded-full bg-slate-800 text-amber-400 flex items-center justify-center border border-slate-700 font-bold shrink-0">
                       JP
                     </div>
                   )}
@@ -265,8 +318,9 @@ export const Header: React.FC<HeaderProps> = ({
                 </div>
 
                 <button
+                  type="button"
                   onClick={() => setSideMenuOpen(false)}
-                  className="p-2 text-slate-400 hover:text-white rounded-lg hover:bg-white/10 transition"
+                  className="p-2 text-slate-400 hover:text-white rounded-lg hover:bg-white/10 transition cursor-pointer"
                   aria-label="Close menu drawer"
                 >
                   <X className="w-5 h-5" />
@@ -274,7 +328,7 @@ export const Header: React.FC<HeaderProps> = ({
               </div>
 
               {/* Drawer Body Links */}
-              <div className="flex-1 overflow-y-auto p-4 space-y-4 text-xs">
+              <div className="flex-1 overflow-y-auto p-4 space-y-4 text-xs overscroll-contain">
                 
                 {/* 1. Orders & Tracking Highlight Card */}
                 <div className="bg-gradient-to-r from-amber-500/15 via-orange-500/10 to-amber-500/15 border border-amber-300 rounded-2xl p-3.5 shadow-xs">
@@ -293,11 +347,16 @@ export const Header: React.FC<HeaderProps> = ({
                   </div>
 
                   <button
+                    type="button"
                     onClick={() => {
                       setSideMenuOpen(false);
-                      onOpenOrders?.();
+                      if (onOpenOrders) {
+                        onOpenOrders();
+                      } else {
+                        window.dispatchEvent(new CustomEvent('open-orders-drawer'));
+                      }
                     }}
-                    className="w-full flex items-center justify-between bg-slate-900 hover:bg-slate-800 text-white font-black px-3.5 py-2.5 rounded-xl text-xs transition active:scale-95 shadow-md shadow-slate-900/10"
+                    className="w-full flex items-center justify-between bg-slate-900 hover:bg-slate-800 text-white font-black px-3.5 py-2.5 rounded-xl text-xs transition active:scale-95 shadow-md shadow-slate-900/10 cursor-pointer"
                   >
                     <div className="flex items-center space-x-2">
                       <Package className="w-4 h-4 text-amber-400" />
@@ -307,16 +366,38 @@ export const Header: React.FC<HeaderProps> = ({
                   </button>
                 </div>
 
-                {/* 2. Heritage Rooster Showcase Strains */}
+                {/* 2. Quick Shopping Cart Action */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSideMenuOpen(false);
+                    openCart();
+                  }}
+                  className="w-full flex items-center justify-between p-3 rounded-xl bg-amber-50 hover:bg-amber-100/70 border border-amber-200/80 font-bold text-slate-900 transition text-left cursor-pointer"
+                >
+                  <span className="flex items-center space-x-2.5">
+                    <ShoppingCart className="w-4 h-4 text-amber-600" />
+                    <span>View Shopping Cart</span>
+                  </span>
+                  {cartCount > 0 ? (
+                    <span className="text-[10px] bg-amber-500 text-stone-950 font-black px-2 py-0.5 rounded-full">
+                      {cartCount} {cartCount === 1 ? 'item' : 'items'}
+                    </span>
+                  ) : (
+                    <span className="text-[10px] text-slate-400 font-normal">Empty</span>
+                  )}
+                </button>
+
+                {/* 3. Heritage Rooster Showcase Strains */}
                 <div>
                   <h4 className="text-[11px] font-black uppercase tracking-wider text-slate-400 px-2 mb-1.5">
                     Heritage Rooster Catalog ({birdsCount} Birds)
                   </h4>
                   <div className="space-y-1">
-                    <a
-                      href="#showcase"
-                      onClick={() => setSideMenuOpen(false)}
-                      className="flex items-center justify-between p-2.5 rounded-xl hover:bg-slate-100 font-bold text-slate-800 transition"
+                    <button
+                      type="button"
+                      onClick={() => handleNavClick('showcase')}
+                      className="w-full flex items-center justify-between p-2.5 rounded-xl hover:bg-slate-100 font-bold text-slate-800 transition text-left cursor-pointer"
                     >
                       <span className="flex items-center space-x-2">
                         <span>🐓</span>
@@ -325,51 +406,52 @@ export const Header: React.FC<HeaderProps> = ({
                       <span className="text-[10px] bg-slate-200 text-slate-700 px-2 py-0.5 rounded-full font-bold">
                         {birdsCount} Strains
                       </span>
-                    </a>
+                    </button>
 
-                    <a
-                      href="#showcase"
-                      onClick={() => setSideMenuOpen(false)}
-                      className="flex items-center justify-between p-2.5 rounded-xl hover:bg-slate-100 font-bold text-slate-800 transition"
+                    <button
+                      type="button"
+                      onClick={() => handleNavClick('showcase')}
+                      className="w-full flex items-center justify-between p-2.5 rounded-xl hover:bg-slate-100 font-bold text-slate-800 transition text-left cursor-pointer"
                     >
                       <span className="flex items-center space-x-2">
                         <span>🥇</span>
                         <span>Pure Peela Aseel (Fighter Stance)</span>
                       </span>
                       <ChevronRight className="w-4 h-4 text-slate-400" />
-                    </a>
+                    </button>
 
-                    <a
-                      href="#showcase"
-                      onClick={() => setSideMenuOpen(false)}
-                      className="flex items-center justify-between p-2.5 rounded-xl hover:bg-slate-100 font-bold text-slate-800 transition"
+                    <button
+                      type="button"
+                      onClick={() => handleNavClick('showcase')}
+                      className="w-full flex items-center justify-between p-2.5 rounded-xl hover:bg-slate-100 font-bold text-slate-800 transition text-left cursor-pointer"
                     >
                       <span className="flex items-center space-x-2">
                         <span>🥈</span>
                         <span>Kagar & Sindhi Heritage</span>
                       </span>
                       <ChevronRight className="w-4 h-4 text-slate-400" />
-                    </a>
+                    </button>
 
-                    <a
-                      href="#showcase"
-                      onClick={() => setSideMenuOpen(false)}
-                      className="flex items-center justify-between p-2.5 rounded-xl hover:bg-slate-100 font-bold text-slate-800 transition"
+                    <button
+                      type="button"
+                      onClick={() => handleNavClick('showcase')}
+                      className="w-full flex items-center justify-between p-2.5 rounded-xl hover:bg-slate-100 font-bold text-slate-800 transition text-left cursor-pointer"
                     >
                       <span className="flex items-center space-x-2">
                         <span>🖤</span>
                         <span>Kadaknath (Black Meat Lineage)</span>
                       </span>
                       <ChevronRight className="w-4 h-4 text-slate-400" />
-                    </a>
+                    </button>
 
                     {onOpenReels && (
                       <button
+                        type="button"
                         onClick={() => {
                           setSideMenuOpen(false);
                           onOpenReels();
                         }}
-                        className="w-full flex items-center justify-between p-2.5 rounded-xl hover:bg-sky-50 text-sky-800 font-bold transition text-left"
+                        className="w-full flex items-center justify-between p-2.5 rounded-xl hover:bg-sky-50 text-sky-800 font-bold transition text-left cursor-pointer"
                       >
                         <span className="flex items-center space-x-2">
                           <PlayCircle className="w-4 h-4 text-sky-600" />
@@ -383,51 +465,51 @@ export const Header: React.FC<HeaderProps> = ({
                   </div>
                 </div>
 
-                {/* 3. Farm Care, Health & Bio-Security */}
+                {/* 4. Farm Care, Health & Bio-Security */}
                 <div>
                   <h4 className="text-[11px] font-black uppercase tracking-wider text-slate-400 px-2 mb-1.5">
                     Estate Standards & Logistics
                   </h4>
                   <div className="space-y-1">
-                    <a
-                      href="#biosecurity"
-                      onClick={() => setSideMenuOpen(false)}
-                      className="flex items-center justify-between p-2.5 rounded-xl hover:bg-slate-100 font-bold text-slate-800 transition"
+                    <button
+                      type="button"
+                      onClick={() => handleNavClick('biosecurity')}
+                      className="w-full flex items-center justify-between p-2.5 rounded-xl hover:bg-slate-100 font-bold text-slate-800 transition text-left cursor-pointer"
                     >
                       <span className="flex items-center space-x-2">
                         <ShieldCheck className="w-4 h-4 text-emerald-600" />
                         <span>Marek & ND Vaccination Standards</span>
                       </span>
                       <ChevronRight className="w-4 h-4 text-slate-400" />
-                    </a>
+                    </button>
 
-                    <a
-                      href="#delivery"
-                      onClick={() => setSideMenuOpen(false)}
-                      className="flex items-center justify-between p-2.5 rounded-xl hover:bg-slate-100 font-bold text-slate-800 transition"
+                    <button
+                      type="button"
+                      onClick={() => handleNavClick('delivery')}
+                      className="w-full flex items-center justify-between p-2.5 rounded-xl hover:bg-slate-100 font-bold text-slate-800 transition text-left cursor-pointer"
                     >
                       <span className="flex items-center space-x-2">
                         <Truck className="w-4 h-4 text-sky-600" />
                         <span>Live AC Crate Delivery Process</span>
                       </span>
                       <ChevronRight className="w-4 h-4 text-slate-400" />
-                    </a>
+                    </button>
 
-                    <a
-                      href="#visit-guide"
-                      onClick={() => setSideMenuOpen(false)}
-                      className="flex items-center justify-between p-2.5 rounded-xl hover:bg-slate-100 font-bold text-slate-800 transition"
+                    <button
+                      type="button"
+                      onClick={() => handleNavClick('visit-guide')}
+                      className="w-full flex items-center justify-between p-2.5 rounded-xl hover:bg-slate-100 font-bold text-slate-800 transition text-left cursor-pointer"
                     >
                       <span className="flex items-center space-x-2">
                         <MapPin className="w-4 h-4 text-amber-600" />
                         <span>Schedule Farm Visit (Hoskote Estate)</span>
                       </span>
                       <ChevronRight className="w-4 h-4 text-slate-400" />
-                    </a>
+                    </button>
                   </div>
                 </div>
 
-                {/* 4. Support & Direct Farm Connect */}
+                {/* 5. Support & Direct Farm Connect */}
                 <div>
                   <h4 className="text-[11px] font-black uppercase tracking-wider text-slate-400 px-2 mb-1.5">
                     Help & Farm Contacts
@@ -471,15 +553,16 @@ export const Header: React.FC<HeaderProps> = ({
                   </div>
                 </div>
 
-                {/* 5. User Sign Out (if logged in) */}
+                {/* 6. User Sign Out (if logged in) */}
                 {user && (
                   <div className="pt-2 border-t border-slate-200">
                     <button
+                      type="button"
                       onClick={() => {
                         setSideMenuOpen(false);
                         signOut();
                       }}
-                      className="w-full flex items-center justify-between p-2.5 rounded-xl text-red-600 hover:bg-red-50 font-bold transition"
+                      className="w-full flex items-center justify-between p-2.5 rounded-xl text-red-600 hover:bg-red-50 font-bold transition cursor-pointer"
                     >
                       <span className="flex items-center space-x-2">
                         <LogOut className="w-4 h-4" />
@@ -492,7 +575,7 @@ export const Header: React.FC<HeaderProps> = ({
               </div>
 
               {/* Drawer Bottom Guarantee */}
-              <div className="p-3.5 bg-slate-50 border-t border-slate-200 flex items-center justify-between text-[11px] text-slate-500">
+              <div className="shrink-0 p-3.5 bg-slate-50 border-t border-slate-200 flex items-center justify-between text-[11px] text-slate-500">
                 <span className="flex items-center space-x-1.5 font-bold text-emerald-700">
                   <ShieldCheck className="w-4 h-4 text-emerald-600" />
                   <span>100% Pure Indian Gamefowl</span>
@@ -502,7 +585,8 @@ export const Header: React.FC<HeaderProps> = ({
 
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </header>
   );
