@@ -89,3 +89,4 @@ export const CartToast: React.FC = () => {
     </div>
   );
 };
+

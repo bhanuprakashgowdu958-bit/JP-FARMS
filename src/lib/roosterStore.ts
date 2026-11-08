@@ -369,10 +369,18 @@ export function useOrders() {
     setOrders(updated);
   };
 
+  const deleteOrder = (id: string) => {
+    const current = getStoredOrders();
+    const updated = current.filter((o) => o.id !== id);
+    saveStoredOrders(updated);
+    setOrders(updated);
+  };
+
   return {
     orders,
     isLoaded,
     addOrder,
     updateOrderStatus,
+    deleteOrder,
   };
 }

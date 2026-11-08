@@ -83,6 +83,17 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
         roosterBreed: rooster.breed,
         roosterImage: rooster.images[0] || '',
         price,
+        items: [
+          {
+            roosterId: rooster.id,
+            roosterTag: rooster.tagId,
+            roosterName: rooster.name,
+            roosterBreed: rooster.breed,
+            roosterImage: rooster.images[0] || '',
+            price,
+            quantity: 1,
+          },
+        ],
         customerName: customerName.trim(),
         phoneNumber: phoneNumber.trim(),
         deliveryAddress: deliveryAddress.trim() || 'JP Farms Estate Gate Pickup',

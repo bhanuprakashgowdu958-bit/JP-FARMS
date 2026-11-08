@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { 
   ArrowLeft, 
@@ -25,7 +25,13 @@ import {
   Search,
   Banknote,
   Truck,
-  Package
+  Package,
+  Printer,
+  Download,
+  ShieldCheck,
+  FileText,
+  X,
+  ExternalLink
 } from 'lucide-react';
 import { Rooster, RoosterCategory, RoosterBadge, CustomerInquiry, RoosterOrder } from '@/types/rooster';
 import { useRoosters, useInquiries, useOrders } from '@/lib/roosterStore';
@@ -45,13 +51,26 @@ export const AdminPanel: React.FC = () => {
   } = useRoosters();
 
   const { inquiries, updateInquiryStatus } = useInquiries();
-  const { orders, updateOrderStatus } = useOrders();
+  const { orders, updateOrderStatus, deleteOrder } = useOrders();
 
   const [activeTab, setActiveTab] = useState<'roosters' | 'orders' | 'inquiries' | 'add'>('roosters');
   const [searchFilter, setSearchFilter] = useState('');
+  const [orderStatusFilter, setOrderStatusFilter] = useState<'all' | 'confirmed' | 'dispatched' | 'delivered'>('all');
+  const [orderSearchQuery, setOrderSearchQuery] = useState('');
+  const [printingOrder, setPrintingOrder] = useState<RoosterOrder | null>(null);
   const [editingRooster, setEditingRooster] = useState<Rooster | null>(null);
   const [uploadingField, setUploadingField] = useState<string | null>(null);
   const [uploadProgress, setUploadProgress] = useState<number>(0);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const tabParam = params.get('tab');
+      if (tabParam === 'orders' || tabParam === 'roosters' || tabParam === 'inquiries' || tabParam === 'add') {
+        setActiveTab(tabParam as any);
+      }
+    }
+  }, []);
 
   // Form State for Adding / Editing Rooster
   const [formData, setFormData] = useState({
@@ -219,11 +238,91 @@ export const AdminPanel: React.FC = () => {
   const videoCount = roosters.filter(r => !!r.videoUrl).length;
   const totalInquiries = inquiries.length;
 
+  // Order Metrics
+  const confirmedOrdersCount = orders.filter((o) => o.status === 'confirmed').length;
+  const dispatchedOrdersCount = orders.filter((o) => o.status === 'dispatched').length;
+  const deliveredOrdersCount = orders.filter((o) => o.status === 'delivered').length;
+  const totalRevenue = orders.reduce((sum, o) => sum + o.price, 0);
+
   const filteredRoosters = roosters.filter(r => 
     r.tagId.toLowerCase().includes(searchFilter.toLowerCase()) ||
     r.name.toLowerCase().includes(searchFilter.toLowerCase()) ||
     r.breed.toLowerCase().includes(searchFilter.toLowerCase())
   );
+
+  const filteredOrders = orders.filter((order) => {
+    if (orderStatusFilter !== 'all' && order.status !== orderStatusFilter) {
+      return false;
+    }
+    if (!orderSearchQuery.trim()) return true;
+
+    const q = orderSearchQuery.toLowerCase();
+    const idMatch = order.id.toLowerCase().includes(q);
+    const nameMatch = order.customerName.toLowerCase().includes(q);
+    const phoneMatch = order.phoneNumber.includes(q);
+    const cityMatch = (order.city || '').toLowerCase().includes(q);
+    const birdMatch = (order.roosterName || '').toLowerCase().includes(q) || (order.roosterTag || '').toLowerCase().includes(q);
+    const itemMatch = order.items?.some((i) => 
+      i.roosterName.toLowerCase().includes(q) || 
+      i.roosterTag.toLowerCase().includes(q) ||
+      i.roosterBreed.toLowerCase().includes(q)
+    );
+
+    return idMatch || nameMatch || phoneMatch || cityMatch || birdMatch || itemMatch;
+  });
+
+  const handleExportOrdersCSV = () => {
+    if (orders.length === 0) {
+      alert('No orders to export.');
+      return;
+    }
+    const headers = [
+      'Order ID',
+      'Date',
+      'Status',
+      'Customer Name',
+      'Phone',
+      'Delivery Type',
+      'Address',
+      'City',
+      'State',
+      'Pincode',
+      'Payment Method',
+      'Total Amount (INR)',
+      'Birds Ordered',
+      'Notes',
+    ];
+    const rows = orders.map((o) => {
+      const birdsList = o.items && o.items.length > 0
+        ? o.items.map((i) => `${i.roosterName} (#${i.roosterTag}) x${i.quantity}`).join('; ')
+        : `${o.roosterName} (#${o.roosterTag})`;
+      return [
+        `"${o.id}"`,
+        `"${o.orderDate}"`,
+        `"${o.status}"`,
+        `"${o.customerName.replace(/"/g, '""')}"`,
+        `"${o.phoneNumber}"`,
+        `"${o.deliveryType}"`,
+        `"${(o.deliveryAddress || '').replace(/"/g, '""')}"`,
+        `"${o.city || ''}"`,
+        `"${o.state || ''}"`,
+        `"${o.pincode || ''}"`,
+        `"${o.paymentMethod}"`,
+        `"${o.price}"`,
+        `"${birdsList.replace(/"/g, '""')}"`,
+        `"${(o.notes || '').replace(/"/g, '""')}"`,
+      ].join(',');
+    });
+
+    const csvContent = 'data:text/csv;charset=utf-8,' + [headers.join(','), ...rows].join('\n');
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement('a');
+    link.setAttribute('href', encodedUri);
+    link.setAttribute('download', `jp_farms_orders_${new Date().toISOString().slice(0, 10)}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   return (
     <div className="min-h-screen bg-stone-100 text-stone-900 pb-20">
@@ -354,31 +453,59 @@ export const AdminPanel: React.FC = () => {
         </div>
 
         {/* Analytics Top Cards */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-          <div className="bg-white p-5 rounded-2xl border border-stone-200 shadow-sm">
-            <p className="text-xs font-semibold text-stone-500 uppercase">Documented Birds</p>
-            <p className="text-3xl font-black text-stone-900 mt-1">{totalRoosters}</p>
-            <p className="text-[11px] text-stone-400 mt-1">Live showcase entries</p>
-          </div>
+        {activeTab === 'orders' ? (
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            <div className="bg-white p-5 rounded-2xl border border-stone-200 shadow-sm">
+              <p className="text-xs font-semibold text-stone-500 uppercase">Gross Revenue</p>
+              <p className="text-3xl font-black text-emerald-700 mt-1">₹{totalRevenue.toLocaleString('en-IN')}</p>
+              <p className="text-[11px] text-stone-400 mt-1">Total value of all placed orders</p>
+            </div>
 
-          <div className="bg-white p-5 rounded-2xl border border-stone-200 shadow-sm">
-            <p className="text-xs font-semibold text-stone-500 uppercase">Champion Strains</p>
-            <p className="text-3xl font-black text-amber-600 mt-1">{championCount}</p>
-            <p className="text-[11px] text-stone-400 mt-1">Direct pedigree lines</p>
-          </div>
+            <div className="bg-white p-5 rounded-2xl border border-stone-200 shadow-sm">
+              <p className="text-xs font-semibold text-stone-500 uppercase">Total Orders</p>
+              <p className="text-3xl font-black text-stone-900 mt-1">{orders.length}</p>
+              <p className="text-[11px] text-stone-400 mt-1">Live customer orders</p>
+            </div>
 
-          <div className="bg-white p-5 rounded-2xl border border-stone-200 shadow-sm">
-            <p className="text-xs font-semibold text-stone-500 uppercase">HD Video Reels</p>
-            <p className="text-3xl font-black text-emerald-600 mt-1">{videoCount}</p>
-            <p className="text-[11px] text-stone-400 mt-1">Available on Rooster TV</p>
-          </div>
+            <div className="bg-white p-5 rounded-2xl border border-stone-200 shadow-sm">
+              <p className="text-xs font-semibold text-stone-500 uppercase">In-Transit Crates</p>
+              <p className="text-3xl font-black text-sky-600 mt-1">{dispatchedOrdersCount}</p>
+              <p className="text-[11px] text-stone-400 mt-1">En route to customers</p>
+            </div>
 
-          <div className="bg-white p-5 rounded-2xl border border-stone-200 shadow-sm">
-            <p className="text-xs font-semibold text-stone-500 uppercase">Visitor Requests</p>
-            <p className="text-3xl font-black text-stone-900 mt-1">{totalInquiries}</p>
-            <p className="text-[11px] text-stone-400 mt-1">Received via website</p>
+            <div className="bg-white p-5 rounded-2xl border border-stone-200 shadow-sm">
+              <p className="text-xs font-semibold text-stone-500 uppercase">Pending Dispatch</p>
+              <p className="text-3xl font-black text-amber-600 mt-1">{confirmedOrdersCount}</p>
+              <p className="text-[11px] text-stone-400 mt-1">Requires crate packing & vet check</p>
+            </div>
           </div>
-        </div>
+        ) : (
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            <div className="bg-white p-5 rounded-2xl border border-stone-200 shadow-sm">
+              <p className="text-xs font-semibold text-stone-500 uppercase">Documented Birds</p>
+              <p className="text-3xl font-black text-stone-900 mt-1">{totalRoosters}</p>
+              <p className="text-[11px] text-stone-400 mt-1">Live showcase entries</p>
+            </div>
+
+            <div className="bg-white p-5 rounded-2xl border border-stone-200 shadow-sm">
+              <p className="text-xs font-semibold text-stone-500 uppercase">Champion Strains</p>
+              <p className="text-3xl font-black text-amber-600 mt-1">{championCount}</p>
+              <p className="text-[11px] text-stone-400 mt-1">Direct pedigree lines</p>
+            </div>
+
+            <div className="bg-white p-5 rounded-2xl border border-stone-200 shadow-sm">
+              <p className="text-xs font-semibold text-stone-500 uppercase">HD Video Reels</p>
+              <p className="text-3xl font-black text-emerald-600 mt-1">{videoCount}</p>
+              <p className="text-[11px] text-stone-400 mt-1">Available on Rooster TV</p>
+            </div>
+
+            <div className="bg-white p-5 rounded-2xl border border-stone-200 shadow-sm">
+              <p className="text-xs font-semibold text-stone-500 uppercase">Visitor Requests</p>
+              <p className="text-3xl font-black text-stone-900 mt-1">{totalInquiries}</p>
+              <p className="text-[11px] text-stone-400 mt-1">Received via website</p>
+            </div>
+          </div>
+        )}
 
         {/* TAB 1: ROOSTERS INVENTORY */}
         {activeTab === 'roosters' && (
@@ -533,141 +660,352 @@ export const AdminPanel: React.FC = () => {
           </div>
         )}
 
-        {/* TAB 2: LIVE CUSTOMER ORDERS (Amazon/Flipkart Style) */}
+        {/* TAB 2: LIVE CUSTOMER ORDERS (Amazon/Flipkart Style Command Center) */}
         {activeTab === 'orders' && (
-          <div className="space-y-4">
-            <div className="bg-white p-4 rounded-2xl border border-stone-200 shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-              <div>
-                <h3 className="font-bold text-stone-900 text-base flex items-center space-x-2">
-                  <Banknote className="w-5 h-5 text-amber-600" />
-                  <span>Online Customer Orders</span>
-                  <span className="bg-emerald-100 text-emerald-800 text-xs px-2 py-0.5 rounded-full font-extrabold">
-                    {orders.length} Total
-                  </span>
-                </h3>
-                <p className="text-xs text-stone-500">
-                  Track live orders placed through the website. Contact buyers, verify payments, and coordinate climate crate dispatch.
-                </p>
-              </div>
+          <div className="space-y-6">
+            
+            {/* Header & Filter Controls */}
+            <div className="bg-white p-5 rounded-2xl border border-stone-200 shadow-sm space-y-4">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pb-3 border-b border-stone-100">
+                <div>
+                  <h3 className="font-extrabold text-stone-900 text-lg flex items-center space-x-2">
+                    <Banknote className="w-5 h-5 text-amber-600" />
+                    <span>Customer Orders & Live Crate Dispatches</span>
+                    <span className="bg-amber-100 text-amber-950 text-xs px-2.5 py-0.5 rounded-full font-black border border-amber-300">
+                      {orders.length} Placed
+                    </span>
+                  </h3>
+                  <p className="text-xs text-stone-500 mt-0.5">
+                    Real-time orders placed via website cart & Buy Now. Verify buyers, print crate transit passes, and dispatch live climate crates.
+                  </p>
+                </div>
 
-              <div className="text-xs font-bold bg-amber-50 border border-amber-200 text-amber-900 px-3 py-1.5 rounded-xl">
-                Total Order Volume: ₹{orders.reduce((sum, o) => sum + o.price, 0).toLocaleString('en-IN')}
-              </div>
-            </div>
-
-            <div className="space-y-3">
-              {orders.map((order) => {
-                const customerWhatsAppUrl = generateWhatsAppLink({
-                  phone: order.phoneNumber,
-                  customMessage: `Hello ${order.customerName}! 🐓 JP Farms here regarding your Order #${order.id} for Rooster ${order.roosterName} (TAG: ${order.roosterTag}). We are preparing the bird and wanted to confirm your delivery schedule.`,
-                });
-
-                return (
-                  <div
-                    key={order.id}
-                    className="bg-white p-5 rounded-2xl border border-stone-200 shadow-sm hover:border-amber-300 transition space-y-4"
+                <div className="flex items-center space-x-2">
+                  <button
+                    onClick={handleExportOrdersCSV}
+                    className="inline-flex items-center space-x-1.5 bg-stone-100 hover:bg-stone-200 text-stone-700 font-bold px-3.5 py-2 rounded-xl text-xs transition"
+                    title="Export all orders to CSV for logistics"
                   >
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-stone-100">
-                      <div className="flex items-center space-x-3">
-                        <img
-                          src={order.roosterImage || 'https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?auto=format&fit=crop&w=400&q=80'}
-                          alt={order.roosterName}
-                          className="w-14 h-14 rounded-xl object-cover shrink-0 border border-stone-200 shadow-xs"
-                        />
-                        <div>
-                          <div className="flex items-center space-x-2">
-                            <span className="font-mono text-xs font-extrabold px-2 py-0.5 rounded bg-slate-900 text-amber-400">
-                              {order.id}
-                            </span>
-                            <span className="font-mono text-xs text-stone-600">
-                              TAG: #{order.roosterTag}
-                            </span>
-                          </div>
-                          <h4 className="text-sm font-bold text-stone-900 mt-0.5">
-                            {order.roosterName}
-                          </h4>
-                          <p className="text-xs text-stone-500">{order.roosterBreed}</p>
-                        </div>
-                      </div>
+                    <Download className="w-3.5 h-3.5 text-stone-600" />
+                    <span>Export CSV</span>
+                  </button>
+                </div>
+              </div>
 
-                      <div className="flex items-center space-x-3">
-                        <div className="text-right">
-                          <p className="text-base font-black text-emerald-700">
-                            ₹{order.price.toLocaleString('en-IN')}
-                          </p>
-                          <p className="text-[10px] text-stone-400">{order.orderDate}</p>
-                        </div>
+              {/* Search & Status Filter Pills */}
+              <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
+                <div className="relative flex-1 max-w-md">
+                  <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-stone-400" />
+                  <input
+                    type="text"
+                    placeholder="Search by Order ID, Name, Phone, City, Breed or Tag..."
+                    value={orderSearchQuery}
+                    onChange={(e) => setOrderSearchQuery(e.target.value)}
+                    className="w-full pl-9 pr-4 py-2 text-xs rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-amber-500 bg-stone-50/50"
+                  />
+                  {orderSearchQuery && (
+                    <button
+                      onClick={() => setOrderSearchQuery('')}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-600 text-xs"
+                    >
+                      ✕
+                    </button>
+                  )}
+                </div>
 
-                        <select
-                          value={order.status}
-                          onChange={(e) => updateOrderStatus(order.id, e.target.value as any)}
-                          className={`text-xs font-extrabold rounded-xl px-3 py-1.5 border ${
-                            order.status === 'confirmed'
-                              ? 'bg-amber-50 text-amber-900 border-amber-300'
-                              : order.status === 'dispatched'
-                              ? 'bg-sky-50 text-sky-900 border-sky-300'
-                              : 'bg-emerald-50 text-emerald-900 border-emerald-300'
-                          }`}
-                        >
-                          <option value="confirmed">Order Confirmed</option>
-                          <option value="dispatched">Dispatched / In Transit</option>
-                          <option value="delivered">Delivered & Complete</option>
-                        </select>
-                      </div>
-                    </div>
+                {/* Status Pills */}
+                <div className="flex items-center space-x-1.5 overflow-x-auto pb-1 sm:pb-0">
+                  <button
+                    onClick={() => setOrderStatusFilter('all')}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition whitespace-nowrap ${
+                      orderStatusFilter === 'all'
+                        ? 'bg-stone-900 text-white shadow-xs'
+                        : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
+                    }`}
+                  >
+                    All ({orders.length})
+                  </button>
 
-                    {/* Customer & Delivery Details */}
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs bg-stone-50 p-3.5 rounded-xl border border-stone-100">
-                      <div>
-                        <span className="block text-[10px] uppercase font-bold text-stone-400">Customer</span>
-                        <p className="font-bold text-stone-900">{order.customerName}</p>
-                        <p className="text-stone-600 font-mono">{order.phoneNumber}</p>
-                      </div>
+                  <button
+                    onClick={() => setOrderStatusFilter('confirmed')}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center space-x-1.5 whitespace-nowrap ${
+                      orderStatusFilter === 'confirmed'
+                        ? 'bg-amber-500 text-stone-950 font-black shadow-xs'
+                        : 'bg-amber-50 text-amber-900 hover:bg-amber-100 border border-amber-200'
+                    }`}
+                  >
+                    <span className="w-2 h-2 rounded-full bg-amber-500"></span>
+                    <span>Confirmed ({confirmedOrdersCount})</span>
+                  </button>
 
-                      <div>
-                        <span className="block text-[10px] uppercase font-bold text-stone-400">Delivery Address</span>
-                        <p className="text-stone-800 leading-snug">
-                          {order.deliveryAddress}, {order.city}, {order.state} - {order.pincode}
-                        </p>
-                        <span className="inline-block mt-0.5 text-[10px] font-bold text-sky-700">
-                          {order.deliveryType === 'doorstep_live_crate' ? '🚚 Live Crate Doorstep' : '🏡 Farm Pickup'}
-                        </span>
-                      </div>
+                  <button
+                    onClick={() => setOrderStatusFilter('dispatched')}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center space-x-1.5 whitespace-nowrap ${
+                      orderStatusFilter === 'dispatched'
+                        ? 'bg-sky-600 text-white shadow-xs'
+                        : 'bg-sky-50 text-sky-900 hover:bg-sky-100 border border-sky-200'
+                    }`}
+                  >
+                    <Truck className="w-3.5 h-3.5" />
+                    <span>In Transit ({dispatchedOrdersCount})</span>
+                  </button>
 
-                      <div>
-                        <span className="block text-[10px] uppercase font-bold text-stone-400">Payment & Notes</span>
-                        <p className="font-bold text-stone-900 uppercase">
-                          {order.paymentMethod === 'cod' ? '💵 Cash on Delivery' : order.paymentMethod === 'upi' ? '📱 Instant UPI' : '🪙 Advance Token'}
-                        </p>
-                        {order.notes && <p className="text-[11px] text-stone-500 italic mt-0.5">&ldquo;{order.notes}&rdquo;</p>}
-                      </div>
-                    </div>
-
-                    {/* Quick WhatsApp & Call Actions */}
-                    <div className="flex items-center gap-2 pt-1">
-                      <a
-                        href={customerWhatsAppUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex-1 flex items-center justify-center space-x-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2 rounded-xl text-xs transition"
-                      >
-                        <MessageCircle className="w-3.5 h-3.5" />
-                        <span>Chat on WhatsApp (Send Dispatch Update)</span>
-                      </a>
-
-                      <a
-                        href={`tel:${order.phoneNumber}`}
-                        className="flex items-center justify-center space-x-1.5 bg-stone-100 hover:bg-stone-200 text-stone-800 font-semibold py-2 px-4 rounded-xl text-xs transition"
-                      >
-                        <Phone className="w-3.5 h-3.5" />
-                        <span>Call Buyer</span>
-                      </a>
-                    </div>
-
-                  </div>
-                );
-              })}
+                  <button
+                    onClick={() => setOrderStatusFilter('delivered')}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center space-x-1.5 whitespace-nowrap ${
+                      orderStatusFilter === 'delivered'
+                        ? 'bg-emerald-600 text-white shadow-xs'
+                        : 'bg-emerald-50 text-emerald-900 hover:bg-emerald-100 border border-emerald-200'
+                    }`}
+                  >
+                    <CheckCircle2 className="w-3.5 h-3.5" />
+                    <span>Delivered ({deliveredOrdersCount})</span>
+                  </button>
+                </div>
+              </div>
             </div>
+
+            {/* Orders Feed */}
+            {filteredOrders.length === 0 ? (
+              <div className="bg-white rounded-2xl border border-stone-200 p-12 text-center space-y-3">
+                <div className="w-12 h-12 rounded-full bg-stone-100 flex items-center justify-center mx-auto text-stone-400">
+                  <Package className="w-6 h-6" />
+                </div>
+                <h4 className="font-bold text-stone-800 text-base">No orders found</h4>
+                <p className="text-xs text-stone-500 max-w-sm mx-auto">
+                  {orderSearchQuery
+                    ? `No orders matching "${orderSearchQuery}". Try clearing search filters.`
+                    : `No orders in "${orderStatusFilter}" status at this moment.`}
+                </p>
+                {(orderSearchQuery || orderStatusFilter !== 'all') && (
+                  <button
+                    onClick={() => {
+                      setOrderSearchQuery('');
+                      setOrderStatusFilter('all');
+                    }}
+                    className="text-xs font-bold text-amber-700 hover:underline pt-2 inline-block"
+                  >
+                    Reset Filters
+                  </button>
+                )}
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {filteredOrders.map((order) => {
+                  const birdsListFormatted = order.items && order.items.length > 0
+                    ? order.items.map((i) => `• *${i.roosterName}* (TAG: #${i.roosterTag}) - ₹${i.price.toLocaleString('en-IN')} x ${i.quantity}`).join('\n')
+                    : `• *${order.roosterName}* (TAG: #${order.roosterTag}) - ₹${order.price.toLocaleString('en-IN')}`;
+
+                  const dispatchWhatsAppUrl = generateWhatsAppLink({
+                    phone: order.phoneNumber,
+                    customMessage: `🐓 *JP FARMS • LIVE CRATE DISPATCH NOTICE*
+
+Dear *${order.customerName}*,
+Your order *#${order.id}* has been prepared and certified for dispatch!
+
+📦 *Consigned Roosters:*
+${birdsListFormatted}
+
+🚚 *Transit Mode:* ${order.deliveryType === 'doorstep_live_crate' ? 'Climate-Controlled Live Animal Crate' : 'Farm Gate Pickup'}
+📍 *Delivery Destination:* ${order.deliveryAddress}, ${order.city}, ${order.state} - ${order.pincode}
+💰 *Total Payable:* ₹${order.price.toLocaleString('en-IN')} (${order.paymentMethod.toUpperCase()})
+
+🩺 *Veterinary Status:* Avian Health Exam Passed • Ranikhet/ND & Fowl Pox Certified
+
+Our live transport driver will call you 2 hours prior to arrival. Thank you for choosing JP Farms!`,
+                  });
+
+                  return (
+                    <div
+                      key={order.id}
+                      className="bg-white p-5 rounded-2xl border border-stone-200 shadow-sm hover:border-amber-300 transition space-y-4"
+                    >
+                      {/* Top Bar: Order ID, Date, Amount, Status */}
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-stone-100">
+                        <div className="flex items-center space-x-3">
+                          <span className="font-mono text-xs font-black px-2.5 py-1 rounded-lg bg-stone-900 text-amber-400 tracking-wide shadow-xs">
+                            {order.id}
+                          </span>
+                          <span className="text-xs text-stone-400 font-medium">
+                            {order.orderDate}
+                          </span>
+                          <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full uppercase tracking-wider bg-stone-100 text-stone-700">
+                            {order.deliveryType === 'doorstep_live_crate' ? '🚚 Live Crate' : '🏡 Farm Pickup'}
+                          </span>
+                          <span className={`text-[10px] font-extrabold px-2 py-0.5 rounded-full uppercase tracking-wider ${
+                            order.paymentMethod === 'cod' ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' : 'bg-sky-50 text-sky-800 border border-sky-200'
+                          }`}>
+                            {order.paymentMethod === 'cod' ? '💵 COD' : '📱 UPI Paid'}
+                          </span>
+                        </div>
+
+                        <div className="flex items-center space-x-3 self-end sm:self-auto">
+                          <div className="text-right">
+                            <span className="text-[10px] uppercase font-bold text-stone-400 block">Total Amount</span>
+                            <p className="text-lg font-black text-emerald-700 leading-tight">
+                              ₹{order.price.toLocaleString('en-IN')}
+                            </p>
+                          </div>
+
+                          <select
+                            value={order.status}
+                            onChange={(e) => updateOrderStatus(order.id, e.target.value as any)}
+                            className={`text-xs font-extrabold rounded-xl px-3 py-1.5 border shadow-xs transition ${
+                              order.status === 'confirmed'
+                                ? 'bg-amber-50 text-amber-900 border-amber-300 ring-2 ring-amber-200/50'
+                                : order.status === 'dispatched'
+                                ? 'bg-sky-50 text-sky-900 border-sky-300 ring-2 ring-sky-200/50'
+                                : 'bg-emerald-50 text-emerald-900 border-emerald-300 ring-2 ring-emerald-200/50'
+                            }`}
+                          >
+                            <option value="confirmed">🟡 Order Confirmed (New)</option>
+                            <option value="dispatched">🚚 Dispatched / In Transit</option>
+                            <option value="delivered">🟢 Delivered & Complete</option>
+                          </select>
+                        </div>
+                      </div>
+
+                      {/* Birds in this Consignment (Multi-item breakdown) */}
+                      {order.items && order.items.length > 0 ? (
+                        <div className="bg-stone-50/80 rounded-xl p-3 border border-stone-200 space-y-2">
+                          <div className="flex items-center justify-between text-xs font-bold text-stone-700 pb-1 border-b border-stone-200/70">
+                            <span className="flex items-center space-x-1.5">
+                              <Package className="w-3.5 h-3.5 text-amber-600" />
+                              <span>Consigned Heritage Birds ({order.items.length} {order.items.length === 1 ? 'Rooster' : 'Roosters'})</span>
+                            </span>
+                            <span className="text-stone-500 font-medium">Live Animal Crate Package</span>
+                          </div>
+                          
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
+                            {order.items.map((item, idx) => (
+                              <div
+                                key={idx}
+                                className="flex items-center justify-between bg-white p-2.5 rounded-xl border border-stone-200 shadow-xs"
+                              >
+                                <div className="flex items-center space-x-3">
+                                  <img
+                                    src={item.roosterImage || 'https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?auto=format&fit=crop&w=200&q=80'}
+                                    alt={item.roosterName}
+                                    className="w-12 h-12 rounded-lg object-cover border border-stone-200 shrink-0"
+                                  />
+                                  <div>
+                                    <h5 className="font-bold text-stone-900 text-xs">{item.roosterName}</h5>
+                                    <p className="text-[11px] font-mono text-amber-800 font-bold">TAG: #{item.roosterTag}</p>
+                                    <p className="text-[10px] text-stone-500">{item.roosterBreed}</p>
+                                  </div>
+                                </div>
+                                <div className="text-right">
+                                  <p className="text-xs font-bold text-stone-900">₹{item.price.toLocaleString('en-IN')} × {item.quantity}</p>
+                                  <p className="text-[11px] font-extrabold text-emerald-700">₹{(item.price * item.quantity).toLocaleString('en-IN')}</p>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="flex items-center space-x-3 bg-stone-50 p-3 rounded-xl border border-stone-200">
+                          <img
+                            src={order.roosterImage || 'https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?auto=format&fit=crop&w=200&q=80'}
+                            alt={order.roosterName}
+                            className="w-12 h-12 rounded-lg object-cover border border-stone-200 shrink-0"
+                          />
+                          <div>
+                            <span className="font-mono text-xs text-amber-800 font-bold">TAG: #{order.roosterTag}</span>
+                            <h5 className="font-bold text-stone-900 text-xs">{order.roosterName}</h5>
+                            <p className="text-[11px] text-stone-500">{order.roosterBreed}</p>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Customer & Delivery Information */}
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs bg-stone-50/60 p-3.5 rounded-xl border border-stone-200">
+                        <div>
+                          <span className="block text-[10px] uppercase font-bold text-stone-400">Buyer Contact</span>
+                          <p className="font-bold text-stone-900 text-sm mt-0.5">{order.customerName}</p>
+                          <a
+                            href={`tel:${order.phoneNumber}`}
+                            className="text-stone-600 hover:text-amber-700 font-mono font-bold flex items-center space-x-1 mt-0.5"
+                          >
+                            <Phone className="w-3 h-3 text-stone-400" />
+                            <span>{order.phoneNumber}</span>
+                          </a>
+                        </div>
+
+                        <div>
+                          <span className="block text-[10px] uppercase font-bold text-stone-400">Destination Address</span>
+                          <p className="text-stone-800 leading-snug mt-0.5">
+                            {order.deliveryAddress}, {order.city}, {order.state} - {order.pincode}
+                          </p>
+                          <span className="inline-block mt-1 text-[10px] font-bold text-sky-700">
+                            {order.deliveryType === 'doorstep_live_crate' ? '🚚 Climate Crate Doorstep Delivery' : '🏡 Farm Gate Pickup'}
+                          </span>
+                        </div>
+
+                        <div>
+                          <span className="block text-[10px] uppercase font-bold text-stone-400">Payment & Special Notes</span>
+                          <p className="font-bold text-stone-900 uppercase mt-0.5">
+                            {order.paymentMethod === 'cod' ? '💵 Cash on Delivery (Pay at Crate Unboxing)' : order.paymentMethod === 'upi' ? '📱 Instant UPI / GPay' : '🪙 Advance Token'}
+                          </p>
+                          {order.notes ? (
+                            <p className="text-[11px] text-stone-600 italic mt-1 bg-amber-50/60 p-1.5 rounded border border-amber-200/50">
+                              &ldquo;{order.notes}&rdquo;
+                            </p>
+                          ) : (
+                            <p className="text-[11px] text-stone-400 italic mt-1">No special instructions</p>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Action Toolbar */}
+                      <div className="flex flex-wrap items-center gap-2 pt-1 border-t border-stone-100">
+                        <a
+                          href={dispatchWhatsAppUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex-1 min-w-[200px] flex items-center justify-center space-x-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2 px-3 rounded-xl text-xs transition shadow-xs"
+                          title="Open WhatsApp with pre-filled dispatch tracking message"
+                        >
+                          <MessageCircle className="w-3.5 h-3.5" />
+                          <span>WhatsApp Dispatch Update</span>
+                        </a>
+
+                        <button
+                          onClick={() => setPrintingOrder(order)}
+                          className="flex items-center justify-center space-x-1.5 bg-stone-900 hover:bg-stone-800 text-white font-bold py-2 px-3.5 rounded-xl text-xs transition shadow-xs"
+                          title="Generate printable bio-secure crate dispatch slip & veterinary certificate"
+                        >
+                          <Printer className="w-3.5 h-3.5 text-amber-400" />
+                          <span>Print Crate Pass</span>
+                        </button>
+
+                        <a
+                          href={`tel:${order.phoneNumber}`}
+                          className="flex items-center justify-center space-x-1.5 bg-stone-100 hover:bg-stone-200 text-stone-800 font-semibold py-2 px-3.5 rounded-xl text-xs transition"
+                          title="Call buyer directly"
+                        >
+                          <Phone className="w-3.5 h-3.5 text-stone-600" />
+                          <span>Call</span>
+                        </a>
+
+                        <button
+                          onClick={() => {
+                            if (confirm(`Are you sure you want to delete order ${order.id}?`)) {
+                              deleteOrder(order.id);
+                            }
+                          }}
+                          className="p-2 text-stone-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition"
+                          title="Delete Order"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+
           </div>
         )}
 
@@ -1090,6 +1428,181 @@ export const AdminPanel: React.FC = () => {
         )}
 
       </main>
+
+      {/* PRINTABLE LIVE CRATE SHIPPING PASS & VETERINARY CERTIFICATE MODAL */}
+      {printingOrder && (
+        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-white text-stone-900 rounded-3xl max-w-3xl w-full p-6 sm:p-8 shadow-2xl relative border border-stone-300 my-8 space-y-6">
+            
+            {/* Top Toolbar (Hidden during print) */}
+            <div className="flex items-center justify-between pb-4 border-b border-stone-200 print:hidden">
+              <div className="flex items-center space-x-2">
+                <ShieldCheck className="w-5 h-5 text-emerald-600" />
+                <h3 className="font-extrabold text-stone-900 text-sm sm:text-base">
+                  Live Animal Transit Pass & Veterinary Health Slip
+                </h3>
+              </div>
+
+              <div className="flex items-center space-x-2">
+                <button
+                  onClick={() => window.print()}
+                  className="inline-flex items-center space-x-1.5 bg-amber-500 hover:bg-amber-400 text-stone-950 font-black px-4 py-2 rounded-xl text-xs shadow-md transition"
+                >
+                  <Printer className="w-4 h-4" />
+                  <span>Print Slip / Save PDF</span>
+                </button>
+
+                <button
+                  onClick={() => setPrintingOrder(null)}
+                  className="p-2 text-stone-400 hover:text-stone-700 rounded-xl hover:bg-stone-100 transition"
+                  title="Close Pass"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+
+            {/* Official Pass Document Content (Printable Area) */}
+            <div className="bg-white p-6 rounded-2xl border-2 border-stone-900 space-y-6 font-sans">
+              
+              {/* Document Header */}
+              <div className="flex items-start justify-between border-b-2 border-stone-900 pb-4">
+                <div>
+                  <div className="flex items-center space-x-2">
+                    <span className="text-xl font-black tracking-tight text-stone-950">JP FARMS</span>
+                    <span className="text-[10px] uppercase font-bold tracking-widest px-1.5 py-0.5 rounded bg-stone-900 text-amber-400">
+                      EST. 2016
+                    </span>
+                  </div>
+                  <p className="text-xs font-semibold text-stone-600">Heritage Desi Rooster Conservation & Championship Breeding Estate</p>
+                  <p className="text-[11px] text-stone-500">Helpline: +91 98765 43210 • info@jpfarmsofficial.com • Andhra Pradesh, India</p>
+                </div>
+
+                <div className="text-right">
+                  <span className="inline-block bg-emerald-100 text-emerald-950 text-[10px] font-black px-2.5 py-1 rounded border border-emerald-300 uppercase tracking-wider">
+                    ✓ BIO-SECURE TRANSIT CLEARED
+                  </span>
+                  <p className="font-mono text-xs font-black text-stone-900 mt-1">CONSIGNMENT #{printingOrder.id}</p>
+                  <p className="text-[10px] text-stone-400">{printingOrder.orderDate}</p>
+                </div>
+              </div>
+
+              {/* Consignee & Dispatch Routing */}
+              <div className="grid grid-cols-2 gap-4 text-xs bg-stone-50 p-4 rounded-xl border border-stone-200">
+                <div>
+                  <span className="block text-[10px] font-extrabold uppercase tracking-wider text-stone-400">
+                    CONSIGNEE (BUYER) DETAILS
+                  </span>
+                  <p className="font-black text-stone-950 text-sm mt-0.5">{printingOrder.customerName}</p>
+                  <p className="font-mono font-bold text-stone-700 mt-0.5">{printingOrder.phoneNumber}</p>
+                  <p className="text-stone-800 mt-1 leading-snug">
+                    {printingOrder.deliveryAddress}, {printingOrder.city}, {printingOrder.state} - {printingOrder.pincode}
+                  </p>
+                </div>
+
+                <div>
+                  <span className="block text-[10px] font-extrabold uppercase tracking-wider text-stone-400">
+                    DISPATCH & PAYMENT MANIFEST
+                  </span>
+                  <p className="font-bold text-stone-900 mt-0.5">
+                    Mode: {printingOrder.deliveryType === 'doorstep_live_crate' ? '🚚 Climate-Controlled Live Animal Crate' : '🏡 Farm Gate Pickup'}
+                  </p>
+                  <p className="font-bold text-stone-900 mt-0.5">
+                    Payment Method: {printingOrder.paymentMethod === 'cod' ? 'Cash on Delivery (Pay at Unboxing)' : 'Instant UPI / Prepaid'}
+                  </p>
+                  <p className="font-black text-emerald-800 text-base mt-1">
+                    Total Amount: ₹{printingOrder.price.toLocaleString('en-IN')}
+                  </p>
+                  {printingOrder.notes && (
+                    <p className="text-[11px] text-stone-600 italic mt-0.5">Note: &ldquo;{printingOrder.notes}&rdquo;</p>
+                  )}
+                </div>
+              </div>
+
+              {/* Consigned Birds Table */}
+              <div className="space-y-2">
+                <span className="block text-[10px] font-extrabold uppercase tracking-wider text-stone-500">
+                  CONSIGNED BIRDS INVENTORY
+                </span>
+                <table className="w-full text-xs text-left border border-stone-200 rounded-xl overflow-hidden">
+                  <thead className="bg-stone-100 text-stone-700 uppercase font-bold text-[10px]">
+                    <tr>
+                      <th className="py-2 px-3">Tag ID</th>
+                      <th className="py-2 px-3">Rooster Name</th>
+                      <th className="py-2 px-3">Heritage Breed</th>
+                      <th className="py-2 px-3 text-center">Qty</th>
+                      <th className="py-2 px-3 text-right">Price</th>
+                      <th className="py-2 px-3 text-right">Avian Health Exam</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-stone-200">
+                    {printingOrder.items && printingOrder.items.length > 0 ? (
+                      printingOrder.items.map((item, idx) => (
+                        <tr key={idx} className="bg-white">
+                          <td className="py-2 px-3 font-mono font-bold text-amber-800">#{item.roosterTag}</td>
+                          <td className="py-2 px-3 font-bold text-stone-900">{item.roosterName}</td>
+                          <td className="py-2 px-3 text-stone-600">{item.roosterBreed}</td>
+                          <td className="py-2 px-3 text-center font-bold">{item.quantity}</td>
+                          <td className="py-2 px-3 text-right font-bold text-stone-900">₹{(item.price * item.quantity).toLocaleString('en-IN')}</td>
+                          <td className="py-2 px-3 text-right text-emerald-700 font-extrabold text-[11px]">✓ PASSED (Active)</td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr className="bg-white">
+                        <td className="py-2 px-3 font-mono font-bold text-amber-800">#{printingOrder.roosterTag}</td>
+                        <td className="py-2 px-3 font-bold text-stone-900">{printingOrder.roosterName}</td>
+                        <td className="py-2 px-3 text-stone-600">{printingOrder.roosterBreed}</td>
+                        <td className="py-2 px-3 text-center font-bold">1</td>
+                        <td className="py-2 px-3 text-right font-bold text-stone-900">₹{printingOrder.price.toLocaleString('en-IN')}</td>
+                        <td className="py-2 px-3 text-right text-emerald-700 font-extrabold text-[11px]">✓ PASSED (Active)</td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Veterinary Clearance Box */}
+              <div className="p-3.5 bg-emerald-50/70 border border-emerald-200 rounded-xl text-xs space-y-1">
+                <div className="flex items-center space-x-1.5 text-emerald-900 font-extrabold">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                  <span>VETERINARY HEALTH & BIO-SECURITY CLEARANCE</span>
+                </div>
+                <p className="text-[11px] text-emerald-950 leading-relaxed">
+                  The roosters documented in this consignment have undergone physical examination prior to boxing. Vaccinated against <strong>Ranikhet (ND-Lasota)</strong>, <strong>Fowl Pox</strong>, and <strong>Infectious Bursal Disease (IBD)</strong> with verified deworming schedule. Certified 100% free from communicable avian diseases.
+                </p>
+              </div>
+
+              {/* Live Animal Transport Instructions */}
+              <div className="p-3 bg-amber-50 border border-amber-300 rounded-xl text-xs space-y-1">
+                <p className="font-extrabold text-amber-950 uppercase tracking-wide flex items-center space-x-1.5">
+                  <AlertCircle className="w-3.5 h-3.5 text-amber-600" />
+                  <span>CRITICAL LIVE BIRD TRANSIT PROTOCOL</span>
+                </p>
+                <ul className="text-[10px] text-amber-900 list-disc list-inside space-y-0.5 font-medium">
+                  <li>Keep crate upright and well-ventilated at all times. Do not cover air vents.</li>
+                  <li>Do not stack heavy items or cargo on top of this live bird carrier.</li>
+                  <li>Store in shaded vehicle compartment between 20°C to 30°C. Protect from rain and direct midday sun.</li>
+                  <li>Seed and water sponge trays are affixed inside. Handle with care.</li>
+                </ul>
+              </div>
+
+              {/* Signature Block */}
+              <div className="grid grid-cols-2 gap-8 pt-4 border-t border-stone-200 text-xs">
+                <div>
+                  <p className="text-[10px] text-stone-400 uppercase font-bold">Consignment Inspector</p>
+                  <p className="font-bold text-stone-900 mt-6 pt-1 border-t border-stone-300">JP Farms Logistics Officer</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-[10px] text-stone-400 uppercase font-bold">Veterinary Clearance Officer</p>
+                  <p className="font-bold text-stone-900 mt-6 pt-1 border-t border-stone-300">Certified Avian Specialist</p>
+                </div>
+              </div>
+
+            </div>
+
+          </div>
+        </div>
+      )}
 
     </div>
   );
