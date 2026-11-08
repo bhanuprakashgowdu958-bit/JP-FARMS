@@ -91,53 +91,53 @@ export const RoosterCatalog: React.FC<RoosterCatalogProps> = ({
   }, [roosters, selectedCategory, selectedBadge, searchQuery, sortBy]);
 
   return (
-    <section id="showcase" className="py-16 sm:py-20 bg-stone-50/70 border-b border-stone-200">
+    <section id="showcase" className="py-16 sm:py-20 bg-gradient-to-b from-white via-sky-50/30 to-white border-b border-sky-100">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Section Header */}
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
           <div>
-            <div className="inline-flex items-center space-x-1.5 text-xs font-bold uppercase tracking-wider text-amber-700 bg-amber-100/80 px-3 py-1 rounded-full mb-2">
-              <Award className="w-3.5 h-3.5" />
+            <div className="inline-flex items-center space-x-1.5 text-xs font-bold uppercase tracking-wider text-sky-800 bg-sky-100/80 px-3 py-1 rounded-full mb-2">
+              <Award className="w-3.5 h-3.5 text-sky-600" />
               <span>Living Farm Heritage Gallery</span>
             </div>
-            <h2 className="text-3xl sm:text-4xl font-extrabold text-stone-900 tracking-tight">
+            <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
               Farm Studs & Purebred Rooster Showcase
             </h2>
-            <p className="text-stone-600 text-sm mt-1 max-w-2xl">
+            <p className="text-slate-600 text-sm mt-1 max-w-2xl">
               Explore pure indigenous bloodlines maintained at JP Farms. Each rooster is tagged with verifiable biological traits, comb anatomy, weight, and HD video documentation.
             </p>
           </div>
 
           {/* Quick Stats Badge */}
-          <div className="flex items-center space-x-2 text-xs font-semibold bg-white border border-stone-200 px-4 py-2.5 rounded-2xl shadow-sm self-start md:self-auto">
+          <div className="flex items-center space-x-2 text-xs font-semibold bg-white border border-sky-200 px-4 py-2.5 rounded-2xl shadow-sm self-start md:self-auto">
             <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
-            <span className="text-stone-800">
-              <strong className="text-emerald-700">{roosters.length} Registered Birds</strong> on Exhibition
+            <span className="text-slate-800">
+              <strong className="text-sky-700">{roosters.length} Registered Birds</strong> on Exhibition
             </span>
           </div>
         </div>
 
         {/* Filter Controls Bar */}
-        <div className="bg-white p-4 sm:p-5 rounded-2xl border border-stone-200 shadow-sm space-y-4 mb-8">
+        <div className="bg-white p-4 sm:p-5 rounded-2xl border border-sky-100 shadow-sm space-y-4 mb-8">
           
           {/* Top Row: Search & Badges Filters */}
           <div className="flex flex-col lg:flex-row gap-4 justify-between items-center">
             
             {/* Search Input */}
             <div className="relative w-full lg:w-96">
-              <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-stone-400" />
+              <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search Tag (e.g. JP-AS-101), Breed, or Lineage..."
-                className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-stone-200 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 bg-stone-50/50"
+                className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-sky-100 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 bg-sky-50/40"
               />
               {searchQuery && (
                 <button
                   onClick={() => setSearchQuery('')}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-stone-400 hover:text-stone-600"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400 hover:text-slate-600"
                 >
                   Clear
                 </button>
@@ -146,7 +146,7 @@ export const RoosterCatalog: React.FC<RoosterCatalogProps> = ({
 
             {/* Badge Filter Pills */}
             <div className="flex items-center space-x-1.5 w-full lg:w-auto overflow-x-auto pb-1 lg:pb-0 scrollbar-none">
-              <span className="text-xs font-bold text-stone-400 uppercase tracking-wider mr-1 hidden sm:inline">
+              <span className="text-xs font-bold text-slate-400 uppercase tracking-wider mr-1 hidden sm:inline">
                 Status:
               </span>
               {BADGES.map((badgeItem) => (
@@ -155,8 +155,8 @@ export const RoosterCatalog: React.FC<RoosterCatalogProps> = ({
                   onClick={() => setSelectedBadge(badgeItem.value)}
                   className={`px-3 py-1.5 rounded-xl text-xs font-bold transition whitespace-nowrap ${
                     selectedBadge === badgeItem.value
-                      ? 'bg-stone-900 text-amber-400 shadow-sm border border-amber-500/40'
-                      : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
+                      ? 'bg-sky-700 text-white shadow-sm'
+                      : 'bg-sky-50/60 text-slate-600 hover:bg-sky-100'
                   }`}
                 >
                   {badgeItem.label}
@@ -166,11 +166,11 @@ export const RoosterCatalog: React.FC<RoosterCatalogProps> = ({
 
             {/* Sort Dropdown */}
             <div className="flex items-center space-x-2 w-full lg:w-auto justify-end">
-              <SlidersHorizontal className="w-4 h-4 text-stone-400" />
+              <SlidersHorizontal className="w-4 h-4 text-slate-400" />
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value as any)}
-                className="bg-stone-100 border-none rounded-xl text-xs font-semibold px-3 py-2 text-stone-800 focus:ring-2 focus:ring-amber-500"
+                className="bg-sky-50 border-none rounded-xl text-xs font-semibold px-3 py-2 text-slate-800 focus:ring-2 focus:ring-sky-500"
               >
                 <option value="featured">Featured First</option>
                 <option value="weight">Heaviest Weight First</option>
@@ -182,15 +182,15 @@ export const RoosterCatalog: React.FC<RoosterCatalogProps> = ({
           </div>
 
           {/* Bottom Row: Category Tabs */}
-          <div className="pt-3 border-t border-stone-100 flex items-center space-x-2 overflow-x-auto pb-1 scrollbar-none">
+          <div className="pt-3 border-t border-sky-50 flex items-center space-x-2 overflow-x-auto pb-1 scrollbar-none">
             {CATEGORIES.map((cat) => (
               <button
                 key={cat.value}
                 onClick={() => setSelectedCategory(cat.value)}
                 className={`px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition ${
                   selectedCategory === cat.value
-                    ? 'bg-amber-600 text-white shadow-sm'
-                    : 'bg-stone-50 text-stone-600 hover:bg-stone-200/80'
+                    ? 'bg-gradient-to-r from-sky-600 to-sky-700 text-white shadow-sm'
+                    : 'bg-sky-50/60 text-slate-600 hover:bg-sky-100/70'
                 }`}
               >
                 {cat.label}

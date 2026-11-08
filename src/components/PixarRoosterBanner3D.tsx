@@ -229,7 +229,7 @@ export const PixarRoosterBanner3D: React.FC<PixarRoosterBanner3DProps> = () => {
 
   return (
     <section 
-      className="relative w-full aspect-[16/9] min-h-[480px] sm:min-h-[580px] lg:min-h-[720px] max-h-[88vh] overflow-hidden select-none border-b border-stone-800 bg-stone-950 group"
+      className="relative w-full aspect-[16/9] min-h-[480px] sm:min-h-[580px] lg:min-h-[720px] max-h-[88vh] overflow-hidden select-none border-b border-sky-200/60 bg-sky-950 group"
       aria-label={`JP Farms ${currentSlot.title} Rooster Showcase`}
     >
       {/* 100% UNIQUE HIGH-RESOLUTION CROSSFADE BANNERS */}
@@ -255,32 +255,32 @@ export const PixarRoosterBanner3D: React.FC<PixarRoosterBanner3DProps> = () => {
         );
       })}
 
-      {/* TOP-LEFT AMBIENT REAL-TIME BADGE */}
-      <div className="absolute top-4 left-4 z-20 flex items-center space-x-2.5 bg-stone-950/80 hover:bg-stone-950/95 backdrop-blur-md px-3.5 py-1.5 rounded-full border border-white/15 text-xs text-stone-200 shadow-2xl transition duration-300">
+      {/* TOP-LEFT AMBIENT REAL-TIME BADGE (Light Sky Blue Frosted Glass) */}
+      <div className="absolute top-4 left-4 z-20 flex items-center space-x-2.5 bg-white/90 hover:bg-white backdrop-blur-md px-3.5 py-1.5 rounded-full border border-sky-200/80 text-xs text-slate-800 shadow-lg transition duration-300">
         {isLiveMode ? (
           <span className="flex items-center space-x-1.5">
-            <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_8px_#34d399]" />
-            <span className="text-emerald-400 font-bold uppercase tracking-wider text-[10px]">LIVE FARM TIME</span>
+            <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_#10b981]" />
+            <span className="text-emerald-700 font-bold uppercase tracking-wider text-[10px]">LIVE FARM TIME</span>
           </span>
         ) : (
           <button 
             type="button" 
             onClick={handleSnapToLive}
-            className="flex items-center space-x-1 text-amber-400 hover:text-amber-300 font-semibold transition"
+            className="flex items-center space-x-1 text-sky-700 hover:text-sky-900 font-semibold transition"
             title="Click to snap back to real-time"
           >
-            <Clock className="w-3.5 h-3.5" />
+            <Clock className="w-3.5 h-3.5 text-sky-600" />
             <span className="text-[10px] uppercase font-bold underline">Return to Live</span>
           </button>
         )}
 
-        <div className="h-3 w-px bg-white/20" />
+        <div className="h-3 w-px bg-slate-200" />
 
         <div className="flex items-center space-x-1.5 font-medium">
-          <ActiveIcon className="w-3.5 h-3.5 text-amber-400" />
-          <span className="text-white font-semibold">{currentSlot.title}</span>
-          <span className="text-amber-300 text-[11px] font-mono">({slideIndex + 1}/{banners.length})</span>
-          <span className="hidden sm:inline text-stone-400 text-[11px]">({currentSlot.hoursLabel})</span>
+          <ActiveIcon className="w-3.5 h-3.5 text-amber-500" />
+          <span className="text-slate-900 font-semibold">{currentSlot.title}</span>
+          <span className="text-sky-700 text-[11px] font-mono font-bold">({slideIndex + 1}/{banners.length})</span>
+          <span className="hidden sm:inline text-slate-500 text-[11px]">({currentSlot.hoursLabel})</span>
         </div>
       </div>
 
@@ -289,25 +289,25 @@ export const PixarRoosterBanner3D: React.FC<PixarRoosterBanner3DProps> = () => {
         type="button"
         onClick={prevBanner}
         aria-label="Previous Banner"
-        className="absolute left-4 top-1/2 -translate-y-1/2 z-20 w-11 h-11 rounded-full bg-stone-950/40 hover:bg-stone-950/85 border border-white/20 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 hover:scale-110 active:scale-95 backdrop-blur-sm shadow-xl"
+        className="absolute left-4 top-1/2 -translate-y-1/2 z-20 w-11 h-11 rounded-full bg-white/85 hover:bg-white border border-sky-200 text-slate-800 hover:text-sky-600 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 hover:scale-110 active:scale-95 backdrop-blur-sm shadow-xl"
       >
-        <ChevronLeft className="w-6 h-6 text-amber-300" />
+        <ChevronLeft className="w-6 h-6 text-slate-700" />
       </button>
 
       <button
         type="button"
         onClick={nextBanner}
         aria-label="Next Banner"
-        className="absolute right-4 top-1/2 -translate-y-1/2 z-20 w-11 h-11 rounded-full bg-stone-950/40 hover:bg-stone-950/85 border border-white/20 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 hover:scale-110 active:scale-95 backdrop-blur-sm shadow-xl"
+        className="absolute right-4 top-1/2 -translate-y-1/2 z-20 w-11 h-11 rounded-full bg-white/85 hover:bg-white border border-sky-200 text-slate-800 hover:text-sky-600 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 hover:scale-110 active:scale-95 backdrop-blur-sm shadow-xl"
       >
-        <ChevronRight className="w-6 h-6 text-amber-300" />
+        <ChevronRight className="w-6 h-6 text-slate-700" />
       </button>
 
       {/* BOTTOM-CENTER CONTROLLER (TIME SLOTS + DYNAMIC SLIDE DOTS + 15S INDICATOR) */}
       <div className="absolute bottom-5 left-1/2 -translate-x-1/2 z-20 flex flex-col items-center space-y-2">
         
         {/* Active Slot's Slide Dots */}
-        <div className="flex items-center space-x-2 px-3 py-1 rounded-full bg-stone-950/60 backdrop-blur-md border border-white/10 shadow-lg">
+        <div className="flex items-center space-x-2 px-3 py-1 rounded-full bg-white/85 backdrop-blur-md border border-sky-200/80 shadow-md">
           {banners.map((banner, index) => {
             const isActive = index === slideIndex;
             return (
@@ -319,17 +319,17 @@ export const PixarRoosterBanner3D: React.FC<PixarRoosterBanner3DProps> = () => {
                 title={banner.title}
                 className={`h-1.5 rounded-full transition-all duration-500 ${
                   isActive 
-                    ? 'w-6 bg-amber-400 shadow-[0_0_8px_#f59e0b]' 
-                    : 'w-1.5 bg-white/40 hover:bg-white/70'
+                    ? 'w-6 bg-sky-600 shadow-[0_0_8px_#0284c7]' 
+                    : 'w-1.5 bg-slate-300 hover:bg-slate-400'
                 }`}
               />
             );
           })}
-          <span className="text-[9px] font-mono text-stone-400 pl-1">15s auto</span>
+          <span className="text-[9px] font-mono text-slate-500 pl-1">15s auto</span>
         </div>
 
         {/* 4 Time Slot Selection Pills */}
-        <div className="flex items-center space-x-1 sm:space-x-1.5 p-1 rounded-full bg-stone-950/85 backdrop-blur-md border border-white/15 shadow-2xl max-w-[95vw] overflow-x-auto">
+        <div className="flex items-center space-x-1 sm:space-x-1.5 p-1 rounded-full bg-white/90 backdrop-blur-md border border-sky-200/90 shadow-2xl max-w-[95vw] overflow-x-auto">
           
           {/* Real-Time Live Button */}
           <button
@@ -337,16 +337,16 @@ export const PixarRoosterBanner3D: React.FC<PixarRoosterBanner3DProps> = () => {
             onClick={handleSnapToLive}
             className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all duration-300 ${
               isLiveMode
-                ? 'bg-emerald-600 text-white shadow-[0_0_12px_#059669]'
-                : 'text-stone-300 hover:text-white hover:bg-white/10'
+                ? 'bg-emerald-600 text-white shadow-sm'
+                : 'text-slate-600 hover:text-slate-900 hover:bg-sky-50'
             }`}
             title="Snap to current real-world time"
           >
-            <span className={`w-2 h-2 rounded-full ${isLiveMode ? 'bg-white' : 'bg-emerald-400 animate-pulse'}`} />
+            <span className={`w-2 h-2 rounded-full ${isLiveMode ? 'bg-white' : 'bg-emerald-500 animate-pulse'}`} />
             <span>Live</span>
           </button>
 
-          <div className="h-4 w-px bg-white/15 mx-0.5" />
+          <div className="h-4 w-px bg-slate-200 mx-0.5" />
 
           {/* 4 Time Slots (Morning, Midday, Evening, Night) */}
           {(['morning', 'midday', 'evening', 'night'] as TimeSlotKey[]).map((slotKey) => {
@@ -362,18 +362,18 @@ export const PixarRoosterBanner3D: React.FC<PixarRoosterBanner3DProps> = () => {
                 onClick={() => handleSelectSlot(slotKey)}
                 className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-all duration-300 ${
                   isSelected
-                    ? 'bg-amber-500 text-stone-950 font-bold shadow-[0_0_14px_#f59e0b]'
-                    : 'text-stone-300 hover:text-white hover:bg-white/10'
+                    ? 'bg-gradient-to-r from-sky-600 to-sky-700 text-white font-bold shadow-md shadow-sky-600/30'
+                    : 'text-slate-600 hover:text-slate-900 hover:bg-sky-50'
                 }`}
                 title={`${slot.title} (${slot.hoursLabel}) - ${slot.banners.length} Unique Banners`}
               >
-                <SlotIcon className={`w-3.5 h-3.5 ${isSelected ? 'text-stone-950' : 'text-amber-400'}`} />
+                <SlotIcon className={`w-3.5 h-3.5 ${isSelected ? 'text-white' : 'text-amber-500'}`} />
                 <span>{slot.shortLabel}</span>
-                <span className={`text-[10px] px-1 py-0.2 rounded-full ${isSelected ? 'bg-stone-950/20 text-stone-950' : 'bg-white/10 text-stone-400'}`}>
+                <span className={`text-[10px] px-1 py-0.2 rounded-full ${isSelected ? 'bg-white/20 text-white' : 'bg-sky-100 text-sky-800'}`}>
                   {slot.banners.length}
                 </span>
                 {isActuallyLive && !isSelected && (
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 ml-0.5" title="Currently Live Time" />
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 ml-0.5" title="Currently Live Time" />
                 )}
               </button>
             );

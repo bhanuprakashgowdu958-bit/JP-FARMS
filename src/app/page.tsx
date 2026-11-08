@@ -46,7 +46,7 @@ export default function HomePage() {
   });
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#fbfdfa]">
+    <div className="min-h-screen flex flex-col bg-[#f4f9fd]">
       
       {/* Main Header */}
       <Header 
@@ -60,6 +60,13 @@ export default function HomePage() {
         <PixarRoosterBanner3D 
           onOpenReels={() => setIsReelsOpen(true)}
           onScheduleVisit={() => setInquiryRooster(roosters[0] || null)}
+        />
+
+        {/* High-Converting Grand Heritage Hero & Value Proposition */}
+        <Hero 
+          onOpenReels={() => setIsReelsOpen(true)}
+          onScheduleVisit={() => setInquiryRooster(roosters[0] || null)}
+          birdsCount={birdsCount}
         />
 
         {/* Colorful Grand Heritage Exhibition Banner & Marquee */}
@@ -98,12 +105,12 @@ export default function HomePage() {
         {/* Watch Reels Floating Trigger */}
         <button
           onClick={() => setIsReelsOpen(true)}
-          className="flex items-center space-x-2 bg-stone-900/90 hover:bg-stone-900 text-amber-400 font-bold px-3.5 py-2.5 rounded-full shadow-2xl border border-amber-500/40 backdrop-blur-md transition hover:scale-105 group"
+          className="flex items-center space-x-2 bg-white/95 hover:bg-white text-sky-800 font-bold px-3.5 py-2.5 rounded-full shadow-2xl border border-sky-300 backdrop-blur-md transition hover:scale-105 group"
           title="Watch Rooster Videos"
         >
-          <PlayCircle className="w-5 h-5 text-amber-400 group-hover:scale-110 transition" />
+          <PlayCircle className="w-5 h-5 text-sky-600 group-hover:scale-110 transition" />
           <span className="text-xs hidden sm:inline">Rooster TV</span>
-          <span className="bg-red-600 text-white text-[9px] font-extrabold px-1.5 py-0.5 rounded-full uppercase">
+          <span className="bg-sky-600 text-white text-[9px] font-extrabold px-1.5 py-0.5 rounded-full uppercase">
             Live
           </span>
         </button>

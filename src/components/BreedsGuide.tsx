@@ -48,19 +48,19 @@ const BREEDS_INFO = [
 
 export const BreedsGuide: React.FC = () => {
   return (
-    <section id="breeds" className="py-16 sm:py-24 bg-white border-b border-stone-200">
+    <section id="breeds" className="py-16 sm:py-24 bg-white border-b border-sky-100">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Header */}
         <div className="text-center max-w-3xl mx-auto mb-16 space-y-3">
-          <div className="inline-flex items-center space-x-1.5 text-xs font-bold uppercase tracking-wider text-amber-800 bg-amber-100 px-3 py-1 rounded-full">
-            <Award className="w-3.5 h-3.5 text-amber-700" />
+          <div className="inline-flex items-center space-x-1.5 text-xs font-bold uppercase tracking-wider text-sky-800 bg-sky-100 border border-sky-200 px-3 py-1 rounded-full">
+            <Award className="w-3.5 h-3.5 text-sky-600" />
             <span>Preserving Indian Avian Heritage</span>
           </div>
-          <h2 className="text-3xl sm:text-4xl font-extrabold text-stone-900 tracking-tight">
+          <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
             Our Pure Heritage Breeds
           </h2>
-          <p className="text-stone-600 text-sm sm:text-base leading-relaxed">
+          <p className="text-slate-600 text-sm sm:text-base leading-relaxed">
             At <strong>JP Farms</strong>, we do not cross-breed commercial broilers. We maintain pure genetic lines of indigenous Indian gamefowl and country roosters, carefully selecting for bone density, disease immunity, temperament, and plumage fidelity.
           </p>
         </div>
@@ -70,20 +70,20 @@ export const BreedsGuide: React.FC = () => {
           {BREEDS_INFO.map((breed, index) => (
             <div
               key={index}
-              className="bg-stone-50 rounded-2xl border border-stone-200 overflow-hidden flex flex-col hover:border-amber-500/50 hover:shadow-lg transition-all duration-300 group"
+              className="bg-sky-50/30 rounded-2xl border border-sky-100 overflow-hidden flex flex-col hover:border-sky-300 hover:shadow-lg transition-all duration-300 group"
             >
-              <div className="relative h-48 overflow-hidden bg-stone-900">
+              <div className="relative h-48 overflow-hidden bg-slate-900">
                 <img
                   src={breed.image}
                   alt={breed.name}
                   className="w-full h-full object-cover group-hover:scale-105 transition duration-500"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-stone-950 via-transparent to-transparent"></div>
+                <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-transparent"></div>
                 <div className="absolute bottom-3 left-3 right-3 flex justify-between items-end">
-                  <span className="text-xs font-bold text-amber-400 bg-stone-900/80 px-2 py-0.5 rounded">
+                  <span className="text-xs font-bold text-amber-300 bg-slate-900/80 px-2 py-0.5 rounded">
                     {breed.hindiName}
                   </span>
-                  <span className="text-[11px] font-mono text-stone-300 bg-stone-950/80 px-2 py-0.5 rounded">
+                  <span className="text-[11px] font-mono text-slate-300 bg-slate-950/80 px-2 py-0.5 rounded">
                     {breed.weight}
                   </span>
                 </div>
@@ -91,22 +91,22 @@ export const BreedsGuide: React.FC = () => {
 
               <div className="p-5 flex-1 flex flex-col justify-between space-y-4">
                 <div>
-                  <h3 className="text-lg font-bold text-stone-900 group-hover:text-amber-700 transition">
+                  <h3 className="text-lg font-bold text-slate-900 group-hover:text-sky-700 transition">
                     {breed.name}
                   </h3>
-                  <p className="text-xs font-semibold text-amber-700 mt-0.5">
+                  <p className="text-xs font-semibold text-sky-700 mt-0.5">
                     {breed.tagline}
                   </p>
-                  <p className="text-[11px] text-stone-500 mt-1">
+                  <p className="text-[11px] text-slate-500 mt-1">
                     Origin: {breed.origin}
                   </p>
 
                   <div className="mt-3 space-y-1.5">
-                    <p className="text-[10px] uppercase font-bold text-stone-400">Key Pure Traits:</p>
-                    <ul className="text-xs text-stone-700 space-y-1">
+                    <p className="text-[10px] uppercase font-bold text-slate-400">Key Pure Traits:</p>
+                    <ul className="text-xs text-slate-700 space-y-1">
                       {breed.traits.map((trait, tIdx) => (
                         <li key={tIdx} className="flex items-center space-x-1.5">
-                          <span className="w-1.5 h-1.5 rounded-full bg-amber-500 shrink-0"></span>
+                          <span className="w-1.5 h-1.5 rounded-full bg-sky-500 shrink-0"></span>
                           <span>{trait}</span>
                         </li>
                       ))}
@@ -114,9 +114,9 @@ export const BreedsGuide: React.FC = () => {
                   </div>
                 </div>
 
-                <div className="pt-3 border-t border-stone-200">
-                  <p className="text-[11px] text-stone-600">
-                    <strong className="text-stone-800">Ideal For:</strong> {breed.bestFor}
+                <div className="pt-3 border-t border-sky-100">
+                  <p className="text-[11px] text-slate-600">
+                    <strong className="text-slate-800">Ideal For:</strong> {breed.bestFor}
                   </p>
                 </div>
               </div>

@@ -20,32 +20,32 @@ export const Header: React.FC<HeaderProps> = ({ onOpenReels, birdsCount = 7 }) =
   });
 
   return (
-    <header className="sticky top-0 z-40 bg-stone-950/95 backdrop-blur-md border-b border-stone-800 text-stone-100">
-      {/* Top Banner: Farm Heritage & Visitors Welcome */}
-      <div className="bg-emerald-950/80 border-b border-emerald-900/60 text-xs px-4 py-1.5 text-stone-300">
+    <header className="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-sky-100 text-slate-800 shadow-sm">
+      {/* Top Banner: Farm Heritage & Visitors Welcome (Light Sky Blue Tint) */}
+      <div className="bg-sky-50/90 border-b border-sky-100/80 text-xs px-4 py-1.5 text-sky-950">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div className="flex items-center space-x-3">
-            <span className="flex items-center text-emerald-400 font-medium">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse mr-1.5 inline-block"></span>
-              {birdsCount} Champion Strains Documented • Visitors Welcome
+            <span className="flex items-center text-sky-800 font-semibold">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse mr-1.5 inline-block"></span>
+              {birdsCount} Champion Strains Documented • Visitors Welcome Daily
             </span>
-            <span className="hidden sm:inline text-stone-500">•</span>
-            <span className="hidden sm:inline text-stone-400">Pure Indian Gamefowl & Desi Avian Conservation</span>
+            <span className="hidden sm:inline text-sky-300">•</span>
+            <span className="hidden sm:inline text-sky-700">Pure Indian Gamefowl & Desi Avian Conservation</span>
           </div>
           <div className="flex items-center space-x-4">
             <a 
               href={`tel:${FARM_INFO.phone}`} 
-              className="flex items-center text-stone-300 hover:text-emerald-400 transition"
+              className="flex items-center text-sky-800 hover:text-sky-950 font-medium transition"
             >
-              <Phone className="w-3 h-3 mr-1" />
+              <Phone className="w-3 h-3 mr-1 text-sky-600" />
               <span>Farm Helpline: {FARM_INFO.phone}</span>
             </a>
             <Link
               href="/admin"
-              className="text-stone-400 hover:text-amber-400 transition flex items-center space-x-1 pl-2 border-l border-stone-700"
+              className="text-sky-700 hover:text-amber-700 transition flex items-center space-x-1 pl-2 border-l border-sky-200"
               title="Farm Owner Showcase Manager"
             >
-              <Settings className="w-3 h-3" />
+              <Settings className="w-3 h-3 text-sky-600" />
               <span className="hidden md:inline">Admin</span>
             </Link>
           </div>
@@ -58,51 +58,51 @@ export const Header: React.FC<HeaderProps> = ({ onOpenReels, birdsCount = 7 }) =
           
           {/* Logo */}
           <Link href="/" className="flex items-center space-x-3 group">
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-amber-600 to-amber-700 p-0.5 shadow-lg shadow-amber-900/40 group-hover:scale-105 transition duration-200">
-              <div className="w-full h-full bg-stone-950 rounded-[10px] flex items-center justify-center">
-                <Feather className="w-6 h-6 text-amber-500 transform -rotate-12" />
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-amber-500 to-amber-600 p-0.5 shadow-md shadow-amber-500/20 group-hover:scale-105 transition duration-200">
+              <div className="w-full h-full bg-white rounded-[10px] flex items-center justify-center">
+                <Feather className="w-6 h-6 text-amber-600 transform -rotate-12" />
               </div>
             </div>
             <div>
               <div className="flex items-center space-x-1.5">
-                <span className="font-extrabold text-2xl tracking-tight text-white group-hover:text-amber-400 transition">
+                <span className="font-extrabold text-2xl tracking-tight text-slate-900 group-hover:text-sky-700 transition">
                   JP FARMS
                 </span>
-                <span className="text-[10px] uppercase font-bold tracking-widest px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-400 border border-amber-500/30">
+                <span className="text-[10px] uppercase font-bold tracking-widest px-1.5 py-0.5 rounded bg-sky-100 text-sky-800 border border-sky-200">
                   Est. 2016
                 </span>
               </div>
-              <p className="text-[11px] text-stone-400 tracking-wide">
+              <p className="text-[11px] text-slate-500 tracking-wide">
                 Heritage Desi Rooster Showcase Estate
               </p>
             </div>
           </Link>
 
           {/* Desktop Nav Links */}
-          <nav className="hidden lg:flex items-center space-x-7 text-sm font-medium text-stone-300">
-            <a href="#showcase" className="hover:text-amber-400 transition py-1">
+          <nav className="hidden lg:flex items-center space-x-7 text-sm font-medium text-slate-600">
+            <a href="#showcase" className="hover:text-sky-600 transition py-1">
               Rooster Showcase
             </a>
-            <a href="#breeds" className="hover:text-amber-400 transition py-1">
+            <a href="#breeds" className="hover:text-sky-600 transition py-1">
               Pure Breeds
             </a>
             <button
               onClick={onOpenReels}
-              className="flex items-center space-x-1.5 text-amber-400 hover:text-amber-300 font-semibold bg-amber-950/40 hover:bg-amber-950/70 border border-amber-600/40 px-3 py-1.5 rounded-full transition group"
+              className="flex items-center space-x-1.5 text-sky-700 hover:text-sky-800 font-semibold bg-sky-50 hover:bg-sky-100/80 border border-sky-200 px-3 py-1.5 rounded-full transition group shadow-xs"
             >
-              <PlayCircle className="w-4 h-4 text-amber-400 group-hover:scale-110 transition" />
+              <PlayCircle className="w-4 h-4 text-sky-600 group-hover:scale-110 transition" />
               <span>Rooster TV (Videos)</span>
-              <span className="bg-amber-600 text-stone-950 text-[9px] font-extrabold px-1.5 py-0.2 rounded-full uppercase tracking-wider">
+              <span className="bg-sky-600 text-white text-[9px] font-extrabold px-1.5 py-0.2 rounded-full uppercase tracking-wider">
                 HD
               </span>
             </button>
-            <a href="#biosecurity" className="hover:text-amber-400 transition py-1">
+            <a href="#biosecurity" className="hover:text-sky-600 transition py-1">
               Diet & Care
             </a>
-            <a href="#visit" className="hover:text-amber-400 transition py-1">
+            <a href="#visit-guide" className="hover:text-sky-600 transition py-1">
               Farm Visit
             </a>
-            <a href="#community" className="hover:text-amber-400 transition py-1">
+            <a href="#reviews" className="hover:text-sky-600 transition py-1">
               Breeder Community
             </a>
           </nav>
@@ -113,7 +113,7 @@ export const Header: React.FC<HeaderProps> = ({ onOpenReels, birdsCount = 7 }) =
               href={generalWhatsAppUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center space-x-2 bg-emerald-700 hover:bg-emerald-600 text-white text-sm font-semibold px-4 py-2.5 rounded-xl shadow-lg transition active:scale-95"
+              className="flex items-center space-x-2 bg-gradient-to-r from-sky-600 to-sky-700 hover:from-sky-500 hover:to-sky-600 text-white text-sm font-semibold px-4 py-2.5 rounded-xl shadow-md shadow-sky-600/20 transition active:scale-95"
             >
               <MessageCircle className="w-4 h-4" />
               <span>Connect with Farm</span>
@@ -125,15 +125,15 @@ export const Header: React.FC<HeaderProps> = ({ onOpenReels, birdsCount = 7 }) =
             {onOpenReels && (
               <button
                 onClick={onOpenReels}
-                className="flex items-center space-x-1 text-xs font-bold text-amber-400 bg-amber-950/60 border border-amber-600/40 px-2.5 py-1.5 rounded-lg"
+                className="flex items-center space-x-1 text-xs font-bold text-sky-700 bg-sky-50 border border-sky-200 px-2.5 py-1.5 rounded-lg"
               >
-                <PlayCircle className="w-4 h-4" />
+                <PlayCircle className="w-4 h-4 text-sky-600" />
                 <span>Videos</span>
               </button>
             )}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="text-stone-300 hover:text-white p-2 rounded-lg bg-stone-900 border border-stone-800"
+              className="text-slate-700 hover:text-slate-900 p-2 rounded-lg bg-sky-50 border border-sky-100"
               aria-label="Toggle menu"
             >
               {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
@@ -144,19 +144,19 @@ export const Header: React.FC<HeaderProps> = ({ onOpenReels, birdsCount = 7 }) =
 
       {/* Mobile Drawer */}
       {mobileMenuOpen && (
-        <div className="lg:hidden bg-stone-900 border-b border-stone-800 px-4 pt-3 pb-6 space-y-3">
-          <nav className="flex flex-col space-y-3 text-base font-medium text-stone-200">
+        <div className="lg:hidden bg-white border-b border-sky-200 px-4 pt-3 pb-6 space-y-3 shadow-lg">
+          <nav className="flex flex-col space-y-3 text-base font-medium text-slate-700">
             <a
               href="#showcase"
               onClick={() => setMobileMenuOpen(false)}
-              className="p-2 hover:bg-stone-800 rounded-lg"
+              className="p-2 hover:bg-sky-50 rounded-lg text-slate-800"
             >
               🐓 Rooster Showcase ({birdsCount} Strains)
             </a>
             <a
               href="#breeds"
               onClick={() => setMobileMenuOpen(false)}
-              className="p-2 hover:bg-stone-800 rounded-lg"
+              className="p-2 hover:bg-sky-50 rounded-lg text-slate-800"
             >
               🛡️ Heritage Breeds (Aseel, Kadaknath, Desi)
             </a>
@@ -165,46 +165,46 @@ export const Header: React.FC<HeaderProps> = ({ onOpenReels, birdsCount = 7 }) =
                 setMobileMenuOpen(false);
                 onOpenReels?.();
               }}
-              className="flex items-center justify-between p-2 bg-amber-950/40 border border-amber-600/40 text-amber-400 rounded-lg text-left"
+              className="flex items-center justify-between p-2 bg-sky-50 border border-sky-200 text-sky-800 rounded-lg text-left"
             >
               <span className="flex items-center space-x-2">
-                <PlayCircle className="w-5 h-5" />
-                <span>Watch Rooster TV Videos</span>
+                <PlayCircle className="w-5 h-5 text-sky-600" />
+                <span className="font-semibold">Watch Rooster TV Videos</span>
               </span>
-              <span className="bg-amber-600 text-stone-950 text-[10px] font-bold px-2 py-0.5 rounded-full">
+              <span className="bg-sky-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
                 VIDEOS
               </span>
             </button>
             <a
               href="#biosecurity"
               onClick={() => setMobileMenuOpen(false)}
-              className="p-2 hover:bg-stone-800 rounded-lg"
+              className="p-2 hover:bg-sky-50 rounded-lg text-slate-800"
             >
               🌿 Organic Nutrition & Natural Care
             </a>
             <a
-              href="#visit"
+              href="#visit-guide"
               onClick={() => setMobileMenuOpen(false)}
-              className="p-2 hover:bg-stone-800 rounded-lg"
+              className="p-2 hover:bg-sky-50 rounded-lg text-slate-800"
             >
               📍 Schedule a Farm Visit
             </a>
             <Link
               href="/admin"
               onClick={() => setMobileMenuOpen(false)}
-              className="p-2 text-stone-400 hover:text-amber-400 rounded-lg flex items-center space-x-2"
+              className="p-2 text-slate-500 hover:text-sky-700 rounded-lg flex items-center space-x-2"
             >
-              <Settings className="w-4 h-4" />
+              <Settings className="w-4 h-4 text-sky-600" />
               <span>Showcase Manager (Admin)</span>
             </Link>
           </nav>
 
-          <div className="pt-3 border-t border-stone-800 flex flex-col gap-2">
+          <div className="pt-3 border-t border-sky-100 flex flex-col gap-2">
             <a
               href={generalWhatsAppUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center justify-center space-x-2 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold py-3 rounded-xl shadow-lg"
+              className="flex items-center justify-center space-x-2 bg-gradient-to-r from-sky-600 to-sky-700 hover:from-sky-500 hover:to-sky-600 text-white font-semibold py-3 rounded-xl shadow-md"
             >
               <MessageCircle className="w-5 h-5" />
               <span>Message Farm on WhatsApp</span>
