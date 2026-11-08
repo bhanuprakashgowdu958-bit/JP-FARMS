@@ -40,6 +40,16 @@ export interface Rooster {
   views?: number;
 }
 
+export interface RoosterOrderItem {
+  roosterId: string;
+  roosterTag: string;
+  roosterName: string;
+  roosterBreed: string;
+  roosterImage: string;
+  price: number;
+  quantity: number;
+}
+
 export interface RoosterOrder {
   id: string; // e.g. "JP-ORD-94821"
   roosterId: string;
@@ -48,6 +58,7 @@ export interface RoosterOrder {
   roosterBreed: string;
   roosterImage: string;
   price: number;
+  items?: RoosterOrderItem[];
   customerName: string;
   phoneNumber: string;
   deliveryAddress: string;

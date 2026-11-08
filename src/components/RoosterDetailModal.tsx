@@ -17,12 +17,14 @@ import {
   Ruler, 
   Eye, 
   Calendar,
-  MapPin
+  MapPin,
+  ShoppingCart
 } from 'lucide-react';
 import { Rooster } from '@/types/rooster';
 import { FARM_INFO } from '@/lib/data';
 import { generateWhatsAppLink } from '@/lib/utils';
 import { BreedCertificateModal } from './BreedCertificateModal';
+import { useCart } from '@/lib/cartStore';
 
 interface RoosterDetailModalProps {
   rooster: Rooster | null;
@@ -41,6 +43,8 @@ export const RoosterDetailModal: React.FC<RoosterDetailModalProps> = ({
   const [selectedPhotoIndex, setSelectedPhotoIndex] = useState(0);
   const [copiedLink, setCopiedLink] = useState(false);
   const [showCertificate, setShowCertificate] = useState(false);
+
+  const { addToCart, isInCart, openCart } = useCart();
 
   if (!rooster) return null;
 
@@ -243,18 +247,32 @@ export const RoosterDetailModal: React.FC<RoosterDetailModalProps> = ({
                 </p>
               </div>
 
-              {onBuyNow && (
+              <div className="flex items-center space-x-2 shrink-0">
                 <button
                   type="button"
                   onClick={() => {
+                    addToCart(rooster);
                     onClose();
-                    onBuyNow(rooster);
                   }}
-                  className="inline-flex items-center justify-center space-x-2 bg-gradient-to-r from-amber-500 via-amber-600 to-amber-500 hover:from-amber-400 hover:to-amber-500 text-stone-950 font-black px-6 py-3 rounded-xl text-sm shadow-lg shadow-amber-500/20 transition active:scale-95 shrink-0"
+                  className="inline-flex items-center justify-center space-x-1.5 bg-white hover:bg-stone-100 text-stone-900 border border-stone-300 font-extrabold px-4 py-3 rounded-xl text-xs sm:text-sm shadow-xs transition active:scale-95"
                 >
-                  <span>⚡ Buy This Rooster</span>
+                  <ShoppingCart className="w-4 h-4 text-stone-900" />
+                  <span>Add to Cart</span>
                 </button>
-              )}
+
+                {onBuyNow && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onClose();
+                      onBuyNow(rooster);
+                    }}
+                    className="inline-flex items-center justify-center space-x-1.5 bg-gradient-to-r from-amber-500 via-amber-600 to-amber-500 hover:from-amber-400 hover:to-amber-500 text-stone-950 font-black px-5 py-3 rounded-xl text-xs sm:text-sm shadow-lg shadow-amber-500/20 transition active:scale-95"
+                  >
+                    <span>⚡ Buy Now</span>
+                  </button>
+                )}
+              </div>
             </div>
 
             {/* Biological Specifications Matrix */}

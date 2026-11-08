@@ -13,14 +13,17 @@ import { RoosterDetailModal } from '@/components/RoosterDetailModal';
 import { RoosterReelsModal } from '@/components/RoosterReelsModal';
 import { BookingModal } from '@/components/BookingModal';
 import { CheckoutModal } from '@/components/CheckoutModal';
+import { CartSlideOver } from '@/components/CartSlideOver';
 import { useRoosters } from '@/lib/roosterStore';
+import { useCart } from '@/lib/cartStore';
 import { Rooster } from '@/types/rooster';
-import { PlayCircle, MessageCircle } from 'lucide-react';
+import { PlayCircle, MessageCircle, ShoppingBag, ArrowRight } from 'lucide-react';
 import { FARM_INFO } from '@/lib/data';
 import { generateWhatsAppLink } from '@/lib/utils';
 
 export default function HomePage() {
   const { roosters, isLoaded } = useRoosters();
+  const { cartCount, cartTotal, openCart } = useCart();
 
   const [selectedRooster, setSelectedRooster] = useState<Rooster | null>(null);
   const [inquiryRooster, setInquiryRooster] = useState<Rooster | null>(null);
@@ -157,6 +160,30 @@ export default function HomePage() {
         isOpen={!!checkoutRooster}
         onClose={() => setCheckoutRooster(null)}
       />
+
+      {/* 5. Amazon/Flipkart Slide-Over Shopping Cart & Multi-Item Checkout Drawer */}
+      <CartSlideOver />
+
+      {/* Mobile Sticky Bottom Cart Banner */}
+      {cartCount > 0 && (
+        <div className="fixed bottom-0 inset-x-0 z-40 bg-white/95 backdrop-blur-md border-t border-amber-200 px-4 py-2.5 shadow-2xl flex items-center justify-between sm:hidden">
+          <div>
+            <span className="text-[11px] text-slate-500 font-bold block">
+              {cartCount} {cartCount === 1 ? 'Rooster' : 'Roosters'} in Cart
+            </span>
+            <span className="text-base font-black text-slate-900">
+              ₹{cartTotal.toLocaleString('en-IN')}
+            </span>
+          </div>
+          <button
+            onClick={openCart}
+            className="flex items-center space-x-1.5 bg-gradient-to-r from-amber-500 to-amber-600 text-stone-950 font-black px-4 py-2 rounded-xl text-xs shadow-md active:scale-95"
+          >
+            <span>View Cart & Buy</span>
+            <ArrowRight className="w-4 h-4" />
+          </button>
+        </div>
+      )}
 
     </div>
   );

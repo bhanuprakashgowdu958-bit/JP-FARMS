@@ -2,9 +2,10 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { Phone, MessageCircle, PlayCircle, ShieldCheck, Menu, X, Settings, Feather, Sparkles, MapPin } from 'lucide-react';
+import { Phone, MessageCircle, PlayCircle, ShieldCheck, Menu, X, Settings, Feather, Sparkles, MapPin, ShoppingCart } from 'lucide-react';
 import { FARM_INFO } from '@/lib/data';
 import { generateWhatsAppLink } from '@/lib/utils';
+import { useCart } from '@/lib/cartStore';
 
 interface HeaderProps {
   onOpenReels?: () => void;
@@ -13,6 +14,7 @@ interface HeaderProps {
 
 export const Header: React.FC<HeaderProps> = ({ onOpenReels, birdsCount = 7 }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { cartCount, openCart } = useCart();
 
   const generalWhatsAppUrl = generateWhatsAppLink({
     phone: FARM_INFO.whatsapp,
@@ -112,12 +114,21 @@ export const Header: React.FC<HeaderProps> = ({ onOpenReels, birdsCount = 7 }) =
 
           {/* Quick Actions */}
           <div className="hidden sm:flex items-center space-x-2 shrink-0">
-            <a
-              href="#showcase"
-              className="flex items-center space-x-1.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-stone-950 text-xs font-black px-3.5 py-2.5 rounded-xl shadow-md shadow-amber-500/20 transition active:scale-95 whitespace-nowrap"
+            {/* Live Shopping Cart Button (Amazon/Flipkart Style) */}
+            <button
+              type="button"
+              onClick={openCart}
+              className="relative flex items-center space-x-1.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-stone-950 text-xs font-black px-3.5 py-2.5 rounded-xl shadow-md shadow-amber-500/20 transition active:scale-95 whitespace-nowrap group"
+              title="View Shopping Cart"
             >
-              <span>⚡ Buy Now</span>
-            </a>
+              <ShoppingCart className="w-4 h-4 text-stone-950 group-hover:scale-110 transition" />
+              <span>Cart</span>
+              {cartCount > 0 && (
+                <span className="bg-stone-950 text-amber-300 text-[10px] font-black px-1.5 py-0.5 rounded-full min-w-[18px] text-center border border-amber-400/50 animate-pulse">
+                  {cartCount}
+                </span>
+              )}
+            </button>
 
             <a
               href={generalWhatsAppUrl}
@@ -130,8 +141,24 @@ export const Header: React.FC<HeaderProps> = ({ onOpenReels, birdsCount = 7 }) =
             </a>
           </div>
 
-          {/* Mobile Menu Button */}
+          {/* Mobile Actions: Cart & Menu Button */}
           <div className="flex items-center lg:hidden space-x-2">
+            {/* Mobile Cart Button */}
+            <button
+              type="button"
+              onClick={openCart}
+              className="relative p-2 rounded-lg bg-amber-500 text-stone-950 font-bold flex items-center justify-center shadow-xs"
+              aria-label="Open cart"
+              title="Cart"
+            >
+              <ShoppingCart className="w-5 h-5 text-stone-950" />
+              {cartCount > 0 && (
+                <span className="absolute -top-1.5 -right-1.5 bg-stone-950 text-amber-300 text-[9px] font-black w-4 h-4 rounded-full flex items-center justify-center border border-white">
+                  {cartCount}
+                </span>
+              )}
+            </button>
+
             {onOpenReels && (
               <button
                 onClick={onOpenReels}

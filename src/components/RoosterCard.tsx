@@ -1,10 +1,11 @@
 'use client';
 
 import React from 'react';
-import { PlayCircle, MessageCircle, Eye, CheckCircle2, Award, Sparkles } from 'lucide-react';
+import { PlayCircle, MessageCircle, Eye, CheckCircle2, Award, Sparkles, ShoppingCart, Check } from 'lucide-react';
 import { Rooster } from '@/types/rooster';
 import { FARM_INFO } from '@/lib/data';
 import { generateWhatsAppLink } from '@/lib/utils';
+import { useCart } from '@/lib/cartStore';
 
 interface RoosterCardProps {
   rooster: Rooster;
@@ -25,6 +26,9 @@ export const RoosterCard: React.FC<RoosterCardProps> = ({
     phone: FARM_INFO.whatsapp,
     customMessage: `Hello JP Farms! 🐓 I am viewing Rooster #${rooster.tagId} (${rooster.name}, ${rooster.breed}) on your website. I would love to learn more about its bloodline and plan a farm visit.`,
   });
+
+  const { addToCart, isInCart, openCart } = useCart();
+  const inCart = isInCart(rooster.id);
 
   const price = rooster.price || 9500;
   const originalPrice = rooster.originalPrice || Math.round(price * 1.25);
@@ -176,14 +180,26 @@ export const RoosterCard: React.FC<RoosterCardProps> = ({
         {/* Action Area */}
         <div className="pt-3 border-t border-stone-100 space-y-2">
           
-          {/* PRIMARY BUY NOW BUTTON (Amazon/Flipkart Style) */}
-          <button
-            type="button"
-            onClick={() => onBuyNow ? onBuyNow(rooster) : onSelect(rooster)}
-            className="w-full flex items-center justify-center space-x-2 bg-gradient-to-r from-amber-500 via-amber-600 to-amber-500 hover:from-amber-400 hover:to-amber-500 text-stone-950 font-black py-2.5 px-4 rounded-xl text-xs transition shadow-md shadow-amber-500/20 active:scale-95"
-          >
-            <span>⚡ Buy Now (₹{price.toLocaleString('en-IN')})</span>
-          </button>
+          {/* PRIMARY E-COMMERCE ACTION: ADD TO CART (Amazon/Flipkart Style) */}
+          {inCart ? (
+            <button
+              type="button"
+              onClick={() => openCart()}
+              className="w-full flex items-center justify-center space-x-2 bg-emerald-600 hover:bg-emerald-700 text-white font-black py-2.5 px-4 rounded-xl text-xs transition shadow-md shadow-emerald-600/20 active:scale-95"
+            >
+              <Check className="w-4 h-4 text-white" />
+              <span>✓ In Cart • View Cart →</span>
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={() => addToCart(rooster)}
+              className="w-full flex items-center justify-center space-x-2 bg-gradient-to-r from-amber-500 via-amber-600 to-amber-500 hover:from-amber-400 hover:to-amber-500 text-stone-950 font-black py-2.5 px-4 rounded-xl text-xs transition shadow-md shadow-amber-500/20 active:scale-95 group/btn"
+            >
+              <ShoppingCart className="w-4 h-4 text-stone-950 group-hover/btn:scale-110 transition" />
+              <span>Add to Cart (₹{price.toLocaleString('en-IN')})</span>
+            </button>
+          )}
 
           {/* Secondary Actions: Inspect Profile & WhatsApp */}
           <div className="grid grid-cols-2 gap-2">
