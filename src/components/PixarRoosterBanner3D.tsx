@@ -269,43 +269,14 @@ export const PixarRoosterBanner3D: React.FC<PixarRoosterBanner3DProps> = () => {
         })}
 
         {/* AMAZON-STYLE SOFT BOTTOM GRADIENT BLEND INTO SKY-BLUE BACKGROUND */}
-        <div className="absolute inset-x-0 bottom-0 h-24 sm:h-32 bg-gradient-to-t from-[#f4f9fd] via-[#f4f9fd]/30 to-transparent pointer-events-none z-10" />
-
-        {/* TOP-LEFT AMBIENT REAL-TIME BADGE */}
-        <div className="absolute top-3.5 left-3.5 sm:top-5 sm:left-6 z-20 flex items-center space-x-2 bg-white/90 hover:bg-white backdrop-blur-md px-3.5 py-1.5 rounded-full border border-sky-200/80 text-xs text-slate-800 shadow-lg transition duration-300">
-          {isLiveMode ? (
-            <span className="flex items-center space-x-1.5">
-              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_#10b981]" />
-              <span className="text-emerald-700 font-bold uppercase tracking-wider text-[10px]">LIVE FARM TIME</span>
-            </span>
-          ) : (
-            <button 
-              type="button" 
-              onClick={handleSnapToLive}
-              className="flex items-center space-x-1 text-sky-700 hover:text-sky-900 font-semibold transition"
-              title="Click to snap back to real-time"
-            >
-              <Clock className="w-3.5 h-3.5 text-sky-600" />
-              <span className="text-[10px] uppercase font-bold underline">Return to Live</span>
-            </button>
-          )}
-
-          <div className="h-3 w-px bg-slate-200" />
-
-          <div className="flex items-center space-x-1.5 font-medium">
-            <ActiveIcon className="w-3.5 h-3.5 text-amber-500" />
-            <span className="text-slate-900 font-bold">{currentSlot.title}</span>
-            <span className="text-sky-700 text-[11px] font-mono font-bold">({slideIndex + 1}/{banners.length})</span>
-            <span className="hidden sm:inline text-slate-500 text-[11px]">({currentSlot.hoursLabel})</span>
-          </div>
-        </div>
+        <div className="absolute inset-x-0 bottom-0 h-20 sm:h-28 bg-gradient-to-t from-[#f4f9fd] via-[#f4f9fd]/30 to-transparent pointer-events-none z-10" />
 
         {/* FULL-BLEED EDGE NAVIGATION ARROWS (AMAZON STYLE) */}
         <button
           type="button"
           onClick={prevBanner}
           aria-label="Previous Banner"
-          className="absolute left-2.5 sm:left-5 top-1/2 -translate-y-1/2 z-20 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-white/90 hover:bg-white text-slate-800 shadow-xl border border-sky-100 flex items-center justify-center opacity-80 sm:opacity-0 group-hover:opacity-100 transition-all duration-200 hover:scale-110 active:scale-95 backdrop-blur-sm"
+          className="absolute left-2.5 sm:left-5 top-1/2 -translate-y-1/2 z-20 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-white/80 hover:bg-white text-slate-800 shadow-xl border border-sky-100/80 flex items-center justify-center opacity-80 sm:opacity-0 group-hover:opacity-100 transition-all duration-200 hover:scale-110 active:scale-95 backdrop-blur-sm"
         >
           <ChevronLeft className="w-6 h-6 text-slate-700" />
         </button>
@@ -314,87 +285,29 @@ export const PixarRoosterBanner3D: React.FC<PixarRoosterBanner3DProps> = () => {
           type="button"
           onClick={nextBanner}
           aria-label="Next Banner"
-          className="absolute right-2.5 sm:right-5 top-1/2 -translate-y-1/2 z-20 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-white/90 hover:bg-white text-slate-800 shadow-xl border border-sky-100 flex items-center justify-center opacity-80 sm:opacity-0 group-hover:opacity-100 transition-all duration-200 hover:scale-110 active:scale-95 backdrop-blur-sm"
+          className="absolute right-2.5 sm:right-5 top-1/2 -translate-y-1/2 z-20 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-white/80 hover:bg-white text-slate-800 shadow-xl border border-sky-100/80 flex items-center justify-center opacity-80 sm:opacity-0 group-hover:opacity-100 transition-all duration-200 hover:scale-110 active:scale-95 backdrop-blur-sm"
         >
           <ChevronRight className="w-6 h-6 text-slate-700" />
         </button>
 
-        {/* BOTTOM CONTROLLER: TIME SLOTS + SLIDE DOTS OVER BOTTOM BLEND */}
-        <div className="absolute bottom-3 sm:bottom-5 left-1/2 -translate-x-1/2 z-20 flex flex-col items-center space-y-2">
-          
-          {/* Active Slot's Slide Dots */}
-          <div className="flex items-center space-x-1.5 px-3 py-1 rounded-full bg-white/80 backdrop-blur-md border border-sky-200/80 shadow-md">
-            {banners.map((banner, index) => {
-              const isActive = index === slideIndex;
-              return (
-                <button
-                  key={banner.id}
-                  type="button"
-                  onClick={() => setSlideIndex(index)}
-                  aria-label={`Show ${currentSlot.shortLabel} banner ${index + 1}`}
-                  title={banner.title}
-                  className={`h-1.5 rounded-full transition-all duration-300 ${
-                    isActive 
-                      ? 'w-5 sm:w-6 bg-sky-600 shadow-sm' 
-                      : 'w-1.5 bg-slate-300 hover:bg-slate-400'
-                  }`}
-                />
-              );
-            })}
-            <span className="text-[9px] font-mono text-slate-500 pl-1">15s auto</span>
-          </div>
-
-          {/* 4 Time Slot Selection Pills */}
-          <div className="flex items-center space-x-1 sm:space-x-1.5 p-1 rounded-full bg-white/95 backdrop-blur-md border border-sky-200/90 shadow-xl max-w-[95vw] overflow-x-auto">
-            
-            {/* Real-Time Live Button */}
-            <button
-              type="button"
-              onClick={handleSnapToLive}
-              className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all duration-300 ${
-                isLiveMode
-                  ? 'bg-emerald-600 text-white shadow-sm'
-                  : 'text-slate-600 hover:text-slate-900 hover:bg-sky-50'
-              }`}
-              title="Snap to current real-world time"
-            >
-              <span className={`w-2 h-2 rounded-full ${isLiveMode ? 'bg-white' : 'bg-emerald-500 animate-pulse'}`} />
-              <span>Live</span>
-            </button>
-
-            <div className="h-4 w-px bg-slate-200 mx-0.5" />
-
-            {/* 4 Time Slots (Morning, Midday, Evening, Night) */}
-            {(['morning', 'midday', 'evening', 'night'] as TimeSlotKey[]).map((slotKey) => {
-              const slot = TIME_SLOTS[slotKey];
-              const isSelected = slotKey === activeSlotKey;
-              const SlotIcon = slot.icon;
-              const isActuallyLive = slotKey === liveSlotKey;
-
-              return (
-                <button
-                  key={slotKey}
-                  type="button"
-                  onClick={() => handleSelectSlot(slotKey)}
-                  className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-all duration-300 ${
-                    isSelected
-                      ? 'bg-gradient-to-r from-sky-600 to-sky-700 text-white font-bold shadow-md shadow-sky-600/30'
-                      : 'text-slate-600 hover:text-slate-900 hover:bg-sky-50'
-                  }`}
-                  title={`${slot.title} (${slot.hoursLabel}) - ${slot.banners.length} Unique Banners`}
-                >
-                  <SlotIcon className={`w-3.5 h-3.5 ${isSelected ? 'text-white' : 'text-amber-500'}`} />
-                  <span>{slot.shortLabel}</span>
-                  <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono ${isSelected ? 'bg-white/20 text-white' : 'bg-sky-100 text-sky-800'}`}>
-                    {slot.banners.length}
-                  </span>
-                  {isActuallyLive && !isSelected && (
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 ml-0.5" title="Currently Live Time" />
-                  )}
-                </button>
-              );
-            })}
-          </div>
+        {/* SUBTLE CLEAN CAROUSEL DOTS (CLEAN USER POV - ZERO OVERLAY CLUTTER) */}
+        <div className="absolute bottom-4 sm:bottom-6 left-1/2 -translate-x-1/2 z-20 flex items-center space-x-2 px-3 py-1.5 rounded-full bg-white/70 hover:bg-white/90 backdrop-blur-md border border-sky-200/60 shadow-md transition-all duration-200">
+          {banners.map((banner, index) => {
+            const isActive = index === slideIndex;
+            return (
+              <button
+                key={banner.id}
+                type="button"
+                onClick={() => setSlideIndex(index)}
+                aria-label={`Slide ${index + 1}`}
+                className={`h-2 rounded-full transition-all duration-300 ${
+                  isActive 
+                    ? 'w-6 bg-sky-600 shadow-xs' 
+                    : 'w-2 bg-slate-300 hover:bg-slate-400'
+                }`}
+              />
+            );
+          })}
         </div>
 
       </div>
