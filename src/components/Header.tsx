@@ -2,29 +2,48 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { Phone, MessageCircle, PlayCircle, ShieldCheck, Menu, X, Settings, Feather, Sparkles, MapPin, ShoppingCart } from 'lucide-react';
+import { 
+  Phone, 
+  MessageCircle, 
+  PlayCircle, 
+  ShieldCheck, 
+  Menu, 
+  X, 
+  Settings, 
+  Feather, 
+  Sparkles, 
+  MapPin, 
+  ShoppingCart, 
+  Package, 
+  Truck 
+} from 'lucide-react';
 import { FARM_INFO } from '@/lib/data';
 import { generateWhatsAppLink } from '@/lib/utils';
 import { useCart } from '@/lib/cartStore';
+import { useOrders } from '@/lib/roosterStore';
 import { GoogleSignInButton } from './GoogleSignInButton';
 
 interface HeaderProps {
   onOpenReels?: () => void;
+  onOpenOrders?: () => void;
   birdsCount?: number;
 }
 
-export const Header: React.FC<HeaderProps> = ({ onOpenReels, birdsCount = 7 }) => {
+export const Header: React.FC<HeaderProps> = ({ 
+  onOpenReels, 
+  onOpenOrders, 
+  birdsCount = 7 
+}) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { cartCount, openCart } = useCart();
+  const { orders } = useOrders();
 
-  const generalWhatsAppUrl = generateWhatsAppLink({
-    phone: FARM_INFO.whatsapp,
-    customMessage: `Hello JP Farms! I visited your website showcase and would like to learn more about your heritage roosters and plan a visit to your farm.`,
-  });
+  const activeOrdersCount = orders.filter(o => o.status === 'confirmed' || o.status === 'dispatched').length;
+  const totalOrdersCount = orders.length;
 
   return (
-    <header className="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-sky-100 text-slate-800 shadow-sm">
-      {/* Top Banner: Farm Heritage & Visitors Welcome (Light Sky Blue Tint) */}
+    <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-sky-100 text-slate-800 shadow-xs">
+      {/* Top Banner: Farm Heritage & Helpline */}
       <div className="bg-sky-50/90 border-b border-sky-100/80 text-xs px-4 py-1.5 text-sky-950">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div className="flex items-center space-x-3">
@@ -73,10 +92,36 @@ export const Header: React.FC<HeaderProps> = ({ onOpenReels, birdsCount = 7 }) =
             </div>
           </Link>
 
-          {/* Quick Actions */}
-          <div className="hidden sm:flex items-center space-x-2 shrink-0">
+          {/* Quick Actions (Desktop: Google Sign In, My Orders, Cart) */}
+          <div className="hidden sm:flex items-center space-x-2.5 shrink-0">
             {/* Google Sign In / Account Button */}
             <GoogleSignInButton variant="header" />
+
+            {/* Amazon / Flipkart Style "Returns & Orders" Tracker */}
+            <button
+              type="button"
+              onClick={onOpenOrders}
+              className="relative flex items-center space-x-2 bg-slate-100 hover:bg-slate-200/90 text-slate-800 text-xs font-bold px-3.5 py-2.5 rounded-xl border border-slate-200 transition active:scale-95 whitespace-nowrap group shadow-2xs"
+              title="View & Track Your Orders"
+            >
+              <Package className="w-4 h-4 text-slate-700 group-hover:text-amber-600 transition" />
+              <div className="text-left leading-tight hidden lg:block">
+                <span className="block text-[9px] text-slate-500 font-bold uppercase tracking-wider">Returns</span>
+                <span className="block text-xs font-black text-slate-900">& Orders</span>
+              </div>
+              <span className="lg:hidden text-xs font-extrabold">Orders</span>
+              
+              {activeOrdersCount > 0 ? (
+                <span className="bg-amber-500 text-stone-950 text-[10px] font-black px-1.5 py-0.5 rounded-full min-w-[18px] text-center border border-amber-600/30 flex items-center space-x-1 shadow-xs">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-pulse"></span>
+                  <span>{activeOrdersCount}</span>
+                </span>
+              ) : totalOrdersCount > 0 ? (
+                <span className="bg-slate-200 text-slate-700 text-[10px] font-bold px-1.5 py-0.5 rounded-full min-w-[16px] text-center">
+                  {totalOrdersCount}
+                </span>
+              ) : null}
+            </button>
 
             {/* Live Shopping Cart Button (Amazon/Flipkart Style) */}
             <button
@@ -93,22 +138,28 @@ export const Header: React.FC<HeaderProps> = ({ onOpenReels, birdsCount = 7 }) =
                 </span>
               )}
             </button>
-
-            <a
-              href={generalWhatsAppUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center space-x-2 bg-gradient-to-r from-sky-600 to-sky-700 hover:from-sky-500 hover:to-sky-600 text-white text-xs font-semibold px-3.5 py-2.5 rounded-xl shadow-md shadow-sky-600/20 transition active:scale-95 whitespace-nowrap"
-            >
-              <MessageCircle className="w-4 h-4" />
-              <span>Connect with Farm</span>
-            </a>
           </div>
 
-          {/* Mobile Actions: Google, Cart & Menu Button */}
-          <div className="flex items-center lg:hidden space-x-2">
+          {/* Mobile Actions: Google, Orders, Cart & Menu Button */}
+          <div className="flex items-center lg:hidden space-x-1.5">
             {/* Mobile Google Sign In */}
             <GoogleSignInButton variant="compact" />
+
+            {/* Mobile Orders Button */}
+            <button
+              type="button"
+              onClick={onOpenOrders}
+              className="relative p-2 rounded-lg bg-slate-100 text-slate-800 font-bold flex items-center justify-center border border-slate-200 shadow-2xs"
+              aria-label="Track orders"
+              title="My Orders"
+            >
+              <Package className="w-5 h-5 text-slate-800" />
+              {activeOrdersCount > 0 && (
+                <span className="absolute -top-1 -right-1 bg-amber-500 text-stone-950 text-[9px] font-black w-4 h-4 rounded-full flex items-center justify-center border border-white">
+                  {activeOrdersCount}
+                </span>
+              )}
+            </button>
 
             {/* Mobile Cart Button */}
             <button
@@ -129,12 +180,13 @@ export const Header: React.FC<HeaderProps> = ({ onOpenReels, birdsCount = 7 }) =
             {onOpenReels && (
               <button
                 onClick={onOpenReels}
-                className="flex items-center space-x-1 text-xs font-bold text-sky-700 bg-sky-50 border border-sky-200 px-2.5 py-1.5 rounded-lg"
+                className="hidden sm:flex items-center space-x-1 text-xs font-bold text-sky-700 bg-sky-50 border border-sky-200 px-2.5 py-1.5 rounded-lg"
               >
                 <PlayCircle className="w-4 h-4 text-sky-600" />
                 <span>Videos</span>
               </button>
             )}
+
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               className="text-slate-700 hover:text-slate-900 p-2 rounded-lg bg-sky-50 border border-sky-100"
@@ -146,6 +198,48 @@ export const Header: React.FC<HeaderProps> = ({ onOpenReels, birdsCount = 7 }) =
         </div>
       </div>
 
+      {/* Amazon / Flipkart Style Category Secondary Sub-Nav Bar */}
+      <div className="bg-slate-900 text-slate-200 text-xs px-4 py-2 border-t border-slate-800">
+        <div className="max-w-7xl mx-auto flex items-center justify-between overflow-x-auto no-scrollbar space-x-3 sm:space-x-6 whitespace-nowrap">
+          <div className="flex items-center space-x-4 sm:space-x-6 text-[11px] font-bold">
+            <a 
+              href="#showcase" 
+              className="flex items-center space-x-1.5 text-amber-400 hover:text-white transition"
+            >
+              <Menu className="w-3.5 h-3.5" />
+              <span>All Strains ({birdsCount})</span>
+            </a>
+            <a href="#showcase" className="hover:text-amber-300 transition text-slate-300">
+              Champion Peela Aseel
+            </a>
+            <a href="#showcase" className="hover:text-amber-300 transition text-slate-300">
+              Kagar & Sindhi
+            </a>
+            <a href="#showcase" className="hover:text-amber-300 transition text-slate-300">
+              Kadaknath (Black Meat)
+            </a>
+            <a href="#biosecurity" className="hover:text-amber-300 transition text-slate-300 flex items-center space-x-1">
+              <ShieldCheck className="w-3 h-3 text-emerald-400" />
+              <span>Bio-Security & Vaccines</span>
+            </a>
+            <a href="#visit-guide" className="hover:text-amber-300 transition text-slate-300 flex items-center space-x-1">
+              <MapPin className="w-3 h-3 text-amber-400" />
+              <span>Visit Farm Estate</span>
+            </a>
+          </div>
+
+          {/* Quick Track Orders Link in Sub-Nav */}
+          <button
+            type="button"
+            onClick={onOpenOrders}
+            className="flex items-center space-x-1.5 text-amber-400 hover:text-amber-300 text-[11px] font-extrabold ml-auto shrink-0 bg-slate-800/80 hover:bg-slate-800 px-2.5 py-1 rounded-md border border-slate-700 transition"
+          >
+            <Truck className="w-3.5 h-3.5 text-amber-400" />
+            <span>Track Orders</span>
+          </button>
+        </div>
+      </div>
+
       {/* Mobile Drawer */}
       {mobileMenuOpen && (
         <div className="lg:hidden bg-white border-b border-sky-200 px-4 pt-3 pb-6 space-y-3 shadow-lg">
@@ -154,11 +248,32 @@ export const Header: React.FC<HeaderProps> = ({ onOpenReels, birdsCount = 7 }) =
             <GoogleSignInButton variant="page" />
           </div>
 
-          <nav className="flex flex-col space-y-3 text-base font-medium text-slate-700">
+          {/* Mobile Orders Tracker Button */}
+          <button
+            onClick={() => {
+              setMobileMenuOpen(false);
+              onOpenOrders?.();
+            }}
+            className="w-full flex items-center justify-between p-3 bg-gradient-to-r from-amber-500/15 via-orange-500/10 to-amber-500/15 border border-amber-300/80 rounded-xl text-slate-900 font-extrabold text-sm"
+          >
+            <div className="flex items-center space-x-2.5">
+              <Package className="w-5 h-5 text-amber-600" />
+              <span>My Orders & Live Transit</span>
+            </div>
+            {activeOrdersCount > 0 ? (
+              <span className="bg-amber-500 text-stone-950 text-xs font-black px-2 py-0.5 rounded-full">
+                {activeOrdersCount} Active
+              </span>
+            ) : (
+              <span className="text-xs text-amber-700 font-semibold">Track →</span>
+            )}
+          </button>
+
+          <nav className="flex flex-col space-y-2 text-sm font-medium text-slate-700">
             <a
               href="#showcase"
               onClick={() => setMobileMenuOpen(false)}
-              className="p-2 hover:bg-sky-50 rounded-lg text-slate-800"
+              className="p-2 hover:bg-sky-50 rounded-lg text-slate-800 font-semibold"
             >
               🐓 Rooster Showcase ({birdsCount} Strains)
             </a>
@@ -199,18 +314,6 @@ export const Header: React.FC<HeaderProps> = ({ onOpenReels, birdsCount = 7 }) =
               📍 Schedule a Farm Visit
             </a>
           </nav>
-
-          <div className="pt-3 border-t border-sky-100 flex flex-col gap-2">
-            <a
-              href={generalWhatsAppUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center justify-center space-x-2 bg-gradient-to-r from-sky-600 to-sky-700 hover:from-sky-500 hover:to-sky-600 text-white font-semibold py-3 rounded-xl shadow-md"
-            >
-              <MessageCircle className="w-5 h-5" />
-              <span>Message Farm on WhatsApp</span>
-            </a>
-          </div>
         </div>
       )}
     </header>

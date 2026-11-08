@@ -2,7 +2,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { useAuth } from '@/lib/authStore';
-import { LogOut, ChevronDown, CheckCircle2, Phone } from 'lucide-react';
+import { LogOut, ChevronDown, CheckCircle2, Phone, Package, ChevronRight } from 'lucide-react';
 import { PhoneCaptureModal } from './PhoneCaptureModal';
 
 export const GoogleIcon: React.FC<{ className?: string }> = ({ className = 'w-4 h-4' }) => (
@@ -126,8 +126,26 @@ export const GoogleSignInButton: React.FC<GoogleSignInButtonProps> = ({
               </div>
             </div>
 
+            {/* Dropdown Action: My Orders */}
+            <div className="pt-2 border-t border-slate-100">
+              <button
+                type="button"
+                onClick={() => {
+                  setDropdownOpen(false);
+                  window.dispatchEvent(new Event('open-orders-drawer'));
+                }}
+                className="w-full text-left flex items-center justify-between px-3 py-2 text-xs font-bold text-slate-800 hover:bg-amber-50 rounded-xl transition group"
+              >
+                <div className="flex items-center space-x-2">
+                  <Package className="w-3.5 h-3.5 text-amber-600" />
+                  <span>My Orders & Live Transit</span>
+                </div>
+                <ChevronRight className="w-3 h-3 text-slate-400 group-hover:text-amber-600 transition" />
+              </button>
+            </div>
+
             {/* Dropdown Action: Sign Out */}
-            <div className="pt-2">
+            <div className="pt-1">
               <button
                 onClick={() => {
                   setDropdownOpen(false);

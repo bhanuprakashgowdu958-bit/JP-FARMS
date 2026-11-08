@@ -16,6 +16,7 @@ import { RoosterReelsModal } from '@/components/RoosterReelsModal';
 import { BookingModal } from '@/components/BookingModal';
 import { CheckoutModal } from '@/components/CheckoutModal';
 import { CartSlideOver } from '@/components/CartSlideOver';
+import { OrdersTrackingDrawer } from '@/components/OrdersTrackingDrawer';
 import { CartToast } from '@/components/CartToast';
 import { useRoosters } from '@/lib/roosterStore';
 import { useCart } from '@/lib/cartStore';
@@ -43,6 +44,13 @@ export default function HomePage() {
   const [checkoutRooster, setCheckoutRooster] = useState<Rooster | null>(null);
   const [isReelsOpen, setIsReelsOpen] = useState(false);
   const [reelsInitialId, setReelsInitialId] = useState<string | undefined>(undefined);
+  const [isOrdersOpen, setIsOrdersOpen] = useState(false);
+
+  useEffect(() => {
+    const handleOpenOrders = () => setIsOrdersOpen(true);
+    window.addEventListener('open-orders-drawer', handleOpenOrders);
+    return () => window.removeEventListener('open-orders-drawer', handleOpenOrders);
+  }, []);
 
   const birdsCount = roosters.length;
 
@@ -89,6 +97,7 @@ export default function HomePage() {
       {/* Main Header */}
       <Header 
         onOpenReels={() => setIsReelsOpen(true)} 
+        onOpenOrders={() => setIsOrdersOpen(true)}
         birdsCount={birdsCount} 
       />
 
@@ -194,7 +203,18 @@ export default function HomePage() {
       {/* 5. Amazon/Flipkart Slide-Over Shopping Cart & Multi-Item Checkout Drawer */}
       <CartSlideOver />
 
-      {/* 6. Non-Intrusive Cart Floating Toast Notification */}
+      {/* 6. Amazon/Flipkart Returns & Orders Live Transit Tracker Drawer */}
+      <OrdersTrackingDrawer
+        isOpen={isOrdersOpen}
+        onClose={() => setIsOrdersOpen(false)}
+        onExploreCatalog={() => {
+          setIsOrdersOpen(false);
+          const el = document.getElementById('showcase');
+          if (el) el.scrollIntoView({ behavior: 'smooth' });
+        }}
+      />
+
+      {/* 7. Non-Intrusive Cart Floating Toast Notification */}
       <CartToast />
 
       {/* Mobile Sticky Bottom Cart Banner */}
