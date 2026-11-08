@@ -6,13 +6,8 @@ import {
   Phone, 
   CheckCircle2, 
   X, 
-  ShieldCheck, 
-  MessageCircle, 
-  Feather, 
-  Truck, 
   Award, 
-  Sparkles,
-  ArrowRight
+  Feather
 } from 'lucide-react';
 import { useAuth } from '@/lib/authStore';
 
@@ -130,7 +125,7 @@ export const PhoneCaptureModal: React.FC<PhoneCaptureModalProps> = ({
               Namaste, {firstName}! 🐓
             </h3>
             <p className="text-xs text-stone-500 max-w-xs mx-auto leading-relaxed">
-              Add your WhatsApp / Mobile Number for direct climate crate tracking, avian vaccine passes, and booking confirmations.
+              Add your mobile number for order tracking and live dispatch updates.
             </p>
           </div>
 
@@ -154,7 +149,7 @@ export const PhoneCaptureModal: React.FC<PhoneCaptureModalProps> = ({
                 <div className="flex items-center justify-between mb-1.5">
                   <label className="text-xs font-bold text-stone-800 flex items-center space-x-1.5">
                     <Phone className="w-3.5 h-3.5 text-amber-600" />
-                    <span>WhatsApp / Mobile Number</span>
+                    <span>Mobile</span>
                   </label>
                   
                   {/* Live Character Count Indicator */}
@@ -194,40 +189,19 @@ export const PhoneCaptureModal: React.FC<PhoneCaptureModalProps> = ({
                 {error && <p className="text-xs font-semibold text-red-600 mt-1.5">{error}</p>}
               </div>
 
-              {/* 3 VIP Member Benefit Pills */}
-              <div className="grid grid-cols-3 gap-2 text-center">
-                <div className="bg-amber-50/70 border border-amber-200/70 p-2 rounded-xl text-stone-700">
-                  <Truck className="w-4 h-4 text-amber-600 mx-auto mb-1" />
-                  <p className="text-[10px] font-bold text-stone-800">Live AC Crate</p>
-                  <p className="text-[9px] text-stone-500">GPS Updates</p>
-                </div>
-
-                <div className="bg-emerald-50/70 border border-emerald-200/70 p-2 rounded-xl text-stone-700">
-                  <ShieldCheck className="w-4 h-4 text-emerald-600 mx-auto mb-1" />
-                  <p className="text-[10px] font-bold text-stone-800">Vaccine Pass</p>
-                  <p className="text-[9px] text-stone-500">PDF Records</p>
-                </div>
-
-                <div className="bg-sky-50/70 border border-sky-200/70 p-2 rounded-xl text-stone-700">
-                  <MessageCircle className="w-4 h-4 text-sky-600 mx-auto mb-1" />
-                  <p className="text-[10px] font-bold text-stone-800">WhatsApp VIP</p>
-                  <p className="text-[9px] text-stone-500">Bird Photos</p>
-                </div>
-              </div>
-
               {/* Submit & Dismiss Actions */}
               <div className="pt-2 space-y-2">
                 <button
                   type="submit"
                   disabled={cleanDigits.length < 10}
-                  className={`w-full py-3.5 rounded-2xl font-black text-xs flex items-center justify-center space-x-2 transition-all duration-200 shadow-md ${
+                  className={`w-full py-3.5 rounded-2xl font-black text-sm flex items-center justify-center space-x-2 transition-all duration-200 shadow-md ${
                     isComplete 
                       ? 'bg-gradient-to-r from-amber-500 via-amber-400 to-amber-500 text-stone-950 hover:shadow-lg hover:shadow-amber-500/30 active:scale-98 cursor-pointer' 
                       : 'bg-stone-200 text-stone-400 cursor-not-allowed'
                   }`}
                 >
-                  <span>Save & Activate Breeder Profile</span>
-                  <ArrowRight className="w-4 h-4" />
+                  <span>Save</span>
+                  <CheckCircle2 className="w-4 h-4" />
                 </button>
 
                 <button
