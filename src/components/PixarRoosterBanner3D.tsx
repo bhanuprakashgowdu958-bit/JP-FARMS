@@ -290,26 +290,6 @@ export const PixarRoosterBanner3D: React.FC<PixarRoosterBanner3DProps> = () => {
           <ChevronRight className="w-6 h-6 text-slate-700" />
         </button>
 
-        {/* SUBTLE CLEAN CAROUSEL DOTS (CLEAN USER POV - ZERO OVERLAY CLUTTER) */}
-        <div className="absolute bottom-4 sm:bottom-6 left-1/2 -translate-x-1/2 z-20 flex items-center space-x-2 px-3 py-1.5 rounded-full bg-white/70 hover:bg-white/90 backdrop-blur-md border border-sky-200/60 shadow-md transition-all duration-200">
-          {banners.map((banner, index) => {
-            const isActive = index === slideIndex;
-            return (
-              <button
-                key={banner.id}
-                type="button"
-                onClick={() => setSlideIndex(index)}
-                aria-label={`Slide ${index + 1}`}
-                className={`h-2 rounded-full transition-all duration-300 ${
-                  isActive 
-                    ? 'w-6 bg-sky-600 shadow-xs' 
-                    : 'w-2 bg-slate-300 hover:bg-slate-400'
-                }`}
-              />
-            );
-          })}
-        </div>
-
       </div>
     </section>
   );
