@@ -31,7 +31,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
   onSuccess,
 }) => {
   const { addInquiry } = useInquiries();
-  const { user } = useAuth();
+  const { user, updatePhone } = useAuth();
 
   const [inquiryType, setInquiryType] = useState<'farm_visit' | 'breed_info' | 'general'>('farm_visit');
   const [name, setName] = useState(user?.displayName || '');
@@ -65,6 +65,12 @@ export const BookingModal: React.FC<BookingModalProps> = ({
         inquiryType: inquiryType === 'farm_visit' ? 'farm_visit' : 'breed_info',
         status: 'new',
       });
+
+      if (phone.trim()) {
+        try {
+          updatePhone(phone.trim());
+        } catch (e) {}
+      }
 
       // Celebratory confetti
       confetti({

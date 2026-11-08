@@ -38,6 +38,8 @@ export interface PersistentProfileData {
 const USER_STORAGE_KEY = 'jp_farms_user_v1';
 const REGISTERED_USERS_KEY = 'jp_farms_registered_users_v1';
 const PERSISTENT_PROFILES_KEY = 'jp_farms_user_profiles_v2';
+const DEVICE_PHONE_KEY = 'jp_farms_device_phone_v1';
+const DEVICE_ADDRESS_KEY = 'jp_farms_device_address_v1';
 
 // Initial registered users list for admin directory demo
 const INITIAL_REGISTERED_USERS: RegisteredCustomer[] = [
@@ -62,9 +64,9 @@ const INITIAL_REGISTERED_USERS: RegisteredCustomer[] = [
 ];
 
 /**
- * Retrieve saved profile data across sessions (never deleted on logout)
+ * Retrieve saved profile data across sessions (never deleted on logout or reload)
  */
-export function getSavedProfile(identifier: { email?: string | null; uid?: string }): PersistentProfileData | null {
+export function getSavedProfile(identifier?: { email?: string | null; uid?: string } | null): PersistentProfileData | null {
   if (typeof window === 'undefined') return null;
   try {
     // 1. Check persistent profiles dictionary
@@ -72,22 +74,74 @@ export function getSavedProfile(identifier: { email?: string | null; uid?: strin
     const dict: Record<string, PersistentProfileData> = raw ? JSON.parse(raw) : {};
     
     let profile: PersistentProfileData | null = null;
-    if (identifier.email && dict[identifier.email.toLowerCase()]) {
+    if (identifier?.email && dict[identifier.email.toLowerCase()]) {
       profile = { ...dict[identifier.email.toLowerCase()] };
-    } else if (identifier.uid && dict[identifier.uid]) {
+    } else if (identifier?.uid && dict[identifier.uid]) {
       profile = { ...dict[identifier.uid] };
+    } else if (dict['device_default']) {
+      profile = { ...dict['device_default'] };
     }
 
-    // 2. Fallback: Check registered customers list
+    // 2. Hardware device storage fallback for phone (guaranteed local retention)
+    const devicePhone = localStorage.getItem(DEVICE_PHONE_KEY);
+    if (!profile?.phoneNumber && devicePhone) {
+      profile = {
+        ...(profile || {}),
+        phoneNumber: devicePhone,
+      };
+    }
+
+    // 3. Hardware device storage fallback for address
+    const deviceAddressRaw = localStorage.getItem(DEVICE_ADDRESS_KEY);
+    if (deviceAddressRaw && (!profile?.deliveryAddress || !profile?.city)) {
+      try {
+        const addrObj = JSON.parse(deviceAddressRaw);
+        profile = {
+          ...(profile || {}),
+          deliveryAddress: profile?.deliveryAddress || addrObj.deliveryAddress,
+          city: profile?.city || addrObj.city,
+          state: profile?.state || addrObj.state,
+          pincode: profile?.pincode || addrObj.pincode,
+        };
+      } catch (e) {}
+    }
+
+    // 4. Previous orders fallback (if customer previously placed an order on this device)
+    if (!profile?.phoneNumber) {
+      try {
+        const ordersRaw = localStorage.getItem('jp_farms_orders_v1');
+        if (ordersRaw) {
+          const orders = JSON.parse(ordersRaw);
+          if (Array.isArray(orders)) {
+            for (let i = orders.length - 1; i >= 0; i--) {
+              const o = orders[i];
+              if (o && o.phoneNumber) {
+                profile = {
+                  ...(profile || {}),
+                  phoneNumber: o.phoneNumber,
+                  deliveryAddress: profile?.deliveryAddress || o.deliveryAddress,
+                  city: profile?.city || o.city,
+                  state: profile?.state || o.state,
+                  pincode: profile?.pincode || o.pincode,
+                };
+                break;
+              }
+            }
+          }
+        }
+      } catch (e) {}
+    }
+
+    // 5. Fallback: Check registered customers list
     if (!profile?.phoneNumber) {
       const customers = getRegisteredCustomers();
       const matched = customers.find(c =>
-        (identifier.email && c.email?.toLowerCase() === identifier.email.toLowerCase()) ||
-        (identifier.uid && c.uid === identifier.uid)
+        (identifier?.email && c.email?.toLowerCase() === identifier.email.toLowerCase()) ||
+        (identifier?.uid && c.uid === identifier.uid)
       );
       if (matched?.phone) {
         profile = {
-          ...profile,
+          ...(profile || {}),
           phoneNumber: matched.phone,
         };
       }
@@ -100,9 +154,9 @@ export function getSavedProfile(identifier: { email?: string | null; uid?: strin
 }
 
 /**
- * Save persistent profile data keyed by user's email and uid
+ * Save persistent profile data keyed by user's email, uid, and device default
  */
-export function savePersistentProfile(identifier: { email?: string | null; uid: string }, data: Partial<PersistentProfileData>): void {
+export function savePersistentProfile(identifier: { email?: string | null; uid?: string }, data: Partial<PersistentProfileData>): void {
   if (typeof window === 'undefined') return;
   try {
     const raw = localStorage.getItem(PERSISTENT_PROFILES_KEY);
@@ -118,9 +172,26 @@ export function savePersistentProfile(identifier: { email?: string | null; uid: 
     if (identifier.email) {
       dict[identifier.email.toLowerCase()] = merged;
     }
-    dict[identifier.uid] = merged;
+    if (identifier.uid) {
+      dict[identifier.uid] = merged;
+    }
+    dict['device_default'] = merged;
 
     localStorage.setItem(PERSISTENT_PROFILES_KEY, JSON.stringify(dict));
+
+    // Save dedicated device keys for indestructible persistence across sessions
+    if (data.phoneNumber) {
+      localStorage.setItem(DEVICE_PHONE_KEY, data.phoneNumber);
+    }
+    if (data.deliveryAddress || data.city || data.state || data.pincode) {
+      const addrObj = {
+        deliveryAddress: data.deliveryAddress || existing.deliveryAddress || '',
+        city: data.city || existing.city || '',
+        state: data.state || existing.state || '',
+        pincode: data.pincode || existing.pincode || '',
+      };
+      localStorage.setItem(DEVICE_ADDRESS_KEY, JSON.stringify(addrObj));
+    }
   } catch (e) {
     console.error('Failed to save persistent profile', e);
   }
@@ -135,13 +206,14 @@ export function buildAppUser(fbUser: any): AppUser {
   const currentMatchingPhone = (currentSession && (currentSession.uid === fbUser.uid || currentSession.email === fbUser.email)) 
     ? currentSession.phoneNumber 
     : null;
+  const devicePhone = typeof window !== 'undefined' ? localStorage.getItem(DEVICE_PHONE_KEY) : null;
 
   return {
     uid: fbUser.uid,
     displayName: fbUser.displayName,
     email: fbUser.email,
     photoURL: fbUser.photoURL,
-    phoneNumber: saved?.phoneNumber || currentMatchingPhone || fbUser.phoneNumber || null,
+    phoneNumber: saved?.phoneNumber || currentMatchingPhone || devicePhone || fbUser.phoneNumber || null,
     deliveryAddress: saved?.deliveryAddress || currentSession?.deliveryAddress,
     city: saved?.city || currentSession?.city,
     state: saved?.state || currentSession?.state,
@@ -268,24 +340,31 @@ async function fetchFirestoreProfile(uid: string): Promise<PersistentProfileData
 export function updateUserPhone(phone: string): AppUser | null {
   if (typeof window === 'undefined') return null;
   try {
-    const user = getStoredUser();
-    if (!user) return null;
     const cleanPhone = phone.trim();
+    if (!cleanPhone) return null;
 
-    // 1. Permanently remember this phone for this user (never lost on sign-out)
-    savePersistentProfile({ email: user.email, uid: user.uid }, { phoneNumber: cleanPhone });
+    // 1. Permanently remember this phone in hardware device storage
+    localStorage.setItem(DEVICE_PHONE_KEY, cleanPhone);
 
-    // 2. Update active session user
-    const updatedUser: AppUser = {
-      ...user,
-      phoneNumber: cleanPhone,
-    };
-    saveStoredUser(updatedUser);
+    const user = getStoredUser();
+    savePersistentProfile({ email: user?.email, uid: user?.uid || 'device_user' }, { phoneNumber: cleanPhone });
 
-    // 3. Asynchronously sync to Firestore cloud
-    syncProfileToFirestore(updatedUser);
+    if (user) {
+      // 2. Update active session user
+      const updatedUser: AppUser = {
+        ...user,
+        phoneNumber: cleanPhone,
+      };
+      saveStoredUser(updatedUser);
 
-    return updatedUser;
+      // 3. Asynchronously sync to Firestore cloud
+      syncProfileToFirestore(updatedUser);
+
+      return updatedUser;
+    } else {
+      window.dispatchEvent(new Event('auth-state-changed'));
+      return null;
+    }
   } catch (e) {
     console.error('Failed to update phone number', e);
     return null;
@@ -296,25 +375,27 @@ export function updateUserAddress(addr: { deliveryAddress?: string; city?: strin
   if (typeof window === 'undefined') return null;
   try {
     const user = getStoredUser();
-    if (!user) return null;
+    savePersistentProfile({ email: user?.email, uid: user?.uid || 'device_user' }, addr);
 
-    // 1. Permanently remember address for this user
-    savePersistentProfile({ email: user.email, uid: user.uid }, addr);
+    if (user) {
+      // 2. Update active session user
+      const updatedUser: AppUser = {
+        ...user,
+        ...(addr.deliveryAddress !== undefined ? { deliveryAddress: addr.deliveryAddress.trim() } : {}),
+        ...(addr.city !== undefined ? { city: addr.city.trim() } : {}),
+        ...(addr.state !== undefined ? { state: addr.state.trim() } : {}),
+        ...(addr.pincode !== undefined ? { pincode: addr.pincode.trim() } : {}),
+      };
+      saveStoredUser(updatedUser);
 
-    // 2. Update active session user
-    const updatedUser: AppUser = {
-      ...user,
-      ...(addr.deliveryAddress !== undefined ? { deliveryAddress: addr.deliveryAddress.trim() } : {}),
-      ...(addr.city !== undefined ? { city: addr.city.trim() } : {}),
-      ...(addr.state !== undefined ? { state: addr.state.trim() } : {}),
-      ...(addr.pincode !== undefined ? { pincode: addr.pincode.trim() } : {}),
-    };
-    saveStoredUser(updatedUser);
+      // 3. Asynchronously sync to Firestore cloud
+      syncProfileToFirestore(updatedUser);
 
-    // 3. Asynchronously sync to Firestore cloud
-    syncProfileToFirestore(updatedUser);
-
-    return updatedUser;
+      return updatedUser;
+    } else {
+      window.dispatchEvent(new Event('auth-state-changed'));
+      return null;
+    }
   } catch (e) {
     console.error('Failed to update address', e);
     return null;

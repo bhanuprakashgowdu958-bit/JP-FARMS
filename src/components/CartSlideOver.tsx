@@ -44,7 +44,7 @@ export const CartSlideOver: React.FC = () => {
   } = useCart();
 
   const { addOrder } = useOrders();
-  const { user, isAuthenticated, signInWithGoogle, updateAddress } = useAuth();
+  const { user, isAuthenticated, signInWithGoogle, updatePhone, updateAddress } = useAuth();
   const [isPhoneModalOpen, setIsPhoneModalOpen] = useState(false);
 
   const [step, setStep] = useState<'cart' | 'checkout'>('cart');
@@ -152,14 +152,21 @@ export const CartSlideOver: React.FC = () => {
         status: 'confirmed',
       });
 
-      // Auto-save delivery address to profile for future 1-click orders
-      if (user && formData.address) {
-        updateAddress({
-          deliveryAddress: formData.address,
-          city: formData.city,
-          state: formData.state,
-          pincode: formData.pincode,
-        });
+      // Auto-save phone and delivery address to profile & hardware storage for future 1-click orders
+      if (effectivePhone.trim()) {
+        try {
+          updatePhone(effectivePhone.trim());
+        } catch (e) {}
+      }
+      if (formData.address) {
+        try {
+          updateAddress({
+            deliveryAddress: formData.address,
+            city: formData.city,
+            state: formData.state,
+            pincode: formData.pincode,
+          });
+        } catch (e) {}
       }
 
       // Trigger celebratory confetti

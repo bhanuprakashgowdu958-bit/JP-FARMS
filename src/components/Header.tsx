@@ -28,7 +28,6 @@ import { generateWhatsAppLink } from '@/lib/utils';
 import { useCart } from '@/lib/cartStore';
 import { useOrders } from '@/lib/roosterStore';
 import { useAuth } from '@/lib/authStore';
-import { GoogleSignInButton } from './GoogleSignInButton';
 import { UserProfileModal } from './UserProfileModal';
 
 interface HeaderProps {
@@ -181,18 +180,40 @@ export const Header: React.FC<HeaderProps> = ({
 
           {/* Top Right Actions (Desktop): Profile, Cart & Menu Bar */}
           <div className="flex items-center space-x-2.5 shrink-0">
-            {/* Google Sign In / Account Avatar Button */}
-            <GoogleSignInButton variant="header" />
-
-            {/* My Profile Button */}
+            {/* Unified My Profile Button (Profile Icon / Google Avatar directly in My Profile) */}
             <button
               type="button"
               onClick={() => setIsProfileModalOpen(true)}
-              className="flex items-center space-x-1.5 bg-slate-900 hover:bg-slate-800 text-amber-300 hover:text-white text-xs font-bold px-3.5 py-2.5 rounded-xl border border-amber-500/40 shadow-sm transition active:scale-95 whitespace-nowrap group cursor-pointer"
-              title="View & Edit My Profile"
+              className="flex items-center space-x-2 bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold pl-2.5 pr-3.5 py-1.5 rounded-xl border border-amber-500/40 hover:border-amber-400 shadow-sm transition active:scale-95 whitespace-nowrap group cursor-pointer"
+              title={user ? `My Profile (${user.displayName || user.email})` : 'Sign In / My Profile'}
             >
-              <User className="w-4 h-4 text-amber-400 group-hover:scale-110 transition" />
-              <span>My Profile</span>
+              {user ? (
+                <>
+                  <div className="relative shrink-0">
+                    <img
+                      src={user.photoURL || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=120&q=80'}
+                      alt=""
+                      className="w-6 h-6 rounded-full object-cover border border-amber-400 group-hover:scale-105 transition"
+                    />
+                    <span className="absolute -bottom-0.5 -right-0.5 w-2 h-2 bg-emerald-500 rounded-full border border-slate-900" />
+                  </div>
+                  <div className="flex flex-col text-left leading-tight">
+                    <span className="text-white text-[11px] font-black truncate max-w-[90px]">
+                      {user.displayName?.split(' ')[0] || 'Breeder'}
+                    </span>
+                    <span className="text-[9px] text-amber-400 font-extrabold">
+                      My Profile
+                    </span>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="w-6 h-6 rounded-full bg-slate-800 text-amber-400 flex items-center justify-center border border-amber-500/30 group-hover:border-amber-400 transition shrink-0">
+                    <User className="w-3.5 h-3.5" />
+                  </div>
+                  <span className="text-amber-300 group-hover:text-white transition">My Profile</span>
+                </>
+              )}
             </button>
 
             {/* Shopping Cart Button */}
@@ -274,8 +295,29 @@ export const Header: React.FC<HeaderProps> = ({
 
           {/* Right: Profile Avatar & Cart (Zero-Overflow Flipkart/Amazon Action Strip) */}
           <div className="flex items-center space-x-2.5 shrink-0">
-            {/* Mobile Profile Avatar (Tap to open My Profile) */}
-            <GoogleSignInButton variant="compact" />
+            {/* Mobile Profile Avatar & Sanctuary Button (Tap to open My Profile) */}
+            <button
+              type="button"
+              onClick={() => setIsProfileModalOpen(true)}
+              className="relative p-1 rounded-xl bg-slate-900 hover:bg-slate-850 border border-amber-500/40 transition active:scale-95 flex items-center justify-center cursor-pointer shrink-0"
+              title={user ? `My Profile (${user.displayName || user.email})` : 'Sign In / Profile'}
+              aria-label="My Profile"
+            >
+              {user ? (
+                <div className="relative">
+                  <img
+                    src={user.photoURL || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=120&q=80'}
+                    alt=""
+                    className="w-7 h-7 rounded-full object-cover border border-amber-400"
+                  />
+                  <span className="absolute -bottom-0.5 -right-0.5 w-2 h-2 bg-emerald-500 rounded-full border border-slate-900" />
+                </div>
+              ) : (
+                <div className="w-7 h-7 rounded-lg bg-slate-800 text-amber-400 flex items-center justify-center">
+                  <User className="w-4 h-4" />
+                </div>
+              )}
+            </button>
 
             {/* Mobile Cart Button */}
             <button

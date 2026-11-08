@@ -132,8 +132,13 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
         notes: notes.trim(),
       });
 
-      // Auto-save delivery address to user profile
-      if (user && deliveryAddress.trim()) {
+      // Auto-save phone and delivery address to user profile & persistent storage
+      if (effectivePhone.trim()) {
+        try {
+          updatePhone(effectivePhone.trim());
+        } catch (e) {}
+      }
+      if (deliveryAddress.trim()) {
         try {
           updateAddress({
             deliveryAddress: deliveryAddress.trim(),
