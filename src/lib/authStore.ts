@@ -753,6 +753,9 @@ export function useAuth() {
     }
     saveStoredUser(null);
     setUser(null);
+    if (typeof window !== 'undefined') {
+      window.location.href = '/signup';
+    }
   };
 
   return {

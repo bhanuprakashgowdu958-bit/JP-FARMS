@@ -23,15 +23,28 @@ export default function SignUpPage() {
   const { isAuthenticated, user } = useAuth();
   const router = useRouter();
 
-  // If already authenticated, redirect to home
+  // If already authenticated, redirect directly to home
   useEffect(() => {
     if (isAuthenticated) {
-      const timer = setTimeout(() => {
-        router.push('/');
-      }, 500);
-      return () => clearTimeout(timer);
+      router.replace('/');
     }
   }, [isAuthenticated, router]);
+
+  if (isAuthenticated) {
+    return (
+      <div className="min-h-screen bg-stone-950 flex flex-col items-center justify-center p-6 text-center">
+        <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-amber-500 to-amber-600 p-0.5 shadow-xl shadow-amber-500/20 mb-4 animate-pulse flex items-center justify-center">
+          <div className="w-full h-full bg-stone-900 rounded-[14px] flex items-center justify-center">
+            <Feather className="w-8 h-8 text-amber-500 transform -rotate-12" />
+          </div>
+        </div>
+        <h1 className="text-2xl font-black text-white tracking-tight">JP FARMS</h1>
+        <p className="text-xs text-amber-400/90 mt-1 font-semibold uppercase tracking-wider">
+          Entering Farm Showcase...
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-stone-950 text-stone-100 flex flex-col justify-between">
@@ -56,23 +69,14 @@ export default function SignUpPage() {
         </Link>
 
         <div className="flex items-center space-x-3">
-          <Link
-            href="/"
-            className="inline-flex items-center space-x-1.5 text-xs font-bold text-amber-300 hover:text-white bg-stone-900/90 hover:bg-stone-800 px-3.5 py-2 rounded-xl border border-amber-500/30 transition shadow-sm"
-          >
-            <ArrowLeft className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">Explore Showcase</span>
-            <span className="sm:hidden">Showcase</span>
-          </Link>
-
           <a
             href="https://wa.me/919876543210"
             target="_blank"
             rel="noopener noreferrer"
-            className="hidden sm:inline-flex items-center space-x-1.5 text-xs font-bold text-emerald-400 hover:text-emerald-300 bg-stone-900/80 hover:bg-stone-800 px-3.5 py-2 rounded-xl border border-stone-800 transition shadow-sm backdrop-blur-xs"
+            className="inline-flex items-center space-x-1.5 text-xs font-bold text-emerald-400 hover:text-emerald-300 bg-stone-900/80 hover:bg-stone-800 px-3.5 py-2 rounded-xl border border-stone-800 transition shadow-sm backdrop-blur-xs"
           >
             <MessageCircle className="w-3.5 h-3.5" />
-            <span>Farm Helpline</span>
+            <span>Farm Helpline: +91 98765 43210</span>
           </a>
         </div>
       </header>
@@ -206,17 +210,6 @@ export default function SignUpPage() {
                       <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
                       <span>100% Free</span>
                     </span>
-                  </div>
-
-                  {/* Or browse as guest */}
-                  <div className="pt-1 text-center">
-                    <Link
-                      href="/"
-                      className="inline-flex items-center justify-center space-x-2 w-full py-2.5 px-4 rounded-xl border border-stone-200 hover:border-amber-400 text-stone-700 hover:text-amber-900 bg-stone-50 hover:bg-amber-50/50 font-bold text-xs transition duration-150 group"
-                    >
-                      <span>Explore Rooster Catalog as Guest</span>
-                      <ArrowRight className="w-3.5 h-3.5 text-stone-400 group-hover:text-amber-600 group-hover:translate-x-0.5 transition" />
-                    </Link>
                   </div>
                 </div>
               )}

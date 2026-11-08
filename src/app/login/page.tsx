@@ -11,15 +11,28 @@ export default function LoginPage() {
   const { isAuthenticated, user } = useAuth();
   const router = useRouter();
 
-  // If already authenticated, redirect to home
+  // If already authenticated, redirect directly to home
   useEffect(() => {
     if (isAuthenticated) {
-      const timer = setTimeout(() => {
-        router.push('/');
-      }, 500);
-      return () => clearTimeout(timer);
+      router.replace('/');
     }
   }, [isAuthenticated, router]);
+
+  if (isAuthenticated) {
+    return (
+      <div className="min-h-screen bg-stone-950 flex flex-col items-center justify-center p-6 text-center">
+        <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-amber-500 to-amber-600 p-0.5 shadow-xl shadow-amber-500/20 mb-4 animate-pulse flex items-center justify-center">
+          <div className="w-full h-full bg-stone-900 rounded-[14px] flex items-center justify-center">
+            <Feather className="w-8 h-8 text-amber-500 transform -rotate-12" />
+          </div>
+        </div>
+        <h1 className="text-2xl font-black text-white tracking-tight">JP FARMS</h1>
+        <p className="text-xs text-amber-400/90 mt-1 font-semibold uppercase tracking-wider">
+          Entering Farm Showcase...
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-stone-100 via-amber-50/30 to-stone-200 text-stone-900 flex flex-col justify-between p-4 sm:p-6">
