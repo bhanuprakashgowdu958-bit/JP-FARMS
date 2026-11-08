@@ -78,18 +78,24 @@ export const TIME_SLOTS: Record<TimeSlotKey, TimeSlotConfig> = {
     banners: [
       {
         id: 'midday-1',
+        src: '/banners/banner_rainbow_wings_crow.jpg',
+        alt: 'Triumphant Rooster Crowing with Open Wings Under Farm Rainbow',
+        title: 'Triumphant Crow & Farm Rainbow',
+      },
+      {
+        id: 'midday-2',
         src: '/banners/midday_1_chicks_pasture.jpg',
         alt: 'Rooster Guiding Fluffy Chicks Across Clover Meadow',
         title: 'Free-Range Clover Pasture with Chicks',
       },
       {
-        id: 'midday-2',
+        id: 'midday-3',
         src: '/banners/midday_3_peela_champion.jpg',
         alt: 'Champion Peela Aseel on Ancient Stone Gate in Noon Sun',
         title: 'Alpha Champion on Ancient Stone Gate',
       },
       {
-        id: 'midday-3',
+        id: 'midday-4',
         src: '/banners/midday_4_farm_stream.jpg',
         alt: 'Rooster by Sparkling Freshwater Farm Stream',
         title: 'Sparkling Farm Stream & Willows',
