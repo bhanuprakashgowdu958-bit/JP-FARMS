@@ -1,6 +1,8 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { useAuth } from '@/lib/authStore';
 import { Header } from '@/components/Header';
 import { ZomatoBannerCarousel } from '@/components/ZomatoBannerCarousel';
 import { UserProfileHub } from '@/components/UserProfileHub';
@@ -19,11 +21,21 @@ import { CartToast } from '@/components/CartToast';
 import { useRoosters } from '@/lib/roosterStore';
 import { useCart } from '@/lib/cartStore';
 import { Rooster } from '@/types/rooster';
-import { PlayCircle, MessageCircle, ShoppingBag, ArrowRight } from 'lucide-react';
+import { PlayCircle, MessageCircle, ShoppingBag, ArrowRight, Feather } from 'lucide-react';
 import { FARM_INFO } from '@/lib/data';
 import { generateWhatsAppLink } from '@/lib/utils';
 
 export default function HomePage() {
+  const { isAuthenticated, isLoading } = useAuth();
+  const router = useRouter();
+
+  // If user is not signed in, take them through the sign up page
+  useEffect(() => {
+    if (!isLoading && !isAuthenticated) {
+      router.replace('/signup');
+    }
+  }, [isLoading, isAuthenticated, router]);
+
   const { roosters, isLoaded } = useRoosters();
   const { cartCount, cartTotal, openCart } = useCart();
 
@@ -54,6 +66,23 @@ export default function HomePage() {
     phone: FARM_INFO.whatsapp,
     customMessage: 'Hello JP Farms! I am browsing your website and want to inquire about visiting your farm and seeing your desi roosters.',
   });
+
+  // While checking auth state or redirecting new visitors to /signup
+  if (isLoading || !isAuthenticated) {
+    return (
+      <div className="min-h-screen bg-stone-950 flex flex-col items-center justify-center p-6 text-center">
+        <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-amber-500 to-amber-600 p-0.5 shadow-xl shadow-amber-500/20 mb-4 animate-pulse flex items-center justify-center">
+          <div className="w-full h-full bg-stone-900 rounded-[14px] flex items-center justify-center">
+            <Feather className="w-8 h-8 text-amber-500 transform -rotate-12" />
+          </div>
+        </div>
+        <h1 className="text-2xl font-black text-white tracking-tight">JP FARMS</h1>
+        <p className="text-xs text-amber-400/90 mt-1 font-semibold uppercase tracking-wider">
+          Connecting to Heritage Estate...
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col bg-[#f4f9fd]">

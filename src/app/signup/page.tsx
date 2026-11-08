@@ -37,23 +37,32 @@ export default function SignUpPage() {
       
       {/* Top Navigation Bar */}
       <header className="max-w-7xl w-full mx-auto p-4 sm:p-6 flex items-center justify-between relative z-20">
-        <Link
-          href="/"
-          className="inline-flex items-center space-x-2 text-xs font-bold text-stone-300 hover:text-white bg-stone-900/80 hover:bg-stone-800 px-3.5 py-2 rounded-xl border border-stone-800 transition shadow-sm backdrop-blur-xs"
-        >
-          <ArrowLeft className="w-3.5 h-3.5" />
-          <span>Back to Farm Showcase</span>
-        </Link>
-
-        <div className="flex items-center space-x-2">
-          <span className="text-xs text-stone-400 hidden sm:inline">Already registered?</span>
-          <Link
-            href="/login"
-            className="text-xs font-bold text-amber-400 hover:text-amber-300 px-3 py-1.5 rounded-lg border border-amber-500/30 hover:bg-amber-500/10 transition"
-          >
-            Sign In
-          </Link>
+        <div className="flex items-center space-x-3">
+          <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-amber-500 to-amber-600 p-0.5 flex items-center justify-center shadow-lg shadow-amber-500/20">
+            <div className="w-full h-full bg-stone-900 rounded-[14px] flex items-center justify-center">
+              <Feather className="w-5 h-5 text-amber-400 transform -rotate-12" />
+            </div>
+          </div>
+          <div>
+            <div className="flex items-center space-x-1.5">
+              <span className="text-base font-black text-white tracking-tight">JP FARMS</span>
+              <span className="text-[10px] uppercase font-bold tracking-widest px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-400/30">
+                Est. 2016
+              </span>
+            </div>
+            <p className="text-[11px] text-stone-400 font-medium">Heritage Desi Rooster Conservation Estate</p>
+          </div>
         </div>
+
+        <a
+          href="https://wa.me/919876543210"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center space-x-1.5 text-xs font-bold text-emerald-400 hover:text-emerald-300 bg-stone-900/80 hover:bg-stone-800 px-3.5 py-2 rounded-xl border border-stone-800 transition shadow-sm backdrop-blur-xs"
+        >
+          <MessageCircle className="w-3.5 h-3.5" />
+          <span>Farm Helpline: +91 98765 43210</span>
+        </a>
       </header>
 
       {/* Main Split Showcase Container */}
@@ -155,12 +164,12 @@ export default function SignUpPage() {
               {/* Headline & Value Pitch */}
               <div className="text-center space-y-1">
                 <h2 className="text-lg sm:text-xl font-extrabold text-stone-900">
-                  {isAuthenticated ? `Welcome back, ${user?.displayName}!` : 'Join the JP Farms Breeder Circle'}
+                  {isAuthenticated ? `Welcome, ${user?.displayName}!` : 'Welcome to JP Farms'}
                 </h2>
                 <p className="text-xs text-stone-500 max-w-sm mx-auto">
                   {isAuthenticated 
-                    ? 'Your account is connected. Redirecting you to the catalog...'
-                    : '1-click sign-up with your Google ID. Fast, secure, and password-free.'
+                    ? 'Entering farm showcase...'
+                    : 'Please sign in with your Google account to enter our live rooster catalog, breeding stock, and farm guides.'
                   }
                 </p>
               </div>
@@ -242,15 +251,9 @@ export default function SignUpPage() {
             </div>
 
             {/* Bottom Footer Notice */}
-            <div className="pt-6 border-t border-stone-100 text-center space-y-2">
+            <div className="pt-6 border-t border-stone-100 text-center space-y-1">
               <p className="text-[11px] text-stone-400">
-                By joining, you agree to JP Farms bio-security and humane live animal transit policies.
-              </p>
-              <p className="text-[11px] text-stone-500">
-                Already have an account?{' '}
-                <Link href="/login" className="font-bold text-amber-600 hover:text-amber-700 underline">
-                  Sign in here
-                </Link>
+                Fast & secure 1-click Google sign-in. By entering, you agree to JP Farms bio-security and live transit policies.
               </p>
             </div>
 
