@@ -29,6 +29,7 @@ import { generateWhatsAppLink } from '@/lib/utils';
 import { useOrders } from '@/lib/roosterStore';
 import { useAuth } from '@/lib/authStore';
 import { PhoneCaptureModal } from '@/components/PhoneCaptureModal';
+import { GoogleIcon } from '@/components/GoogleSignInButton';
 
 interface CheckoutModalProps {
   rooster: Rooster | null;
@@ -44,7 +45,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
   onOrderSuccess,
 }) => {
   const { addOrder } = useOrders();
-  const { user, updatePhone, updateAddress } = useAuth();
+  const { user, isAuthenticated, signInWithGoogle, updatePhone, updateAddress } = useAuth();
   const [isPhoneModalOpen, setIsPhoneModalOpen] = useState(false);
 
   const [deliveryType, setDeliveryType] = useState<'doorstep_live_crate' | 'farm_pickup'>('doorstep_live_crate');
@@ -84,6 +85,12 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
 
   const handleSubmitOrder = (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!isAuthenticated || !user) {
+      alert('Sign-In Required: Please sign in with your Google account in 1 click to reserve your rooster and enable live tracking.');
+      signInWithGoogle();
+      return;
+    }
 
     if (!hasPhone) {
       setIsPhoneModalOpen(true);
@@ -419,6 +426,59 @@ Please confirm bird availability and dispatch schedule. Thank you!`;
                 <label className="block text-xs font-extrabold text-slate-800 uppercase tracking-wider mb-2">
                   2. Buyer & Contact Information
                 </label>
+
+                {/* Guest Sign-In Notification Banner OR Verified Member Banner */}
+                {!isAuthenticated || !user ? (
+                  <div className="bg-gradient-to-r from-amber-500/10 via-amber-400/15 to-orange-500/10 border-2 border-amber-400 rounded-2xl p-4 sm:p-5 text-center space-y-3 shadow-xs mb-3">
+                    <div className="w-10 h-10 rounded-xl bg-amber-500 text-stone-950 flex items-center justify-center mx-auto shadow-md">
+                      <Lock className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <span className="text-[10px] sm:text-[11px] font-black uppercase tracking-wider text-amber-900 bg-amber-200/80 px-3 py-1 rounded-full border border-amber-300">
+                        Sign-In Required to Place Order
+                      </span>
+                      <h3 className="text-sm sm:text-base font-black text-slate-900 mt-2">
+                        Please sign in with Google to reserve this rooster
+                      </h3>
+                      <p className="text-xs text-slate-600 max-w-md mx-auto mt-1">
+                        Guest accounts must sign in to activate live GPS climate crate tracking, WhatsApp dispatches, and official breeder health passes.
+                      </p>
+                    </div>
+
+                    <div className="max-w-xs mx-auto pt-1">
+                      <button
+                        type="button"
+                        onClick={() => signInWithGoogle()}
+                        className="w-full flex items-center justify-center space-x-2.5 bg-white hover:bg-stone-50 text-slate-800 font-bold py-3 px-4 rounded-xl border-2 border-amber-400 text-xs shadow-md transition hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
+                      >
+                        <GoogleIcon className="w-4 h-4 shrink-0" />
+                        <span>1-Click Sign In with Google</span>
+                      </button>
+                      <p className="text-[10px] text-slate-400 mt-1.5">
+                        ⚡ Instant 1-click verification • Your selected rooster stays reserved
+                      </p>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-between bg-amber-50/70 border border-amber-200/80 rounded-xl p-2.5 text-xs mb-3">
+                    <div className="flex items-center space-x-2">
+                      <img
+                        src={user.photoURL || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=120&q=80'}
+                        alt=""
+                        className="w-6 h-6 rounded-full object-cover border border-amber-300"
+                      />
+                      <div>
+                        <p className="font-bold text-slate-900 leading-tight">{user.displayName}</p>
+                        <p className="text-[10px] text-slate-500 font-mono">{user.email}</p>
+                      </div>
+                    </div>
+                    <span className="text-[10px] font-extrabold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-full flex items-center space-x-1">
+                      <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+                      <span>Google Verified</span>
+                    </span>
+                  </div>
+                )}
+
                 <div className="space-y-3">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
@@ -632,7 +692,17 @@ Please confirm bird availability and dispatch schedule. Thank you!`;
 
               {/* Submit Button */}
               <div className="pt-2">
-                {!hasPhone ? (
+                {!isAuthenticated || !user ? (
+                  <button
+                    type="button"
+                    onClick={() => signInWithGoogle()}
+                    className="w-full flex items-center justify-center space-x-2.5 bg-gradient-to-r from-amber-500 via-amber-600 to-amber-500 hover:from-amber-400 hover:to-amber-500 text-stone-950 font-black py-4 px-6 rounded-2xl text-sm sm:text-base shadow-xl shadow-amber-500/20 transition active:scale-95 cursor-pointer animate-pulse"
+                  >
+                    <GoogleIcon className="w-5 h-5 shrink-0" />
+                    <span>Sign in with Google to Place Order (₹{price.toLocaleString('en-IN')})</span>
+                    <ChevronRight className="w-5 h-5 text-stone-950" />
+                  </button>
+                ) : !hasPhone ? (
                   <button
                     type="button"
                     onClick={() => setIsPhoneModalOpen(true)}

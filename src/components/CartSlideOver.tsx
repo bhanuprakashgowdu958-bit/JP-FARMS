@@ -100,6 +100,11 @@ export const CartSlideOver: React.FC = () => {
 
   const handlePlaceOrder = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!isAuthenticated || !user) {
+      alert('Sign-In Required: Please sign in with your Google account in 1 click to reserve your roosters and enable live tracking.');
+      signInWithGoogle();
+      return;
+    }
     if (!hasPhone) {
       setIsPhoneModalOpen(true);
       return;
@@ -534,8 +539,36 @@ Please confirm availability and dispatch schedule. Thank you!`;
                   </div>
                 </div>
 
-                {/* Google Sign In Helper in Checkout */}
-                {isAuthenticated && user ? (
+                {/* Guest Sign-In Notification Banner OR Verified Member Banner */}
+                {!isAuthenticated || !user ? (
+                  <div className="bg-gradient-to-r from-amber-500/10 via-amber-400/15 to-orange-500/10 border-2 border-amber-400 rounded-2xl p-4 text-center space-y-2.5 shadow-xs">
+                    <div className="flex items-center justify-center space-x-1.5 text-amber-900">
+                      <Lock className="w-4 h-4 text-amber-600" />
+                      <span className="text-[10px] sm:text-[11px] font-black uppercase tracking-wider bg-amber-200/80 px-2.5 py-0.5 rounded-full border border-amber-300">
+                        Sign-In Required to Place Order
+                      </span>
+                    </div>
+                    <h3 className="text-xs sm:text-sm font-black text-slate-900">
+                      Please sign in with Google to confirm your reservation
+                    </h3>
+                    <p className="text-[11px] text-slate-600 leading-snug">
+                      Guest accounts must sign in to activate live GPS climate crate tracking and WhatsApp dispatches.
+                    </p>
+                    <div className="pt-1">
+                      <button
+                        type="button"
+                        onClick={() => signInWithGoogle()}
+                        className="w-full flex items-center justify-center space-x-2 bg-white hover:bg-stone-50 text-slate-800 font-bold py-2.5 px-3 rounded-xl border-2 border-amber-400 text-xs shadow-xs transition hover:scale-[1.01] active:scale-[0.99] cursor-pointer"
+                      >
+                        <GoogleIcon className="w-3.5 h-3.5 shrink-0" />
+                        <span>1-Click Sign In with Google</span>
+                      </button>
+                      <p className="text-[10px] text-slate-400 mt-1">
+                        ⚡ Instant verification • Your cart remains safe
+                      </p>
+                    </div>
+                  </div>
+                ) : (
                   <div className="flex items-center justify-between bg-amber-50/70 border border-amber-200/80 rounded-xl p-2.5 text-xs">
                     <div className="flex items-center space-x-2">
                       <img
@@ -548,19 +581,11 @@ Please confirm availability and dispatch schedule. Thank you!`;
                         <p className="text-[10px] text-slate-500 font-mono">{user.email}</p>
                       </div>
                     </div>
-                    <span className="text-[10px] font-extrabold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-full">
-                      ✓ Google Verified
+                    <span className="text-[10px] font-extrabold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-full flex items-center space-x-1">
+                      <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+                      <span>Google Verified</span>
                     </span>
                   </div>
-                ) : (
-                  <button
-                    type="button"
-                    onClick={() => signInWithGoogle()}
-                    className="w-full flex items-center justify-center space-x-2 bg-white hover:bg-stone-50 text-slate-800 font-bold py-2.5 px-3 rounded-xl border border-slate-300 text-xs shadow-xs transition hover:border-amber-400 active:scale-[0.99]"
-                  >
-                    <GoogleIcon className="w-4 h-4 shrink-0" />
-                    <span>Sign in with Google to auto-fill details</span>
-                  </button>
                 )}
 
                 {/* Customer Information */}
@@ -743,7 +768,17 @@ Please confirm availability and dispatch schedule. Thank you!`;
                   </div>
                 </div>
 
-                {!hasPhone ? (
+                {!isAuthenticated || !user ? (
+                  <button
+                    type="button"
+                    onClick={() => signInWithGoogle()}
+                    className="w-full flex items-center justify-center space-x-2.5 bg-gradient-to-r from-amber-500 via-amber-600 to-amber-500 hover:from-amber-400 hover:to-amber-500 text-stone-950 font-black py-3.5 px-4 rounded-xl text-xs sm:text-sm transition shadow-lg shadow-amber-500/25 active:scale-95 cursor-pointer animate-pulse"
+                  >
+                    <GoogleIcon className="w-4 h-4 shrink-0" />
+                    <span>Sign in with Google to Place Order (₹{cartTotal.toLocaleString('en-IN')})</span>
+                    <ArrowRight className="w-4 h-4 text-stone-950" />
+                  </button>
+                ) : !hasPhone ? (
                   <button
                     type="button"
                     onClick={() => setIsPhoneModalOpen(true)}
