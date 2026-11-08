@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { 
   Feather, 
   ArrowLeft, 
+  ArrowRight,
   ShieldCheck, 
   Truck, 
   Award, 
@@ -37,8 +38,8 @@ export default function SignUpPage() {
       
       {/* Top Navigation Bar */}
       <header className="max-w-7xl w-full mx-auto p-4 sm:p-6 flex items-center justify-between relative z-20">
-        <div className="flex items-center space-x-3">
-          <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-amber-500 to-amber-600 p-0.5 flex items-center justify-center shadow-lg shadow-amber-500/20">
+        <Link href="/" className="flex items-center space-x-3 hover:opacity-90 transition group">
+          <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-amber-500 to-amber-600 p-0.5 flex items-center justify-center shadow-lg shadow-amber-500/20 group-hover:scale-105 transition">
             <div className="w-full h-full bg-stone-900 rounded-[14px] flex items-center justify-center">
               <Feather className="w-5 h-5 text-amber-400 transform -rotate-12" />
             </div>
@@ -52,17 +53,28 @@ export default function SignUpPage() {
             </div>
             <p className="text-[11px] text-stone-400 font-medium">Heritage Desi Rooster Conservation Estate</p>
           </div>
-        </div>
+        </Link>
 
-        <a
-          href="https://wa.me/919876543210"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex items-center space-x-1.5 text-xs font-bold text-emerald-400 hover:text-emerald-300 bg-stone-900/80 hover:bg-stone-800 px-3.5 py-2 rounded-xl border border-stone-800 transition shadow-sm backdrop-blur-xs"
-        >
-          <MessageCircle className="w-3.5 h-3.5" />
-          <span>Farm Helpline: +91 98765 43210</span>
-        </a>
+        <div className="flex items-center space-x-3">
+          <Link
+            href="/"
+            className="inline-flex items-center space-x-1.5 text-xs font-bold text-amber-300 hover:text-white bg-stone-900/90 hover:bg-stone-800 px-3.5 py-2 rounded-xl border border-amber-500/30 transition shadow-sm"
+          >
+            <ArrowLeft className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">Explore Showcase</span>
+            <span className="sm:hidden">Showcase</span>
+          </Link>
+
+          <a
+            href="https://wa.me/919876543210"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hidden sm:inline-flex items-center space-x-1.5 text-xs font-bold text-emerald-400 hover:text-emerald-300 bg-stone-900/80 hover:bg-stone-800 px-3.5 py-2 rounded-xl border border-stone-800 transition shadow-sm backdrop-blur-xs"
+          >
+            <MessageCircle className="w-3.5 h-3.5" />
+            <span>Farm Helpline</span>
+          </a>
+        </div>
       </header>
 
       {/* Main Split Showcase Container */}
@@ -178,6 +190,7 @@ export default function SignUpPage() {
               {!isAuthenticated && (
                 <div className="space-y-3 pt-1">
                   <GoogleSignInButton variant="page" />
+                  
                   <div className="flex items-center justify-center space-x-4 text-[11px] text-stone-400">
                     <span className="flex items-center space-x-1">
                       <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
@@ -193,6 +206,17 @@ export default function SignUpPage() {
                       <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
                       <span>100% Free</span>
                     </span>
+                  </div>
+
+                  {/* Or browse as guest */}
+                  <div className="pt-1 text-center">
+                    <Link
+                      href="/"
+                      className="inline-flex items-center justify-center space-x-2 w-full py-2.5 px-4 rounded-xl border border-stone-200 hover:border-amber-400 text-stone-700 hover:text-amber-900 bg-stone-50 hover:bg-amber-50/50 font-bold text-xs transition duration-150 group"
+                    >
+                      <span>Explore Rooster Catalog as Guest</span>
+                      <ArrowRight className="w-3.5 h-3.5 text-stone-400 group-hover:text-amber-600 group-hover:translate-x-0.5 transition" />
+                    </Link>
                   </div>
                 </div>
               )}
