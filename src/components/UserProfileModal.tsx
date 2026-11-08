@@ -8,8 +8,6 @@ import {
   Mail, 
   Phone, 
   MapPin, 
-  Package, 
-  ShoppingCart, 
   Award, 
   CheckCircle2, 
   Edit3, 
@@ -19,7 +17,6 @@ import {
   ArrowLeft
 } from 'lucide-react';
 import { useAuth } from '@/lib/authStore';
-import { useCart } from '@/lib/cartStore';
 import { FARM_INFO } from '@/lib/data';
 import { generateWhatsAppLink } from '@/lib/utils';
 import { GoogleSignInButton } from './GoogleSignInButton';
@@ -38,7 +35,6 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
   onOpenCart,
 }) => {
   const { user, isAuthenticated, signOut, updatePhone, updateAddress } = useAuth();
-  const { cartCount } = useCart();
 
   const [mounted, setMounted] = useState(false);
   const [isEditingPhone, setIsEditingPhone] = useState(false);
@@ -385,43 +381,6 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
               ) : (
                 <p className="text-xs text-slate-400 italic">No delivery address saved yet.</p>
               )}
-            </div>
-
-            {/* Quick Account Shortcuts */}
-            <div className="grid grid-cols-2 gap-2.5 pt-1">
-              <button
-                type="button"
-                onClick={() => {
-                  onClose();
-                  if (onOpenOrders) onOpenOrders();
-                  else window.dispatchEvent(new CustomEvent('open-orders-drawer'));
-                }}
-                className="p-3 rounded-2xl bg-slate-900 hover:bg-slate-800 text-white text-left font-bold transition active:scale-95 cursor-pointer group shadow-sm"
-              >
-                <Package className="w-5 h-5 text-amber-400 mb-1.5 group-hover:scale-110 transition" />
-                <p className="text-xs font-black">My Orders</p>
-                <p className="text-[10px] text-slate-400">Live GPS tracking</p>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => {
-                  onClose();
-                  if (onOpenCart) onOpenCart();
-                }}
-                className="p-3 rounded-2xl bg-amber-500 hover:bg-amber-400 text-stone-950 text-left font-bold transition active:scale-95 cursor-pointer group shadow-sm"
-              >
-                <div className="flex items-center justify-between mb-1.5">
-                  <ShoppingCart className="w-5 h-5 text-stone-950 group-hover:scale-110 transition" />
-                  {cartCount > 0 && (
-                    <span className="text-[10px] bg-stone-950 text-amber-300 font-black px-1.5 py-0.2 rounded-full">
-                      {cartCount}
-                    </span>
-                  )}
-                </div>
-                <p className="text-xs font-black">My Cart</p>
-                <p className="text-[10px] text-stone-800">Review selected birds</p>
-              </button>
             </div>
 
             {/* Direct VIP WhatsApp & Sign Out */}
