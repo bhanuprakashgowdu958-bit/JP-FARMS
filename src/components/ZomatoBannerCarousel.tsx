@@ -22,6 +22,7 @@ interface BannerSlide {
   id: string;
   image: string;
   imageAlt: string;
+  objectPosition?: string;
 }
 
 export const ZomatoBannerCarousel: React.FC<ZomatoBannerCarouselProps> = ({
@@ -40,31 +41,31 @@ export const ZomatoBannerCarousel: React.FC<ZomatoBannerCarouselProps> = ({
       id: 'commercial-grain-ad',
       image: '/banners/ad_rooster_golden_grains_commercial.jpg',
       imageAlt: '3D Commercial Advertisement: Champion Rooster Feeding on Golden Grains at JP Farms',
+      objectPosition: 'center 42%',
     },
     {
       id: 'winter-storybook',
       image: '/banners/winter_storybook_rooster_snow.jpg',
       imageAlt: 'Winter Storybook 3D Illustration: Magnificent Rooster on Snowy Fence at JP Farms',
+      objectPosition: 'center 40%',
     },
     {
       id: 'peela-aseel',
       image: '/banners/banner_rainbow_wings_crow.jpg',
       imageAlt: 'Royal Peela Aseel Rooster with Rainbow Wings Crowing at JP Farms',
+      objectPosition: 'center 38%',
     },
     {
       id: 'alpha-staredown',
       image: '/banners/banner_alpha_warrior_staredown.jpg',
       imageAlt: 'Alpha Warrior Staredown: Purebred Champion Sire at JP Farms',
+      objectPosition: 'center 45%',
     },
     {
       id: 'farm-stream',
       image: '/banners/midday_4_farm_stream.jpg',
       imageAlt: 'JP Farms Green Pastures and Natural Stream Paddocks',
-    },
-    {
-      id: 'black-kadaknath',
-      image: '/banners/night_2_black_kadaknath.jpg',
-      imageAlt: 'Pure Jet-Black Jhabua Kadaknath Rooster at JP Farms',
+      objectPosition: 'center 45%',
     },
   ];
 
@@ -126,7 +127,7 @@ export const ZomatoBannerCarousel: React.FC<ZomatoBannerCarouselProps> = ({
       
       {/* 100% Full-Bleed Clean Banner Container (Zero Text Overlap, Pure Master Artwork) */}
       <div 
-        className="group relative w-full aspect-[16/9] sm:aspect-[21/9] lg:aspect-[21/8] min-h-[220px] sm:min-h-[320px] lg:min-h-[420px] rounded-2xl sm:rounded-3xl border border-sky-200/90 shadow-xl shadow-sky-950/5 overflow-hidden bg-slate-900 transition-all duration-300 cursor-pointer"
+        className="group relative w-full aspect-[16/9] sm:aspect-[16/8] lg:aspect-[16/7.5] min-h-[220px] sm:min-h-[320px] lg:min-h-[420px] max-h-[520px] rounded-2xl sm:rounded-3xl border border-sky-200/90 shadow-xl shadow-sky-950/5 overflow-hidden bg-slate-900 transition-all duration-300 cursor-pointer"
         onMouseEnter={() => setIsPaused(true)}
         onMouseLeave={() => setIsPaused(false)}
         onTouchStart={handleTouchStart}
@@ -141,7 +142,8 @@ export const ZomatoBannerCarousel: React.FC<ZomatoBannerCarouselProps> = ({
             key={current.id}
             src={current.image}
             alt={current.imageAlt}
-            className="w-full h-full object-cover object-[center_35%] filter brightness-[1.02] contrast-[1.03] transition-all duration-700 ease-out group-hover:scale-[1.02]"
+            style={{ objectPosition: current.objectPosition || 'center' }}
+            className="w-full h-full object-cover filter brightness-[1.02] contrast-[1.03] transition-all duration-700 ease-out group-hover:scale-[1.02]"
           />
         </div>
 
