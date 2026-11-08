@@ -14,13 +14,17 @@ import {
   MessageCircle, 
   Sparkles,
   MapPin,
-  Lock
+  Lock,
+  Phone,
+  Edit2,
+  AlertTriangle
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { useCart } from '@/lib/cartStore';
 import { useOrders } from '@/lib/roosterStore';
 import { useAuth } from '@/lib/authStore';
 import { GoogleIcon } from './GoogleSignInButton';
+import { PhoneCaptureModal } from '@/components/PhoneCaptureModal';
 import { FARM_INFO } from '@/lib/data';
 import { generateWhatsAppLink } from '@/lib/utils';
 import { RoosterOrder } from '@/types/rooster';
@@ -40,7 +44,8 @@ export const CartSlideOver: React.FC = () => {
   } = useCart();
 
   const { addOrder } = useOrders();
-  const { user, isAuthenticated, signInWithGoogle } = useAuth();
+  const { user, isAuthenticated, signInWithGoogle, updateAddress } = useAuth();
+  const [isPhoneModalOpen, setIsPhoneModalOpen] = useState(false);
 
   const [step, setStep] = useState<'cart' | 'checkout'>('cart');
   const [deliveryType, setDeliveryType] = useState<'doorstep_live_crate' | 'farm_pickup'>('doorstep_live_crate');
@@ -56,15 +61,23 @@ export const CartSlideOver: React.FC = () => {
     notes: '',
   });
 
-  // Auto-fill customer name if signed in with Google
+  // Auto-fill customer details from profile & saved address
   useEffect(() => {
-    if (user?.displayName && !formData.name) {
+    if (user) {
       setFormData((prev) => ({
         ...prev,
         name: user.displayName || prev.name,
+        phone: user.phoneNumber || prev.phone,
+        address: prev.address || user.deliveryAddress || '',
+        city: prev.city || user.city || '',
+        state: prev.state || user.state || '',
+        pincode: prev.pincode || user.pincode || '',
       }));
     }
   }, [user]);
+
+  const effectivePhone = user?.phoneNumber || formData.phone;
+  const hasPhone = Boolean(effectivePhone && effectivePhone.trim().replace(/\D/g, '').length >= 10);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [orderCompleted, setOrderCompleted] = useState<RoosterOrder | null>(null);
@@ -87,8 +100,13 @@ export const CartSlideOver: React.FC = () => {
 
   const handlePlaceOrder = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.name || !formData.phone) {
-      alert('Please provide your name and WhatsApp contact number.');
+    if (!hasPhone) {
+      setIsPhoneModalOpen(true);
+      return;
+    }
+
+    if (!formData.name) {
+      alert('Please provide your name.');
       return;
     }
 
@@ -123,7 +141,7 @@ export const CartSlideOver: React.FC = () => {
         price: cartTotal,
         items: orderItems,
         customerName: formData.name.trim(),
-        phoneNumber: formData.phone.trim(),
+        phoneNumber: effectivePhone.trim(),
         deliveryAddress: formData.address.trim(),
         city: formData.city.trim(),
         state: formData.state.trim() || 'India',
@@ -133,6 +151,16 @@ export const CartSlideOver: React.FC = () => {
         notes: formData.notes.trim(),
         status: 'confirmed',
       });
+
+      // Auto-save delivery address to profile for future 1-click orders
+      if (user && formData.address) {
+        updateAddress({
+          deliveryAddress: formData.address,
+          city: formData.city,
+          state: formData.state,
+          pincode: formData.pincode,
+        });
+      }
 
       // Trigger celebratory confetti
       confetti({
@@ -151,7 +179,7 @@ export const CartSlideOver: React.FC = () => {
 
 *Order ID:* ${newOrder.id}
 *Customer Name:* ${formData.name}
-*Phone:* ${formData.phone}
+*Phone:* ${effectivePhone}
 *Delivery Type:* ${deliveryType === 'doorstep_live_crate' ? '🚚 Climate-Controlled Live Animal Crate Dispatch' : '🏡 Self Farm Pickup'}
 ${deliveryType === 'doorstep_live_crate' ? `*Delivery Address:* ${formData.address}, ${formData.city}, ${formData.state} - ${formData.pincode}` : ''}
 *Payment Method:* ${paymentMethod === 'cod' ? 'Cash on Delivery (COD)' : 'Google Pay / PhonePe UPI'}
@@ -545,20 +573,72 @@ Please confirm availability and dispatch schedule. Thank you!`;
                     />
                   </div>
 
-                  <div>
-                    <label className="block text-slate-700 font-semibold mb-1">
-                      WhatsApp Mobile Number <span className="text-rose-500">*</span>
-                    </label>
-                    <input
-                      type="tel"
-                      name="phone"
-                      required
-                      value={formData.phone}
-                      onChange={handleInputChange}
-                      placeholder="+91 98765 43210"
-                      className="w-full px-3 py-2 rounded-xl border border-slate-300 focus:outline-hidden focus:border-sky-500 text-xs"
-                    />
-                  </div>
+                  {/* WhatsApp Mobile Number - Linked to Profile */}
+                  {hasPhone ? (
+                    <div>
+                      <div className="flex items-center justify-between mb-1">
+                        <label className="text-slate-700 font-semibold flex items-center space-x-1">
+                          <Phone className="w-3 h-3 text-amber-600" />
+                          <span>Mobile Number</span>
+                          <span className="text-rose-500">*</span>
+                        </label>
+                        <button
+                          type="button"
+                          onClick={() => setIsPhoneModalOpen(true)}
+                          className="text-[11px] text-amber-700 hover:text-amber-800 font-bold hover:underline flex items-center space-x-1"
+                        >
+                          <Edit2 className="w-2.5 h-2.5" />
+                          <span>Change in Profile</span>
+                        </button>
+                      </div>
+                      <div className="relative">
+                        <input
+                          type="tel"
+                          name="phone"
+                          readOnly
+                          value={effectivePhone}
+                          className="w-full px-3 py-2 pl-8 pr-28 rounded-xl border border-slate-300 bg-slate-100/90 text-slate-900 font-mono text-xs font-semibold select-none cursor-not-allowed shadow-inner"
+                        />
+                        <Lock className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-1/2 -translate-y-1/2" />
+                        <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center space-x-1 bg-emerald-50 border border-emerald-200 text-emerald-700 text-[10px] font-bold px-2 py-0.5 rounded-md">
+                          <CheckCircle2 className="w-2.5 h-2.5 text-emerald-600" />
+                          <span>Profile Verified</span>
+                        </div>
+                      </div>
+                      <p className="text-[10px] text-slate-400 mt-1 flex items-center space-x-1">
+                        <span>🔒 Auto-detected from profile (cannot be edited directly)</span>
+                      </p>
+                    </div>
+                  ) : (
+                    <div>
+                      <label className="block text-slate-700 font-semibold mb-1 flex items-center space-x-1">
+                        <Phone className="w-3 h-3 text-amber-600" />
+                        <span>Mobile Number</span>
+                        <span className="text-rose-500">*</span>
+                      </label>
+                      <div className="bg-gradient-to-r from-amber-50 to-orange-50 border-2 border-dashed border-amber-300 rounded-xl p-3 shadow-xs">
+                        <div className="flex items-start space-x-2.5">
+                          <div className="w-7 h-7 rounded-lg bg-amber-500 text-white flex items-center justify-center shrink-0 mt-0.5 shadow-xs">
+                            <AlertTriangle className="w-4 h-4" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-xs font-bold text-amber-950">Mobile Not in Profile</p>
+                            <p className="text-[11px] text-amber-800 leading-snug mt-0.5">
+                              Required for live climate crate dispatch & WhatsApp delivery tracking. Please update your mobile in your profile.
+                            </p>
+                            <button
+                              type="button"
+                              onClick={() => setIsPhoneModalOpen(true)}
+                              className="mt-2 inline-flex items-center space-x-1.5 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-extrabold px-3 py-1.5 rounded-lg text-xs shadow-xs active:scale-95 transition"
+                            >
+                              <Plus className="w-3.5 h-3.5" />
+                              <span>Update Mobile in Profile</span>
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
 
                   {deliveryType === 'doorstep_live_crate' && (
                     <>
@@ -656,14 +736,25 @@ Please confirm availability and dispatch schedule. Thank you!`;
                   </div>
                 </div>
 
-                <button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="w-full flex items-center justify-center space-x-2 bg-gradient-to-r from-amber-500 via-amber-600 to-amber-500 hover:from-amber-400 hover:to-amber-500 text-stone-950 font-black py-3 px-4 rounded-xl text-xs transition shadow-lg shadow-amber-500/25 active:scale-95 disabled:opacity-50"
-                >
-                  <MessageCircle className="w-4 h-4" />
-                  <span>{isSubmitting ? 'Placing Order...' : `Confirm & Place Order (₹${cartTotal.toLocaleString('en-IN')})`}</span>
-                </button>
+                {!hasPhone ? (
+                  <button
+                    type="button"
+                    onClick={() => setIsPhoneModalOpen(true)}
+                    className="w-full flex items-center justify-center space-x-2 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-black py-3 px-4 rounded-xl text-xs transition shadow-lg shadow-amber-500/25 active:scale-95 animate-pulse"
+                  >
+                    <Phone className="w-4 h-4" />
+                    <span>Update Mobile in Profile to Place Order</span>
+                  </button>
+                ) : (
+                  <button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="w-full flex items-center justify-center space-x-2 bg-gradient-to-r from-amber-500 via-amber-600 to-amber-500 hover:from-amber-400 hover:to-amber-500 text-stone-950 font-black py-3 px-4 rounded-xl text-xs transition shadow-lg shadow-amber-500/25 active:scale-95 disabled:opacity-50"
+                  >
+                    <MessageCircle className="w-4 h-4" />
+                    <span>{isSubmitting ? 'Placing Order...' : `Confirm & Place Order (₹${cartTotal.toLocaleString('en-IN')})`}</span>
+                  </button>
+                )}
 
               </form>
             )}
@@ -698,6 +789,12 @@ Please confirm availability and dispatch schedule. Thank you!`;
 
         </div>
       </div>
+
+      {/* Quick In-Place Phone Capture Modal (Never Leaves Checkout) */}
+      <PhoneCaptureModal
+        isOpen={isPhoneModalOpen}
+        onClose={() => setIsPhoneModalOpen(false)}
+      />
     </div>
   );
 };

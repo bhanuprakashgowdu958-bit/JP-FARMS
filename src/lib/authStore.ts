@@ -9,6 +9,10 @@ export interface AppUser {
   email: string | null;
   photoURL: string | null;
   phoneNumber?: string | null;
+  deliveryAddress?: string;
+  city?: string;
+  state?: string;
+  pincode?: string;
   createdAt: string;
 }
 
@@ -141,6 +145,26 @@ export function updateUserPhone(phone: string): AppUser | null {
     return updatedUser;
   } catch (e) {
     console.error('Failed to update phone number', e);
+    return null;
+  }
+}
+
+export function updateUserAddress(addr: { deliveryAddress?: string; city?: string; state?: string; pincode?: string }): AppUser | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    const user = getStoredUser();
+    if (!user) return null;
+    const updatedUser: AppUser = {
+      ...user,
+      ...(addr.deliveryAddress !== undefined ? { deliveryAddress: addr.deliveryAddress.trim() } : {}),
+      ...(addr.city !== undefined ? { city: addr.city.trim() } : {}),
+      ...(addr.state !== undefined ? { state: addr.state.trim() } : {}),
+      ...(addr.pincode !== undefined ? { pincode: addr.pincode.trim() } : {}),
+    };
+    saveStoredUser(updatedUser);
+    return updatedUser;
+  } catch (e) {
+    console.error('Failed to update address', e);
     return null;
   }
 }
@@ -296,6 +320,11 @@ export function useAuth() {
     signOut,
     updatePhone: (phone: string) => {
       const updated = updateUserPhone(phone);
+      if (updated) setUser(updated);
+      return updated;
+    },
+    updateAddress: (addr: { deliveryAddress?: string; city?: string; state?: string; pincode?: string }) => {
+      const updated = updateUserAddress(addr);
       if (updated) setUser(updated);
       return updated;
     },
