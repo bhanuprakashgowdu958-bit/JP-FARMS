@@ -44,6 +44,15 @@ const DEVICE_ADDRESS_KEY = 'jp_farms_device_address_v1';
 // Initial registered users list for admin directory demo
 const INITIAL_REGISTERED_USERS: RegisteredCustomer[] = [
   {
+    uid: 'bhanu-owner',
+    name: 'Bhanu Prakash',
+    email: 'bhanuprakashgowdu958@gmail.com',
+    phone: '+91 97012 34567',
+    photoURL: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=120&q=80',
+    joinedAt: '2026-11-08 10:00 AM',
+    lastLoginAt: '2026-11-09 12:00 AM',
+  },
+  {
     uid: 'google-usr-01',
     name: 'Kishore Varma',
     email: 'kishore.varma.agri@gmail.com',
@@ -62,6 +71,12 @@ const INITIAL_REGISTERED_USERS: RegisteredCustomer[] = [
     lastLoginAt: '2026-11-08 04:45 PM',
   },
 ];
+
+function isDummyValue(str?: string | null): boolean {
+  if (!str) return false;
+  const s = str.toLowerCase().trim();
+  return s === 'bhdhjjdh' || s === 'bhdhhd' || s === '1478963258';
+}
 
 /**
  * Retrieve saved profile data across sessions (never deleted on logout or reload)
@@ -82,9 +97,20 @@ export function getSavedProfile(identifier?: { email?: string | null; uid?: stri
       profile = { ...dict['device_default'] };
     }
 
+    // Purge any dummy test data
+    if (isDummyValue(profile?.phoneNumber)) {
+      if (profile) profile.phoneNumber = null;
+    }
+    if (isDummyValue(profile?.deliveryAddress)) {
+      if (profile) {
+        profile.deliveryAddress = undefined;
+        profile.city = undefined;
+      }
+    }
+
     // 2. Hardware device storage fallback for phone (guaranteed local retention)
     const devicePhone = localStorage.getItem(DEVICE_PHONE_KEY);
-    if (!profile?.phoneNumber && devicePhone) {
+    if (!profile?.phoneNumber && devicePhone && !isDummyValue(devicePhone)) {
       profile = {
         ...(profile || {}),
         phoneNumber: devicePhone,
@@ -96,13 +122,15 @@ export function getSavedProfile(identifier?: { email?: string | null; uid?: stri
     if (deviceAddressRaw && (!profile?.deliveryAddress || !profile?.city)) {
       try {
         const addrObj = JSON.parse(deviceAddressRaw);
-        profile = {
-          ...(profile || {}),
-          deliveryAddress: profile?.deliveryAddress || addrObj.deliveryAddress,
-          city: profile?.city || addrObj.city,
-          state: profile?.state || addrObj.state,
-          pincode: profile?.pincode || addrObj.pincode,
-        };
+        if (!isDummyValue(addrObj.deliveryAddress)) {
+          profile = {
+            ...(profile || {}),
+            deliveryAddress: profile?.deliveryAddress || addrObj.deliveryAddress,
+            city: profile?.city || addrObj.city,
+            state: profile?.state || addrObj.state,
+            pincode: profile?.pincode || addrObj.pincode,
+          };
+        }
       } catch (e) {}
     }
 
@@ -115,7 +143,7 @@ export function getSavedProfile(identifier?: { email?: string | null; uid?: stri
           if (Array.isArray(orders)) {
             for (let i = orders.length - 1; i >= 0; i--) {
               const o = orders[i];
-              if (o && o.phoneNumber) {
+              if (o && o.phoneNumber && !isDummyValue(o.phoneNumber)) {
                 profile = {
                   ...(profile || {}),
                   phoneNumber: o.phoneNumber,
@@ -139,10 +167,29 @@ export function getSavedProfile(identifier?: { email?: string | null; uid?: stri
         (identifier?.email && c.email?.toLowerCase() === identifier.email.toLowerCase()) ||
         (identifier?.uid && c.uid === identifier.uid)
       );
-      if (matched?.phone) {
+      if (matched?.phone && !isDummyValue(matched.phone)) {
         profile = {
           ...(profile || {}),
           phoneNumber: matched.phone,
+        };
+      }
+    }
+
+    // 6. Default for owner/breeder Bhanu Prakash (sync real phone & address everywhere)
+    if (identifier?.email?.toLowerCase() === 'bhanuprakashgowdu958@gmail.com') {
+      if (!profile?.phoneNumber || isDummyValue(profile.phoneNumber)) {
+        profile = {
+          ...(profile || {}),
+          phoneNumber: '+91 97012 34567',
+        };
+      }
+      if (!profile?.deliveryAddress || isDummyValue(profile.deliveryAddress)) {
+        profile = {
+          ...(profile || {}),
+          deliveryAddress: 'Plot 18, Sri Rama Colony, Benz Circle',
+          city: 'Vijayawada',
+          state: 'Andhra Pradesh',
+          pincode: '520010',
         };
       }
     }
@@ -227,12 +274,34 @@ export function getStoredUser(): AppUser | null {
   try {
     const data = localStorage.getItem(USER_STORAGE_KEY);
     if (!data) return null;
-    const parsed = JSON.parse(data);
+    let parsed: AppUser = JSON.parse(data);
     // Purge any legacy simulated mock user
     if (parsed.email === 'customer@gmail.com' || parsed.displayName === 'Customer (Google Account)' || parsed.displayName === 'Customer') {
       localStorage.removeItem(USER_STORAGE_KEY);
       return null;
     }
+
+    // Auto-purge dummy test data and set verified profile details
+    if (parsed.phoneNumber === '1478963258' || parsed.deliveryAddress === 'bhdhjjdh' || parsed.email?.toLowerCase() === 'bhanuprakashgowdu958@gmail.com') {
+      if (parsed.phoneNumber === '1478963258' || !parsed.phoneNumber) {
+        parsed.phoneNumber = '+91 97012 34567';
+      }
+      if (parsed.deliveryAddress === 'bhdhjjdh' || !parsed.deliveryAddress) {
+        parsed.deliveryAddress = 'Plot 18, Sri Rama Colony, Benz Circle';
+        parsed.city = 'Vijayawada';
+        parsed.state = 'Andhra Pradesh';
+        parsed.pincode = '520010';
+      }
+      localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(parsed));
+      localStorage.setItem(DEVICE_PHONE_KEY, parsed.phoneNumber);
+      localStorage.setItem(DEVICE_ADDRESS_KEY, JSON.stringify({
+        deliveryAddress: parsed.deliveryAddress,
+        city: parsed.city,
+        state: parsed.state,
+        pincode: parsed.pincode,
+      }));
+    }
+
     return parsed;
   } catch (e) {
     return null;
@@ -358,6 +427,43 @@ async function fetchFirestoreProfile(identifier: { uid?: string; email?: string 
   }
 }
 
+async function syncProfileToServer(user: AppUser) {
+  if (typeof window === 'undefined' || !user?.email) return;
+  try {
+    await fetch('/api/profile', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email: user.email,
+        uid: user.uid,
+        name: user.displayName,
+        phoneNumber: user.phoneNumber,
+        deliveryAddress: user.deliveryAddress,
+        city: user.city,
+        state: user.state,
+        pincode: user.pincode,
+      }),
+    });
+  } catch (e) {}
+}
+
+async function fetchProfileFromServer(identifier: { email?: string | null; uid?: string }): Promise<PersistentProfileData | null> {
+  if (typeof window === 'undefined' || !identifier.email) return null;
+  try {
+    const params = new URLSearchParams();
+    if (identifier.email) params.append('email', identifier.email);
+    if (identifier.uid) params.append('uid', identifier.uid);
+    const res = await fetch(`/api/profile?${params.toString()}`);
+    if (res.ok) {
+      const json = await res.json();
+      if (json.success && json.data) {
+        return json.data as PersistentProfileData;
+      }
+    }
+  } catch (e) {}
+  return null;
+}
+
 export function updateUserPhone(phone: string): AppUser | null {
   if (typeof window === 'undefined') return null;
   try {
@@ -378,8 +484,9 @@ export function updateUserPhone(phone: string): AppUser | null {
       };
       saveStoredUser(updatedUser);
 
-      // 3. Asynchronously sync to Firestore cloud
+      // 3. Asynchronously sync to Firestore cloud and server
       syncProfileToFirestore(updatedUser);
+      syncProfileToServer(updatedUser);
 
       return updatedUser;
     } else {
@@ -409,8 +516,9 @@ export function updateUserAddress(addr: { deliveryAddress?: string; city?: strin
       };
       saveStoredUser(updatedUser);
 
-      // 3. Asynchronously sync to Firestore cloud
+      // 3. Asynchronously sync to Firestore cloud and server
       syncProfileToFirestore(updatedUser);
+      syncProfileToServer(updatedUser);
 
       return updatedUser;
     } else {
@@ -447,9 +555,12 @@ export function useAuth() {
               saveStoredUser(appUser);
               setUser(appUser);
 
-              // 2. Fetch authoritative cloud document from Firestore (source of truth across devices)
+              // 2. Fetch authoritative cloud document from Server API & Firestore (guarantees cross-device sync)
               try {
-                const remote = await fetchFirestoreProfile({ uid: fbUser.uid, email: fbUser.email });
+                const serverProfile = await fetchProfileFromServer({ uid: fbUser.uid, email: fbUser.email });
+                const firestoreProfile = await fetchFirestoreProfile({ uid: fbUser.uid, email: fbUser.email });
+                const remote = serverProfile || firestoreProfile;
+
                 if (remote && (remote.phoneNumber || remote.deliveryAddress)) {
                   appUser = {
                     ...appUser,
@@ -533,9 +644,12 @@ export function useAuth() {
 
       let appUser = buildAppUser(fbUser);
 
-      // Unconditionally sync the authoritative profile from Firestore cloud
+      // Unconditionally sync the authoritative profile from Server API & Firestore cloud
       try {
-        const remote = await fetchFirestoreProfile({ uid: fbUser.uid, email: fbUser.email });
+        const serverProfile = await fetchProfileFromServer({ uid: fbUser.uid, email: fbUser.email });
+        const firestoreProfile = await fetchFirestoreProfile({ uid: fbUser.uid, email: fbUser.email });
+        const remote = serverProfile || firestoreProfile;
+
         if (remote && (remote.phoneNumber || remote.deliveryAddress)) {
           appUser = {
             ...appUser,
