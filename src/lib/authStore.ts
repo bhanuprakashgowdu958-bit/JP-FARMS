@@ -24,7 +24,7 @@ export interface RegisteredCustomer {
 const USER_STORAGE_KEY = 'jp_farms_user_v1';
 const REGISTERED_USERS_KEY = 'jp_farms_registered_users_v1';
 
-// Initial registered users list for showcase demo
+// Initial registered users list for admin directory demo
 const INITIAL_REGISTERED_USERS: RegisteredCustomer[] = [
   {
     uid: 'google-usr-01',
@@ -42,21 +42,20 @@ const INITIAL_REGISTERED_USERS: RegisteredCustomer[] = [
     joinedAt: '2026-11-06 02:40 PM',
     lastLoginAt: '2026-11-08 04:45 PM',
   },
-  {
-    uid: 'google-usr-03',
-    name: 'Ramesh Naidu',
-    email: 'ramesh.naidu.ap@gmail.com',
-    photoURL: 'https://images.unsplash.com/photo-1527980965255-d3b416303d12?auto=format&fit=crop&w=120&q=80',
-    joinedAt: '2026-11-07 09:30 AM',
-    lastLoginAt: '2026-11-08 09:10 AM',
-  },
 ];
 
 export function getStoredUser(): AppUser | null {
   if (typeof window === 'undefined') return null;
   try {
     const data = localStorage.getItem(USER_STORAGE_KEY);
-    return data ? JSON.parse(data) : null;
+    if (!data) return null;
+    const parsed = JSON.parse(data);
+    // Purge any legacy simulated mock user
+    if (parsed.email === 'customer@gmail.com' || parsed.displayName === 'Customer (Google Account)' || parsed.displayName === 'Customer') {
+      localStorage.removeItem(USER_STORAGE_KEY);
+      return null;
+    }
+    return parsed;
   } catch (e) {
     return null;
   }
@@ -109,8 +108,8 @@ function recordRegisteredCustomer(user: AppUser): void {
       list.unshift({
         uid: user.uid,
         name: user.displayName || 'Google User',
-        email: user.email || 'customer@gmail.com',
-        photoURL: user.photoURL || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=120&q=80',
+        email: user.email || '',
+        photoURL: user.photoURL || '',
         joinedAt: now,
         lastLoginAt: now,
       });
@@ -172,53 +171,73 @@ export function useAuth() {
     setIsLoading(true);
     setError(null);
 
-    // 1. Try Firebase Google Auth Popup if configured
-    if (auth && isFirebaseConfigured) {
-      try {
-        const authMod: any = await import('firebase/auth');
-        if (authMod?.GoogleAuthProvider && authMod?.signInWithPopup) {
-          const provider = new authMod.GoogleAuthProvider();
-          provider.setCustomParameters({ prompt: 'select_account' });
-          const result = await authMod.signInWithPopup(auth, provider);
-          const fbUser = result.user;
-
-          const appUser: AppUser = {
-            uid: fbUser.uid,
-            displayName: fbUser.displayName,
-            email: fbUser.email,
-            photoURL: fbUser.photoURL,
-            phoneNumber: fbUser.phoneNumber,
-            createdAt: new Date().toISOString(),
-          };
-
-          saveStoredUser(appUser);
-          setUser(appUser);
-          setIsLoading(false);
-          return appUser;
-        }
-      } catch (err: any) {
-        console.warn('Firebase Google Auth Popup error, using fallback:', err?.code, err?.message);
-        // If user manually closed popup, don't fallback to simulation
-        if (err?.code === 'auth/popup-closed-by-user') {
-          setIsLoading(false);
-          return null;
-        }
-      }
+    if (!auth) {
+      alert('Firebase Auth is initializing. Please try again in a moment.');
+      setIsLoading(false);
+      return null;
     }
 
-    // 2. Safe Fallback (Allows testing without requiring Google Cloud Console redirect URI setup)
-    const simulatedGoogleUser: AppUser = {
-      uid: `google-${Math.floor(100000 + Math.random() * 900000)}`,
-      displayName: 'Customer (Google Account)',
-      email: 'customer@gmail.com',
-      photoURL: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=120&q=80',
-      createdAt: new Date().toISOString(),
-    };
+    try {
+      const authMod: any = await import('firebase/auth');
+      const provider = new authMod.GoogleAuthProvider();
+      provider.setCustomParameters({ prompt: 'select_account' });
 
-    saveStoredUser(simulatedGoogleUser);
-    setUser(simulatedGoogleUser);
-    setIsLoading(false);
-    return simulatedGoogleUser;
+      // Open authentic Google OAuth popup (accounts.google.com)
+      const result = await authMod.signInWithPopup(auth, provider);
+      const fbUser = result.user;
+
+      const appUser: AppUser = {
+        uid: fbUser.uid,
+        displayName: fbUser.displayName,
+        email: fbUser.email,
+        photoURL: fbUser.photoURL,
+        phoneNumber: fbUser.phoneNumber,
+        createdAt: new Date().toISOString(),
+      };
+
+      saveStoredUser(appUser);
+      setUser(appUser);
+      setIsLoading(false);
+      return appUser;
+    } catch (err: any) {
+      console.error('Google Sign-In Error:', err);
+      setIsLoading(false);
+
+      // 1. User dismissed or closed the Google popup
+      if (err?.code === 'auth/popup-closed-by-user' || err?.code === 'auth/cancelled-popup-request') {
+        return null;
+      }
+
+      // 2. Browser blocked popup
+      if (err?.code === 'auth/popup-blocked') {
+        alert('The Google Sign-In window was blocked by your browser. Please allow popups for this site and click Sign In again.');
+        setError('Popup blocked by browser');
+        return null;
+      }
+
+      // 3. Domain not authorized in Firebase Console
+      if (err?.code === 'auth/unauthorized-domain') {
+        const currentHost = typeof window !== 'undefined' ? window.location.hostname : 'your-domain';
+        alert(
+          `Google Sign-In Setup Notice:\n\nDomain "${currentHost}" must be whitelisted in your Firebase Console.\n\nQuick steps:\n1. Open Firebase Console (console.firebase.google.com) > jp-farms\n2. Click Authentication > Settings > Authorized domains\n3. Click "Add domain" and add "${currentHost}"`
+        );
+        setError(`Domain ${currentHost} is not authorized in Firebase Console.`);
+        return null;
+      }
+
+      // 4. Google provider disabled in Firebase Console
+      if (err?.code === 'auth/operation-not-allowed') {
+        alert(
+          `Google Sign-In Setup Notice:\n\nThe Google provider needs to be enabled in your Firebase Console.\n\nQuick steps:\n1. Open console.firebase.google.com > jp-farms\n2. Click Authentication > Sign-in method\n3. Click "Google" and toggle "Enable"`
+        );
+        setError('Google Sign-In provider is disabled in Firebase Console.');
+        return null;
+      }
+
+      alert(`Google Sign-In failed: ${err?.message || err?.code || 'Please check your connection and try again.'}`);
+      setError(err?.message || 'Authentication failed');
+      return null;
+    }
   };
 
   const signOut = async () => {
