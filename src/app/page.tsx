@@ -2,8 +2,7 @@
 
 import React, { useState } from 'react';
 import { Header } from '@/components/Header';
-import { PixarRoosterBanner3D } from '@/components/PixarRoosterBanner3D';
-import { Hero } from '@/components/Hero';
+import { InteractiveEstateHero } from '@/components/InteractiveEstateHero';
 import { RoosterCatalog } from '@/components/RoosterCatalog';
 import { BreedsGuide } from '@/components/BreedsGuide';
 import { FarmBioSecurity } from '@/components/FarmBioSecurity';
@@ -56,17 +55,12 @@ export default function HomePage() {
 
       {/* Main Content Area */}
       <main className="flex-1">
-        {/* 3D Pixar-Style Animated Rooster & Sun Banner (As in Reference Video) */}
-        <PixarRoosterBanner3D 
+        {/* World-Class Interactive Estate Hero & Bento Feature Grid (Replaces Traditional Banners) */}
+        <InteractiveEstateHero 
+          roosters={roosters}
           onOpenReels={() => setIsReelsOpen(true)}
           onScheduleVisit={() => setInquiryRooster(roosters[0] || null)}
-        />
-
-        {/* High-Converting Grand Heritage Hero & Value Proposition */}
-        <Hero 
-          onOpenReels={() => setIsReelsOpen(true)}
-          onScheduleVisit={() => setInquiryRooster(roosters[0] || null)}
-          birdsCount={birdsCount}
+          onSelectRooster={(rooster) => setSelectedRooster(rooster)}
         />
 
         {/* Colorful Grand Heritage Exhibition Banner & Marquee */}
