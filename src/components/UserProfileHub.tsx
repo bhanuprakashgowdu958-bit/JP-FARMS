@@ -25,13 +25,14 @@ import { GoogleSignInButton } from './GoogleSignInButton';
 import { PhoneCaptureModal } from './PhoneCaptureModal';
 import { FARM_INFO } from '@/lib/data';
 import { generateWhatsAppLink } from '@/lib/utils';
+import confetti from 'canvas-confetti';
 
 interface UserProfileHubProps {
   onOpenCart?: () => void;
 }
 
 export const UserProfileHub: React.FC<UserProfileHubProps> = ({ onOpenCart }) => {
-  const { user, isAuthenticated, signOut } = useAuth();
+  const { user, isAuthenticated, signOut, updatePhone } = useAuth();
   const { cartCount, cartTotal } = useCart();
   const [activeTabModal, setActiveTabModal] = useState<'health' | 'delivery' | null>(null);
   const [isPhoneModalOpen, setIsPhoneModalOpen] = useState(false);
@@ -99,7 +100,7 @@ export const UserProfileHub: React.FC<UserProfileHubProps> = ({ onOpenCart }) =>
                   {user.phoneNumber ? (
                     <button
                       onClick={() => setIsPhoneModalOpen(true)}
-                      className="inline-flex items-center space-x-1 text-amber-300 hover:text-amber-200 bg-amber-400/10 px-2 py-0.5 rounded-lg border border-amber-400/20 font-mono transition group"
+                      className="inline-flex items-center space-x-1.5 text-amber-300 hover:text-amber-200 bg-amber-400/10 px-2.5 py-1 rounded-xl border border-amber-400/20 font-mono transition group cursor-pointer"
                       title="Click to edit phone number"
                     >
                       <Phone className="w-3 h-3 text-amber-400" />
@@ -107,13 +108,39 @@ export const UserProfileHub: React.FC<UserProfileHubProps> = ({ onOpenCart }) =>
                       <Edit3 className="w-2.5 h-2.5 text-stone-400 group-hover:text-white ml-0.5" />
                     </button>
                   ) : (
-                    <button
-                      onClick={() => setIsPhoneModalOpen(true)}
-                      className="inline-flex items-center space-x-1 text-amber-400 hover:text-amber-300 bg-amber-500/20 hover:bg-amber-500/30 px-2.5 py-0.5 rounded-lg border border-amber-400/40 text-[11px] font-bold transition animate-pulse"
+                    <form
+                      onSubmit={(e) => {
+                        e.preventDefault();
+                        const form = e.currentTarget;
+                        const input = form.elements.namedItem('inlinePhone') as HTMLInputElement;
+                        const clean = input.value.trim().replace(/\D/g, '');
+                        if (clean.length === 10) {
+                          const formatted = `+91 ${clean.slice(0, 5)} ${clean.slice(5, 10)}`;
+                          updatePhone(formatted);
+                          try {
+                            confetti({ particleCount: 70, spread: 60, origin: { y: 0.5 } });
+                          } catch (err) {}
+                        } else {
+                          alert('Please enter a valid 10-digit mobile number');
+                        }
+                      }}
+                      className="inline-flex items-center space-x-1.5 bg-stone-800/90 border border-amber-400/50 rounded-xl px-2.5 py-1 shadow-sm"
                     >
-                      <Phone className="w-3 h-3" />
-                      <span>+ Add WhatsApp / Phone</span>
-                    </button>
+                      <span className="text-[11px] text-amber-300 font-bold select-none">🇮🇳 +91</span>
+                      <input
+                        name="inlinePhone"
+                        type="tel"
+                        maxLength={10}
+                        placeholder="Add Mobile Number"
+                        className="bg-transparent text-xs text-white placeholder:text-stone-400 font-mono w-32 focus:outline-hidden"
+                      />
+                      <button
+                        type="submit"
+                        className="bg-amber-500 hover:bg-amber-400 text-stone-950 text-[10px] font-black px-2.5 py-1 rounded-lg transition active:scale-95 cursor-pointer shadow-xs"
+                      >
+                        Save
+                      </button>
+                    </form>
                   )}
                 </div>
               </div>
