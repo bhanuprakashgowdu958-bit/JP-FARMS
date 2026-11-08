@@ -16,12 +16,16 @@ import {
   ShoppingCart, 
   Package, 
   Truck,
-  ChevronRight
+  ChevronRight,
+  LogOut,
+  ExternalLink,
+  HelpCircle
 } from 'lucide-react';
 import { FARM_INFO } from '@/lib/data';
 import { generateWhatsAppLink } from '@/lib/utils';
 import { useCart } from '@/lib/cartStore';
 import { useOrders } from '@/lib/roosterStore';
+import { useAuth } from '@/lib/authStore';
 import { GoogleSignInButton } from './GoogleSignInButton';
 
 interface HeaderProps {
@@ -35,12 +39,18 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenOrders, 
   birdsCount = 7 
 }) => {
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [sideMenuOpen, setSideMenuOpen] = useState(false);
   const { cartCount, openCart } = useCart();
   const { orders } = useOrders();
+  const { user, signOut } = useAuth();
 
   const activeOrdersCount = orders.filter(o => o.status === 'confirmed' || o.status === 'dispatched').length;
   const totalOrdersCount = orders.length;
+
+  const generalWhatsAppUrl = generateWhatsAppLink({
+    phone: FARM_INFO.whatsapp,
+    customMessage: 'Hello JP Farms! I visited your website showcase and would like to learn more about your heritage roosters and plan a visit to your farm.',
+  });
 
   return (
     <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-sky-100 text-slate-800 shadow-xs">
@@ -67,7 +77,7 @@ export const Header: React.FC<HeaderProps> = ({
         </div>
       </div>
 
-      {/* Main Bar (Logo, Profile & Cart ONLY) */}
+      {/* Main Navigation Bar */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-20">
           
@@ -93,12 +103,31 @@ export const Header: React.FC<HeaderProps> = ({
             </div>
           </Link>
 
-          {/* Top Right Actions: User Profile, My Orders & Shopping Cart */}
+          {/* Desktop Center Navigation Links */}
+          <nav className="hidden xl:flex items-center space-x-6 text-xs font-bold text-slate-700">
+            <a href="#showcase" className="hover:text-amber-600 transition flex items-center space-x-1">
+              <span>🐓 Rooster Showcase</span>
+            </a>
+            <a href="#breeds" className="hover:text-amber-600 transition flex items-center space-x-1">
+              <span>🛡️ Heritage Breeds</span>
+            </a>
+            <a href="#biosecurity" className="hover:text-amber-600 transition flex items-center space-x-1">
+              <span>🌿 Bio-Security & Diet</span>
+            </a>
+            <a href="#delivery" className="hover:text-amber-600 transition flex items-center space-x-1">
+              <span>🚚 Live AC Crate Delivery</span>
+            </a>
+            <a href="#visit-guide" className="hover:text-amber-600 transition flex items-center space-x-1">
+              <span>📍 Visit Estate</span>
+            </a>
+          </nav>
+
+          {/* Top Right Actions (Desktop): Profile, Orders, Cart & Menu Bar */}
           <div className="hidden sm:flex items-center space-x-2.5 shrink-0">
             {/* Google Sign In / Account Avatar Button */}
             <GoogleSignInButton variant="header" />
 
-            {/* My Orders Button - Placed Next to Cart */}
+            {/* My Orders Button */}
             <button
               type="button"
               onClick={onOpenOrders}
@@ -134,14 +163,26 @@ export const Header: React.FC<HeaderProps> = ({
                 </span>
               )}
             </button>
+
+            {/* Menu Bar Button - Placed RIGHT NEXT TO CART */}
+            <button
+              type="button"
+              onClick={() => setSideMenuOpen(true)}
+              className="flex items-center space-x-1.5 bg-slate-900 hover:bg-slate-800 text-amber-400 hover:text-white px-3.5 py-2.5 rounded-xl border border-slate-700/80 transition active:scale-95 text-xs font-extrabold shadow-xs whitespace-nowrap group"
+              title="Open Navigation Menu"
+              aria-label="Open menu"
+            >
+              <Menu className="w-4 h-4 text-amber-400 group-hover:scale-110 transition duration-200" />
+              <span>Menu</span>
+            </button>
           </div>
 
-          {/* Mobile Right Actions: Google Profile, My Orders, Cart & Menu Toggle */}
-          <div className="flex items-center lg:hidden space-x-1.5">
+          {/* Mobile Right Actions: Profile, Orders, Cart & Menu Button */}
+          <div className="flex items-center sm:hidden space-x-1.5">
             {/* Mobile Google Sign In */}
             <GoogleSignInButton variant="compact" />
 
-            {/* Mobile Orders Button Next to Cart */}
+            {/* Mobile Orders Button */}
             <button
               type="button"
               onClick={onOpenOrders}
@@ -173,164 +214,294 @@ export const Header: React.FC<HeaderProps> = ({
               )}
             </button>
 
-            {/* Mobile Menu Hamburger */}
+            {/* Mobile Menu Bar Button - Placed RIGHT NEXT TO CART */}
             <button
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="text-slate-700 hover:text-slate-900 p-2.5 rounded-xl bg-sky-50 hover:bg-sky-100 border border-sky-100 transition active:scale-95"
-              aria-label="Toggle menu"
+              onClick={() => setSideMenuOpen(true)}
+              className="p-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-amber-400 border border-slate-700/80 transition active:scale-95 flex items-center justify-center shadow-xs"
+              aria-label="Open menu"
+              title="Menu"
             >
-              {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+              <Menu className="w-5 h-5 text-amber-400" />
             </button>
           </div>
         </div>
       </div>
 
-      {/* Amazon / Flipkart Style Category & Orders Menu Bar */}
-      <nav className="bg-slate-900 text-slate-200 text-xs px-4 py-1.5 border-t border-slate-800 shadow-inner">
-        <div className="max-w-7xl mx-auto flex items-center justify-between overflow-x-auto no-scrollbar space-x-3 sm:space-x-4 whitespace-nowrap">
-          
-          <div className="flex items-center space-x-2 sm:space-x-3 text-[11px] font-bold">
-            {/* All Menu Button */}
-            <button
-              type="button"
-              onClick={() => setMobileMenuOpen(true)}
-              className="flex items-center space-x-1.5 bg-slate-800 hover:bg-slate-700 text-amber-400 hover:text-white px-2.5 py-1.5 rounded-lg border border-slate-700/80 transition active:scale-95 shrink-0"
-            >
-              <Menu className="w-3.5 h-3.5" />
-              <span>All Strains ({birdsCount})</span>
-            </button>
+      {/* Amazon / Flipkart Style Slide-Over Side Menu Drawer (Desktop & Mobile) */}
+      {sideMenuOpen && (
+        <div className="fixed inset-0 z-50 overflow-hidden">
+          {/* Backdrop */}
+          <div 
+            className="absolute inset-0 bg-slate-950/60 backdrop-blur-xs transition-opacity animate-in fade-in duration-200"
+            onClick={() => setSideMenuOpen(false)}
+          />
 
-            <span className="text-slate-700 hidden sm:inline">•</span>
+          {/* Drawer Box */}
+          <div className="fixed inset-y-0 right-0 max-w-full flex pl-10">
+            <div className="w-screen max-w-md bg-white shadow-2xl flex flex-col animate-in slide-in-from-right duration-300">
+              
+              {/* Drawer Top Header (Amazon Hello User Style) */}
+              <div className="p-5 bg-gradient-to-r from-slate-900 via-stone-900 to-slate-950 text-white flex items-center justify-between border-b border-stone-800">
+                <div className="flex items-center space-x-3">
+                  {user ? (
+                    <img
+                      src={user.photoURL || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=120&q=80'}
+                      alt=""
+                      className="w-10 h-10 rounded-full object-cover border-2 border-amber-400"
+                    />
+                  ) : (
+                    <div className="w-10 h-10 rounded-full bg-slate-800 text-amber-400 flex items-center justify-center border border-slate-700 font-bold">
+                      JP
+                    </div>
+                  )}
+                  <div>
+                    <h3 className="text-sm font-black text-white leading-tight">
+                      {user ? `Hello, ${user.displayName?.split(' ')[0]}!` : 'Hello, Breeder!'}
+                    </h3>
+                    <p className="text-[11px] text-amber-400 font-semibold">
+                      JP Farms Heritage Menu
+                    </p>
+                  </div>
+                </div>
 
-            {/* Breed Categories & Page Navigation */}
-            <a 
-              href="#showcase" 
-              className="hover:text-amber-300 transition text-slate-300 px-2 py-1 rounded hover:bg-slate-800"
-            >
-              Champion Peela Aseel
-            </a>
-            <a 
-              href="#showcase" 
-              className="hover:text-amber-300 transition text-slate-300 px-2 py-1 rounded hover:bg-slate-800"
-            >
-              Kagar & Sindhi
-            </a>
-            <a 
-              href="#showcase" 
-              className="hover:text-amber-300 transition text-slate-300 px-2 py-1 rounded hover:bg-slate-800"
-            >
-              Kadaknath
-            </a>
-            <a 
-              href="#biosecurity" 
-              className="hover:text-amber-300 transition text-slate-300 px-2 py-1 rounded hover:bg-slate-800 flex items-center space-x-1"
-            >
-              <ShieldCheck className="w-3 h-3 text-emerald-400" />
-              <span>Bio-Security & Vaccines</span>
-            </a>
-            <a 
-              href="#delivery" 
-              className="hover:text-amber-300 transition text-slate-300 px-2 py-1 rounded hover:bg-slate-800 flex items-center space-x-1"
-            >
-              <Truck className="w-3 h-3 text-sky-400" />
-              <span>AC Crate Delivery</span>
-            </a>
-            <a 
-              href="#visit-guide" 
-              className="hover:text-amber-300 transition text-slate-300 px-2 py-1 rounded hover:bg-slate-800 flex items-center space-x-1"
-            >
-              <MapPin className="w-3 h-3 text-amber-400" />
-              <span>Visit Farm Estate</span>
-            </a>
-          </div>
+                <button
+                  onClick={() => setSideMenuOpen(false)}
+                  className="p-2 text-slate-400 hover:text-white rounded-lg hover:bg-white/10 transition"
+                  aria-label="Close menu drawer"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
 
-          {/* Right side live bio-security indicator */}
-          <div className="hidden lg:flex items-center space-x-3 text-[11px] font-semibold text-slate-400 shrink-0">
-            <span className="flex items-center space-x-1 text-emerald-400">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span>
-              <span>100% Bio-Secure Live Transit</span>
-            </span>
-          </div>
+              {/* Drawer Body Links */}
+              <div className="flex-1 overflow-y-auto p-4 space-y-4 text-xs">
+                
+                {/* 1. Orders & Tracking Highlight Card */}
+                <div className="bg-gradient-to-r from-amber-500/15 via-orange-500/10 to-amber-500/15 border border-amber-300 rounded-2xl p-3.5 shadow-xs">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-[11px] font-extrabold uppercase tracking-wider text-amber-950">
+                      Live Delivery Tracker
+                    </span>
+                    {activeOrdersCount > 0 ? (
+                      <span className="bg-amber-500 text-stone-950 text-[10px] font-black px-2 py-0.5 rounded-full flex items-center space-x-1 shadow-xs">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-pulse"></span>
+                        <span>{activeOrdersCount} in Transit</span>
+                      </span>
+                    ) : (
+                      <span className="text-[10px] text-slate-500 font-semibold">Order History</span>
+                    )}
+                  </div>
 
-        </div>
-      </nav>
+                  <button
+                    onClick={() => {
+                      setSideMenuOpen(false);
+                      onOpenOrders?.();
+                    }}
+                    className="w-full flex items-center justify-between bg-slate-900 hover:bg-slate-800 text-white font-black px-3.5 py-2.5 rounded-xl text-xs transition active:scale-95 shadow-md shadow-slate-900/10"
+                  >
+                    <div className="flex items-center space-x-2">
+                      <Package className="w-4 h-4 text-amber-400" />
+                      <span>Track Orders & Live GPS</span>
+                    </div>
+                    <ChevronRight className="w-4 h-4 text-amber-400" />
+                  </button>
+                </div>
 
-      {/* Mobile Drawer (Accessible from Hamburger & 'All' Button) */}
-      {mobileMenuOpen && (
-        <div className="lg:hidden bg-white border-b border-sky-200 px-4 pt-3 pb-6 space-y-3 shadow-lg">
-          {/* Mobile Google Sign In Banner */}
-          <div className="pb-2 border-b border-sky-100">
-            <GoogleSignInButton variant="page" />
-          </div>
+                {/* 2. Heritage Rooster Showcase Strains */}
+                <div>
+                  <h4 className="text-[11px] font-black uppercase tracking-wider text-slate-400 px-2 mb-1.5">
+                    Heritage Rooster Catalog ({birdsCount} Birds)
+                  </h4>
+                  <div className="space-y-1">
+                    <a
+                      href="#showcase"
+                      onClick={() => setSideMenuOpen(false)}
+                      className="flex items-center justify-between p-2.5 rounded-xl hover:bg-slate-100 font-bold text-slate-800 transition"
+                    >
+                      <span className="flex items-center space-x-2">
+                        <span>🐓</span>
+                        <span>All Champion Roosters</span>
+                      </span>
+                      <span className="text-[10px] bg-slate-200 text-slate-700 px-2 py-0.5 rounded-full font-bold">
+                        {birdsCount} Strains
+                      </span>
+                    </a>
 
-          {/* Mobile Orders Tracker Button */}
-          <button
-            onClick={() => {
-              setMobileMenuOpen(false);
-              onOpenOrders?.();
-            }}
-            className="w-full flex items-center justify-between p-3 bg-gradient-to-r from-amber-500/15 via-orange-500/10 to-amber-500/15 border border-amber-300/80 rounded-xl text-slate-900 font-extrabold text-sm"
-          >
-            <div className="flex items-center space-x-2.5">
-              <Package className="w-5 h-5 text-amber-600" />
-              <span>My Orders & Live Transit</span>
+                    <a
+                      href="#showcase"
+                      onClick={() => setSideMenuOpen(false)}
+                      className="flex items-center justify-between p-2.5 rounded-xl hover:bg-slate-100 font-bold text-slate-800 transition"
+                    >
+                      <span className="flex items-center space-x-2">
+                        <span>🥇</span>
+                        <span>Pure Peela Aseel (Fighter Stance)</span>
+                      </span>
+                      <ChevronRight className="w-4 h-4 text-slate-400" />
+                    </a>
+
+                    <a
+                      href="#showcase"
+                      onClick={() => setSideMenuOpen(false)}
+                      className="flex items-center justify-between p-2.5 rounded-xl hover:bg-slate-100 font-bold text-slate-800 transition"
+                    >
+                      <span className="flex items-center space-x-2">
+                        <span>🥈</span>
+                        <span>Kagar & Sindhi Heritage</span>
+                      </span>
+                      <ChevronRight className="w-4 h-4 text-slate-400" />
+                    </a>
+
+                    <a
+                      href="#showcase"
+                      onClick={() => setSideMenuOpen(false)}
+                      className="flex items-center justify-between p-2.5 rounded-xl hover:bg-slate-100 font-bold text-slate-800 transition"
+                    >
+                      <span className="flex items-center space-x-2">
+                        <span>🖤</span>
+                        <span>Kadaknath (Black Meat Lineage)</span>
+                      </span>
+                      <ChevronRight className="w-4 h-4 text-slate-400" />
+                    </a>
+
+                    {onOpenReels && (
+                      <button
+                        onClick={() => {
+                          setSideMenuOpen(false);
+                          onOpenReels();
+                        }}
+                        className="w-full flex items-center justify-between p-2.5 rounded-xl hover:bg-sky-50 text-sky-800 font-bold transition text-left"
+                      >
+                        <span className="flex items-center space-x-2">
+                          <PlayCircle className="w-4 h-4 text-sky-600" />
+                          <span>Rooster TV Reels & Videos</span>
+                        </span>
+                        <span className="text-[10px] bg-sky-600 text-white px-2 py-0.5 rounded-full font-black">
+                          HD
+                        </span>
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                {/* 3. Farm Care, Health & Bio-Security */}
+                <div>
+                  <h4 className="text-[11px] font-black uppercase tracking-wider text-slate-400 px-2 mb-1.5">
+                    Estate Standards & Logistics
+                  </h4>
+                  <div className="space-y-1">
+                    <a
+                      href="#biosecurity"
+                      onClick={() => setSideMenuOpen(false)}
+                      className="flex items-center justify-between p-2.5 rounded-xl hover:bg-slate-100 font-bold text-slate-800 transition"
+                    >
+                      <span className="flex items-center space-x-2">
+                        <ShieldCheck className="w-4 h-4 text-emerald-600" />
+                        <span>Marek & ND Vaccination Standards</span>
+                      </span>
+                      <ChevronRight className="w-4 h-4 text-slate-400" />
+                    </a>
+
+                    <a
+                      href="#delivery"
+                      onClick={() => setSideMenuOpen(false)}
+                      className="flex items-center justify-between p-2.5 rounded-xl hover:bg-slate-100 font-bold text-slate-800 transition"
+                    >
+                      <span className="flex items-center space-x-2">
+                        <Truck className="w-4 h-4 text-sky-600" />
+                        <span>Live AC Crate Delivery Process</span>
+                      </span>
+                      <ChevronRight className="w-4 h-4 text-slate-400" />
+                    </a>
+
+                    <a
+                      href="#visit-guide"
+                      onClick={() => setSideMenuOpen(false)}
+                      className="flex items-center justify-between p-2.5 rounded-xl hover:bg-slate-100 font-bold text-slate-800 transition"
+                    >
+                      <span className="flex items-center space-x-2">
+                        <MapPin className="w-4 h-4 text-amber-600" />
+                        <span>Schedule Farm Visit (Hoskote Estate)</span>
+                      </span>
+                      <ChevronRight className="w-4 h-4 text-slate-400" />
+                    </a>
+                  </div>
+                </div>
+
+                {/* 4. Support & Direct Farm Connect */}
+                <div>
+                  <h4 className="text-[11px] font-black uppercase tracking-wider text-slate-400 px-2 mb-1.5">
+                    Help & Farm Contacts
+                  </h4>
+                  <div className="space-y-1">
+                    <a
+                      href={generalWhatsAppUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center justify-between p-2.5 rounded-xl bg-emerald-50 hover:bg-emerald-100/80 text-emerald-900 font-bold transition"
+                    >
+                      <span className="flex items-center space-x-2">
+                        <MessageCircle className="w-4 h-4 text-emerald-600" />
+                        <span>WhatsApp Breeder Helpline</span>
+                      </span>
+                      <ExternalLink className="w-3.5 h-3.5 text-emerald-600" />
+                    </a>
+
+                    <a
+                      href={`tel:${FARM_INFO.phone}`}
+                      className="flex items-center justify-between p-2.5 rounded-xl hover:bg-slate-100 font-bold text-slate-800 transition"
+                    >
+                      <span className="flex items-center space-x-2">
+                        <Phone className="w-4 h-4 text-sky-600" />
+                        <span>Call Dispatch: {FARM_INFO.phone}</span>
+                      </span>
+                      <ChevronRight className="w-4 h-4 text-slate-400" />
+                    </a>
+
+                    <Link
+                      href="/admin"
+                      onClick={() => setSideMenuOpen(false)}
+                      className="flex items-center justify-between p-2.5 rounded-xl hover:bg-slate-100 font-bold text-slate-800 transition"
+                    >
+                      <span className="flex items-center space-x-2">
+                        <Settings className="w-4 h-4 text-slate-500" />
+                        <span>Farm Admin Panel</span>
+                      </span>
+                      <ChevronRight className="w-4 h-4 text-slate-400" />
+                    </Link>
+                  </div>
+                </div>
+
+                {/* 5. User Sign Out (if logged in) */}
+                {user && (
+                  <div className="pt-2 border-t border-slate-200">
+                    <button
+                      onClick={() => {
+                        setSideMenuOpen(false);
+                        signOut();
+                      }}
+                      className="w-full flex items-center justify-between p-2.5 rounded-xl text-red-600 hover:bg-red-50 font-bold transition"
+                    >
+                      <span className="flex items-center space-x-2">
+                        <LogOut className="w-4 h-4" />
+                        <span>Sign Out ({user.email})</span>
+                      </span>
+                    </button>
+                  </div>
+                )}
+
+              </div>
+
+              {/* Drawer Bottom Guarantee */}
+              <div className="p-3.5 bg-slate-50 border-t border-slate-200 flex items-center justify-between text-[11px] text-slate-500">
+                <span className="flex items-center space-x-1.5 font-bold text-emerald-700">
+                  <ShieldCheck className="w-4 h-4 text-emerald-600" />
+                  <span>100% Pure Indian Gamefowl</span>
+                </span>
+                <span className="font-mono">Est. 2016</span>
+              </div>
+
             </div>
-            {activeOrdersCount > 0 ? (
-              <span className="bg-amber-500 text-stone-950 text-xs font-black px-2 py-0.5 rounded-full">
-                {activeOrdersCount} Active
-              </span>
-            ) : (
-              <span className="text-xs text-amber-700 font-semibold">Track →</span>
-            )}
-          </button>
-
-          <nav className="flex flex-col space-y-2 text-sm font-medium text-slate-700">
-            <a
-              href="#showcase"
-              onClick={() => setMobileMenuOpen(false)}
-              className="p-2 hover:bg-sky-50 rounded-lg text-slate-800 font-semibold"
-            >
-              🐓 Rooster Showcase ({birdsCount} Strains)
-            </a>
-            <a
-              href="#breeds"
-              onClick={() => setMobileMenuOpen(false)}
-              className="p-2 hover:bg-sky-50 rounded-lg text-slate-800"
-            >
-              🛡️ Heritage Breeds (Aseel, Kadaknath, Desi)
-            </a>
-            {onOpenReels && (
-              <button
-                onClick={() => {
-                  setMobileMenuOpen(false);
-                  onOpenReels?.();
-                }}
-                className="flex items-center justify-between p-2 bg-sky-50 border border-sky-200 text-sky-800 rounded-lg text-left"
-              >
-                <span className="flex items-center space-x-2">
-                  <PlayCircle className="w-5 h-5 text-sky-600" />
-                  <span className="font-semibold">Watch Rooster TV Videos</span>
-                </span>
-                <span className="bg-sky-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
-                  VIDEOS
-                </span>
-              </button>
-            )}
-            <a
-              href="#biosecurity"
-              onClick={() => setMobileMenuOpen(false)}
-              className="p-2 hover:bg-sky-50 rounded-lg text-slate-800"
-            >
-              🌿 Organic Nutrition & Natural Care
-            </a>
-            <a
-              href="#visit-guide"
-              onClick={() => setMobileMenuOpen(false)}
-              className="p-2 hover:bg-sky-50 rounded-lg text-slate-800"
-            >
-              📍 Schedule a Farm Visit
-            </a>
-          </nav>
+          </div>
         </div>
       )}
     </header>
