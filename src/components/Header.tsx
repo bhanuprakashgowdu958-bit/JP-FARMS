@@ -179,7 +179,7 @@ export const Header: React.FC<HeaderProps> = ({
             </a>
           </nav>
 
-          {/* Top Right Actions (Desktop): Profile, Orders, Cart & Menu Bar */}
+          {/* Top Right Actions (Desktop): Profile, Cart & Menu Bar */}
           <div className="flex items-center space-x-2.5 shrink-0">
             {/* Google Sign In / Account Avatar Button */}
             <GoogleSignInButton variant="header" />
@@ -193,27 +193,6 @@ export const Header: React.FC<HeaderProps> = ({
             >
               <User className="w-4 h-4 text-amber-400 group-hover:scale-110 transition" />
               <span>My Profile</span>
-            </button>
-
-            {/* My Orders Button */}
-            <button
-              type="button"
-              onClick={onOpenOrders}
-              className="flex items-center space-x-2 bg-slate-900 hover:bg-slate-800 text-amber-300 hover:text-white text-xs font-bold px-3.5 py-2.5 rounded-xl border border-amber-500/40 shadow-sm transition active:scale-95 whitespace-nowrap group cursor-pointer"
-              title="Track Your Orders & Live Transit"
-            >
-              <Package className="w-4 h-4 text-amber-400 group-hover:scale-110 transition" />
-              <span>My Orders</span>
-              {activeOrdersCount > 0 ? (
-                <span className="bg-amber-500 text-stone-950 text-[10px] font-black px-2 py-0.5 rounded-full min-w-[18px] text-center flex items-center space-x-1 shadow-xs">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-pulse"></span>
-                  <span>{activeOrdersCount}</span>
-                </span>
-              ) : totalOrdersCount > 0 ? (
-                <span className="bg-slate-800 text-slate-300 text-[10px] font-bold px-1.5 py-0.5 rounded-full min-w-[16px] text-center border border-slate-700">
-                  {totalOrdersCount}
-                </span>
-              ) : null}
             </button>
 
             {/* Shopping Cart Button */}
@@ -232,7 +211,7 @@ export const Header: React.FC<HeaderProps> = ({
               )}
             </button>
 
-            {/* Menu Bar Button - Placed RIGHT NEXT TO CART */}
+            {/* Menu Bar Button (Contains My Orders, Catalog, Profile) */}
             <button
               type="button"
               onClick={(e) => {
@@ -240,14 +219,21 @@ export const Header: React.FC<HeaderProps> = ({
                 setSideMenuOpen(true);
               }}
               className="flex items-center space-x-1.5 bg-slate-900 hover:bg-slate-800 text-amber-400 hover:text-white px-3.5 py-2.5 rounded-xl border border-amber-500/30 hover:border-amber-400 transition active:scale-95 text-xs font-extrabold shadow-xs whitespace-nowrap group cursor-pointer"
-              title="Open Navigation Menu"
+              title="Open Navigation Menu (My Orders, Catalog, Estate)"
               aria-label="Open menu"
             >
               <Menu className="w-4 h-4 text-amber-400 group-hover:scale-110 transition duration-200" />
               <span>Menu</span>
-              <span className="text-[10px] bg-amber-400/20 text-amber-300 px-1.5 py-0.5 rounded-md font-bold">
-                {birdsCount}
-              </span>
+              {activeOrdersCount > 0 ? (
+                <span className="bg-amber-500 text-stone-950 text-[10px] font-black px-1.5 py-0.5 rounded-full min-w-[18px] text-center flex items-center space-x-1 shadow-xs">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-pulse"></span>
+                  <span>{activeOrdersCount}</span>
+                </span>
+              ) : (
+                <span className="text-[10px] bg-amber-400/20 text-amber-300 px-1.5 py-0.5 rounded-md font-bold">
+                  {birdsCount}
+                </span>
+              )}
             </button>
           </div>
         </div>
@@ -257,15 +243,20 @@ export const Header: React.FC<HeaderProps> = ({
           
           {/* Left: Hamburger Menu + Logo Brand */}
           <div className="flex items-center space-x-2.5 min-w-0">
-            {/* Hamburger Menu Button (Amazon/Flipkart Top-Left Standard) */}
+            {/* Hamburger Menu Button (Amazon/Flipkart Top-Left Standard, with live order badge) */}
             <button
               type="button"
               onClick={() => setSideMenuOpen(true)}
-              className="p-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-amber-400 border border-amber-500/30 transition active:scale-95 flex items-center justify-center shadow-xs cursor-pointer shrink-0"
+              className="relative p-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-amber-400 border border-amber-500/30 transition active:scale-95 flex items-center justify-center shadow-xs cursor-pointer shrink-0"
               aria-label="Open navigation menu"
               title="Menu"
             >
               <Menu className="w-5 h-5 text-amber-400" />
+              {activeOrdersCount > 0 && (
+                <span className="absolute -top-1 -right-1 bg-amber-500 text-stone-950 text-[9px] font-black w-4 h-4 rounded-full flex items-center justify-center border border-slate-900 animate-pulse">
+                  {activeOrdersCount}
+                </span>
+              )}
             </button>
 
             {/* Mobile Brand Logo */}
@@ -281,26 +272,10 @@ export const Header: React.FC<HeaderProps> = ({
             </Link>
           </div>
 
-          {/* Right: Profile Avatar, Orders & Cart (Zero-Overflow Flipkart/Amazon Action Strip) */}
-          <div className="flex items-center space-x-2 shrink-0">
+          {/* Right: Profile Avatar & Cart (Zero-Overflow Flipkart/Amazon Action Strip) */}
+          <div className="flex items-center space-x-2.5 shrink-0">
             {/* Mobile Profile Avatar (Tap to open My Profile) */}
             <GoogleSignInButton variant="compact" />
-
-            {/* Mobile Orders Button */}
-            <button
-              type="button"
-              onClick={onOpenOrders}
-              className="relative p-2 rounded-xl bg-slate-900 text-amber-400 font-bold flex items-center justify-center border border-amber-500/30 shadow-xs transition active:scale-95 cursor-pointer shrink-0"
-              aria-label="Track orders"
-              title="My Orders"
-            >
-              <Package className="w-4.5 h-4.5 text-amber-400" />
-              {activeOrdersCount > 0 && (
-                <span className="absolute -top-1 -right-1 bg-amber-500 text-stone-950 text-[9px] font-black w-4 h-4 rounded-full flex items-center justify-center border border-slate-900">
-                  {activeOrdersCount}
-                </span>
-              )}
-            </button>
 
             {/* Mobile Cart Button */}
             <button
@@ -417,19 +392,24 @@ export const Header: React.FC<HeaderProps> = ({
                   <ChevronRight className="w-4 h-4 text-amber-700 group-hover:translate-x-0.5 transition-transform" />
                 </button>
 
-                {/* 2. Orders & Tracking Highlight Card */}
+                {/* 2. My Orders Highlight Card in Menu Bar */}
                 <div className="bg-gradient-to-r from-amber-500/15 via-orange-500/10 to-amber-500/15 border border-amber-300 rounded-2xl p-3.5 shadow-xs">
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-[11px] font-extrabold uppercase tracking-wider text-amber-950">
-                      Live Delivery Tracker
+                    <span className="text-[11px] font-extrabold uppercase tracking-wider text-amber-950 flex items-center space-x-1.5">
+                      <Package className="w-3.5 h-3.5 text-amber-600" />
+                      <span>My Orders</span>
                     </span>
                     {activeOrdersCount > 0 ? (
                       <span className="bg-amber-500 text-stone-950 text-[10px] font-black px-2 py-0.5 rounded-full flex items-center space-x-1 shadow-xs">
                         <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-pulse"></span>
                         <span>{activeOrdersCount} in Transit</span>
                       </span>
+                    ) : totalOrdersCount > 0 ? (
+                      <span className="bg-slate-100 text-slate-700 text-[10px] font-bold px-2 py-0.5 rounded-full border border-slate-200">
+                        {totalOrdersCount} Orders
+                      </span>
                     ) : (
-                      <span className="text-[10px] text-slate-500 font-semibold">Order History</span>
+                      <span className="text-[10px] text-slate-500 font-semibold">Live GPS Tracker</span>
                     )}
                   </div>
 
@@ -443,13 +423,20 @@ export const Header: React.FC<HeaderProps> = ({
                         window.dispatchEvent(new CustomEvent('open-orders-drawer'));
                       }
                     }}
-                    className="w-full flex items-center justify-between bg-slate-900 hover:bg-slate-800 text-white font-black px-3.5 py-2.5 rounded-xl text-xs transition active:scale-95 shadow-md shadow-slate-900/10 cursor-pointer"
+                    className="w-full flex items-center justify-between bg-slate-900 hover:bg-slate-800 text-white font-black px-3.5 py-2.5 rounded-xl text-xs transition active:scale-95 shadow-md shadow-slate-900/10 cursor-pointer group"
                   >
                     <div className="flex items-center space-x-2">
-                      <Package className="w-4 h-4 text-amber-400" />
-                      <span>Track Orders & Live GPS</span>
+                      <Package className="w-4 h-4 text-amber-400 group-hover:scale-110 transition" />
+                      <span className="text-amber-300">Track My Orders & Live Transit</span>
                     </div>
-                    <ChevronRight className="w-4 h-4 text-amber-400" />
+                    <div className="flex items-center space-x-1.5">
+                      {activeOrdersCount > 0 && (
+                        <span className="bg-amber-500 text-stone-950 text-[10px] font-black px-1.5 py-0.2 rounded-full">
+                          {activeOrdersCount}
+                        </span>
+                      )}
+                      <ChevronRight className="w-4 h-4 text-amber-400 group-hover:translate-x-0.5 transition-transform" />
+                    </div>
                   </button>
                 </div>
 
