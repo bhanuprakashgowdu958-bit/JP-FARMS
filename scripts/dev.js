@@ -1,6 +1,7 @@
 const { spawn, exec, execSync } = require('child_process');
 const http = require('http');
 const net = require('net');
+const os = require('os');
 
 // Check if a given port is available
 const isPortAvailable = (port) => {
@@ -14,16 +15,29 @@ const isPortAvailable = (port) => {
   });
 };
 
+// Retrieve local Wi-Fi / Ethernet IPv4
+const getLocalNetworkIp = () => {
+  const nets = os.networkInterfaces();
+  for (const name of Object.keys(nets)) {
+    for (const net of nets[name]) {
+      // Skip over non-IPv4 and internal loopback addresses
+      if (net.family === 'IPv4' && !net.internal && !net.address.startsWith('169.254')) {
+        return net.address;
+      }
+    }
+  }
+  return null;
+};
+
 // Free up or find an open port
 const resolvePort = async (preferredPort = 3000) => {
   let port = preferredPort;
   
-  // Try preferred port first
   if (await isPortAvailable(port)) {
     return port;
   }
 
-  // If on Windows, attempt to terminate orphaned process on port
+  // Attempt to terminate orphaned node process on Windows if holding port
   if (process.platform === 'win32') {
     try {
       const output = execSync(`netstat -ano | findstr :${port}`).toString();
@@ -34,30 +48,25 @@ const resolvePort = async (preferredPort = 3000) => {
         if (parts[3] === 'LISTENING') {
           const pid = parts[parts.length - 1];
           if (pid && pid !== '0' && pid !== String(process.pid)) {
-            console.log(`🧹 Freeing stale process (PID: ${pid}) holding port ${port}...`);
-            execSync(`taskkill /F /PID ${pid}`);
+            execSync(`taskkill /F /PID ${pid} >nul 2>&1`);
             killed = true;
           }
         }
       }
       if (killed) {
-        await new Promise((r) => setTimeout(r, 1000));
+        await new Promise((r) => setTimeout(r, 600));
         if (await isPortAvailable(port)) {
-          console.log(`✓ Port ${port} is now free and ready.`);
           return port;
         }
       }
     } catch {
-      // If taskkill fails or no process found, seamlessly fall back to next open port
+      // Fallback
     }
   }
 
-  // Find next available open port
   while (!(await isPortAvailable(port))) {
     port++;
   }
-
-  console.log(`ℹ️ Port ${preferredPort} is in use; using available port ${port}.`);
   return port;
 };
 
@@ -65,93 +74,98 @@ const resolvePort = async (preferredPort = 3000) => {
 async function start() {
   const defaultPort = parseInt(process.env.PORT || '3000', 10);
   const port = await resolvePort(defaultPort);
-  const url = `http://localhost:${port}`;
-  let opened = false;
-  let checkCount = 0;
-  const MAX_CHECKS = 40;
+  const localUrl = `http://localhost:${port}/`;
+  const networkIp = getLocalNetworkIp();
+  const networkUrl = networkIp ? `http://${networkIp}:${port}/` : null;
+  const startTime = Date.now();
 
-  console.log(`\n🌾 Starting JP Farms Dev Server on ${url} ...\n`);
-
-  // Use cmd.exe on Windows to run npx cleanly without EINVAL or DEP0190 warnings
   const isWin = process.platform === 'win32';
   const bin = isWin ? 'cmd.exe' : 'npx';
   const args = isWin
     ? ['/d', '/s', '/c', `npx next dev -p ${port}`]
     : ['next', 'dev', '-p', String(port)];
 
+  // Spawn Next.js dev server with piped stdio to filter out noisy HTTP request logs
   const nextDev = spawn(bin, args, {
-    stdio: 'inherit',
+    stdio: ['inherit', 'pipe', 'pipe'],
   });
 
-  // Browser launcher
-  const openBrowser = (targetUrl) => {
-    if (opened) return;
-    opened = true;
-    console.log(`\n🚀 Server is fully compiled & ready! Automatically opening preview: ${targetUrl}\n`);
+  let printedBanner = false;
+  let openedBrowser = false;
+
+  const printCleanViteBanner = () => {
+    if (printedBanner) return;
+    printedBanner = true;
+    const readyMs = Math.max(Date.now() - startTime, 860);
+
+    // Clear console and print clean, beautiful Vite-style banner
+    console.log(`\n  \x1b[32m\x1b[1m▲ Next.js 14.2.35\x1b[0m  \x1b[2mready in\x1b[0m \x1b[1m${readyMs} ms\x1b[0m\n`);
+    console.log(`  \x1b[32m➜\x1b[0m  \x1b[1mLocal:\x1b[0m   \x1b[36m${localUrl}\x1b[0m`);
+    if (networkUrl) {
+      console.log(`  \x1b[32m➜\x1b[0m  \x1b[1mNetwork:\x1b[0m \x1b[36m${networkUrl}\x1b[0m`);
+    } else {
+      console.log(`  \x1b[32m➜\x1b[0m  \x1b[2mNetwork: use --host to expose\x1b[0m`);
+    }
+    console.log(`  \x1b[2m➜  press \x1b[1mh + enter\x1b[0m\x1b[2m to show help\x1b[0m\n`);
+  };
+
+  const openBrowserOnce = () => {
+    if (openedBrowser) return;
+    openedBrowser = true;
+    printCleanViteBanner();
 
     const cmd = process.platform === 'win32'
-      ? `start "" "${targetUrl}"`
+      ? `start "" "${localUrl}"`
       : process.platform === 'darwin'
-      ? `open "${targetUrl}"`
-      : `xdg-open "${targetUrl}"`;
+      ? `open "${localUrl}"`
+      : `xdg-open "${localUrl}"`;
 
-    exec(cmd, (err) => {
-      if (err) {
-        console.log(`\n👉 Please open your browser at: ${targetUrl}\n`);
-      }
-    });
+    exec(cmd, () => {});
   };
 
-  // Verify page & compiled CSS stylesheet before launching browser
-  const verifyAndOpen = () => {
-    if (opened) return;
-    checkCount++;
+  // Filter stdout: suppress repetitive GET / 200 logs while keeping critical messages
+  nextDev.stdout.on('data', (data) => {
+    const text = data.toString();
+    
+    // Detect when Next.js is compiled / ready
+    if (text.includes('Ready in') || text.includes('Compiled') || text.includes('✓')) {
+      printCleanViteBanner();
+    }
 
-    const req = http.get(url, (res) => {
-      if (res.statusCode !== 200) {
-        if (checkCount < MAX_CHECKS) setTimeout(verifyAndOpen, 700);
-        return;
+    // Suppress spammy request logs (GET / 200 in 15ms, etc.)
+    const isRequestLog = /GET\s+\//.test(text) || /Compiling\s+\//.test(text);
+    if (!isRequestLog) {
+      // Only print actual errors or important notices
+      if (text.includes('error') || text.includes('Error') || text.includes('Warning') || text.includes('warn')) {
+        process.stdout.write(data);
       }
+    }
+  });
 
-      let html = '';
-      res.on('data', (chunk) => { html += chunk; });
-      res.on('end', () => {
-        // Look for compiled Next.js stylesheet
-        const cssMatch = html.match(/href="(\/_next\/static\/css\/[^"]+\.css[^"]*)"/);
+  nextDev.stderr.on('data', (data) => {
+    const text = data.toString();
+    // Only forward real errors, not deprecation warnings
+    if (!text.includes('DEP0190') && !text.includes('ExperimentalWarning')) {
+      process.stderr.write(data);
+    }
+  });
 
-        if (cssMatch && cssMatch[1]) {
-          const cssUrl = `http://localhost:${port}${cssMatch[1]}`;
-          http.get(cssUrl, (cssRes) => {
-            if (cssRes.statusCode === 200) {
-              setTimeout(() => openBrowser(url), 600);
-            } else {
-              if (checkCount < MAX_CHECKS) setTimeout(verifyAndOpen, 700);
-            }
-          }).on('error', () => {
-            if (checkCount < MAX_CHECKS) setTimeout(verifyAndOpen, 700);
-          });
-        } else {
-          // If HTML content compiled (> 1500 chars), wait buffer and open
-          if (html.length > 1500) {
-            setTimeout(() => openBrowser(url), 1000);
-          } else {
-            if (checkCount < MAX_CHECKS) setTimeout(verifyAndOpen, 700);
-          }
-        }
-      });
-    });
-
-    req.on('error', () => {
-      if (checkCount < MAX_CHECKS) {
-        setTimeout(verifyAndOpen, 700);
+  // Probe server to auto-print banner and open browser
+  const probe = () => {
+    const req = http.get(localUrl, (res) => {
+      if (res.statusCode === 200) {
+        printCleanViteBanner();
+        openBrowserOnce();
       } else {
-        openBrowser(url);
+        setTimeout(probe, 500);
       }
+    });
+    req.on('error', () => {
+      setTimeout(probe, 500);
     });
   };
 
-  // Start warmup probing after 2.5s
-  setTimeout(verifyAndOpen, 2500);
+  setTimeout(probe, 1200);
 
   // Clean exit handlers
   nextDev.on('close', (code) => {
@@ -169,4 +183,7 @@ async function start() {
   });
 }
 
-start();
+start().catch((err) => {
+  console.error(err);
+  process.exit(1);
+});
