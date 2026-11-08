@@ -244,9 +244,9 @@ export const PixarRoosterBanner3D: React.FC<PixarRoosterBanner3DProps> = () => {
       className="relative w-full overflow-hidden select-none bg-slate-950 group"
       aria-label={`JP Farms ${currentSlot.title} Rooster Showcase`}
     >
-      {/* 100% FULL-BLEED EDGE-TO-EDGE BANNERS (Auto-adjusting ratio: 16:10 on Mobile, 2.7:1 on Desktop) */}
+      {/* 100% FULL-BLEED EDGE-TO-EDGE BANNERS (Matching agri-nutro.vercel.app sizing: clamp(260px, 60vw, 400px) on mobile, clamp(340px, 48vw, 620px) on desktop) */}
       <div 
-        className="relative w-full overflow-hidden aspect-[16/10] sm:aspect-[2.7/1] min-h-[220px] sm:min-h-0"
+        className="agri-style-banner-stage relative w-full overflow-hidden"
       >
         {banners.map((banner, index) => {
           const isActive = index === slideIndex;

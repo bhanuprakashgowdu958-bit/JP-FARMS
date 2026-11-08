@@ -155,3 +155,19 @@ body {
   animation: pulse-glow-3d 4s ease-in-out infinite;
 }
 
+/* Full-Screen Livestock Banner Sizing (Exact match with agri-nutro.vercel.app) */
+.agri-style-banner-stage {
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+  max-width: 100vw;
+  height: clamp(260px, 60vw, 400px);
+}
+
+@media (min-width: 769px) {
+  .agri-style-banner-stage {
+    height: clamp(340px, 48vw, 620px);
+  }
+}
+
+

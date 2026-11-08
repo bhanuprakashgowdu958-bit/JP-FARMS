@@ -127,10 +127,9 @@ export const ZomatoBannerCarousel: React.FC<ZomatoBannerCarouselProps> = ({
   return (
     <section className="relative w-full overflow-hidden bg-[#f4f9fd]">
       
-      {/* 100% Full-Screen Edge-to-Edge Banner (2.7:1 Aspect Ratio, Zero Side Gaps, Zero Cuts, Smooth 10s Auto-Slide) */}
+      {/* 100% Full-Screen Edge-to-Edge Banner (Matching agri-nutro.vercel.app sizing: clamp(260px, 60vw, 400px) on mobile, clamp(340px, 48vw, 620px) on desktop) */}
       <div 
-        className="group relative w-full overflow-hidden bg-slate-950 transition-all duration-300 cursor-pointer shadow-md"
-        style={{ aspectRatio: '2.7 / 1' }}
+        className="agri-style-banner-stage group relative w-full overflow-hidden bg-slate-950 transition-all duration-300 cursor-pointer shadow-md"
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
