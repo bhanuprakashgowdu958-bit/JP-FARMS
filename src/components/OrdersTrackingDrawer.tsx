@@ -19,6 +19,7 @@ import {
   Sparkles, 
   Search, 
   ArrowRight,
+  ArrowLeft,
   AlertCircle
 } from 'lucide-react';
 import { RoosterOrder } from '@/types/rooster';
@@ -110,21 +111,33 @@ Please share the live AC vehicle GPS transit location and a quick video update o
         <div className="w-screen max-w-xl bg-white shadow-2xl flex flex-col animate-in slide-in-from-right duration-300">
           
           {/* Drawer Top Header (Amazon/Flipkart Style) */}
-          <div className="p-4 sm:p-5 bg-gradient-to-r from-slate-900 via-stone-900 to-slate-950 text-white border-b border-stone-800 flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500 to-orange-500 p-0.5 shadow-md flex items-center justify-center shrink-0">
-                <Package className="w-5 h-5 text-stone-950" />
+          <div className="p-3.5 sm:p-5 bg-gradient-to-r from-slate-900 via-stone-900 to-slate-950 text-white border-b border-stone-800 flex items-center justify-between gap-2">
+            <div className="flex items-center space-x-2 sm:space-x-3 min-w-0">
+              {/* Back Button */}
+              <button
+                type="button"
+                onClick={onClose}
+                className="p-2 -ml-1 text-amber-400 hover:text-amber-300 bg-white/5 hover:bg-white/10 active:scale-95 rounded-xl border border-white/10 transition flex items-center space-x-1 shrink-0 cursor-pointer group"
+                aria-label="Go back"
+                title="Go back"
+              >
+                <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5 group-hover:-translate-x-0.5 transition-transform" />
+                <span className="text-xs font-bold">Back</span>
+              </button>
+
+              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-br from-amber-500 to-orange-500 p-0.5 shadow-md flex items-center justify-center shrink-0">
+                <Package className="w-4 h-4 sm:w-5 sm:h-5 text-stone-950" />
               </div>
-              <div>
-                <div className="flex items-center space-x-2">
-                  <h2 className="text-base sm:text-lg font-black tracking-tight text-white">
+              <div className="min-w-0">
+                <div className="flex items-center space-x-2 flex-wrap gap-y-1">
+                  <h2 className="text-sm sm:text-base md:text-lg font-black tracking-tight text-white truncate">
                     Returns & Orders
                   </h2>
-                  <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 bg-amber-500/20 text-amber-300 border border-amber-500/30 rounded-full">
+                  <span className="text-[9px] sm:text-[10px] font-extrabold uppercase px-2 py-0.5 bg-amber-500/20 text-amber-300 border border-amber-500/30 rounded-full whitespace-nowrap">
                     Live GPS Tracker
                   </span>
                 </div>
-                <p className="text-xs text-slate-300">
+                <p className="text-[11px] sm:text-xs text-slate-300 truncate">
                   Real-time bio-secure climate crate delivery updates
                 </p>
               </div>
@@ -132,8 +145,9 @@ Please share the live AC vehicle GPS transit location and a quick video update o
 
             <button
               onClick={onClose}
-              className="p-2 text-slate-400 hover:text-white rounded-lg hover:bg-white/10 transition"
+              className="p-2 text-slate-400 hover:text-white rounded-lg hover:bg-white/10 transition cursor-pointer shrink-0"
               aria-label="Close orders drawer"
+              title="Close"
             >
               <X className="w-5 h-5" />
             </button>
@@ -220,16 +234,27 @@ Please share the live AC vehicle GPS transit location and a quick video update o
                     ? `No orders match "${searchQuery}". Please check your order ID or phone number.`
                     : 'When you purchase a heritage rooster, live climate-controlled transit tracking and delivery progress will appear here.'}
                 </p>
-                <button
-                  onClick={() => {
-                    onClose();
-                    onExploreCatalog?.();
-                  }}
-                  className="mt-2 inline-flex items-center space-x-2 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-stone-950 font-black px-4 py-2.5 rounded-xl text-xs shadow-md shadow-amber-500/20 active:scale-95 transition"
-                >
-                  <span>Explore Rooster Showcase</span>
-                  <ArrowRight className="w-4 h-4" />
-                </button>
+                <div className="pt-2 flex flex-wrap items-center justify-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onClose();
+                      onExploreCatalog?.();
+                    }}
+                    className="inline-flex items-center space-x-2 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-stone-950 font-black px-4 py-2.5 rounded-xl text-xs shadow-md shadow-amber-500/20 active:scale-95 transition cursor-pointer"
+                  >
+                    <span>Explore Rooster Showcase</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={onClose}
+                    className="inline-flex items-center space-x-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold px-4 py-2.5 rounded-xl text-xs active:scale-95 transition cursor-pointer"
+                  >
+                    <ArrowLeft className="w-4 h-4" />
+                    <span>Back to Store</span>
+                  </button>
+                </div>
               </div>
             ) : (
               filteredOrders.map((order) => {
