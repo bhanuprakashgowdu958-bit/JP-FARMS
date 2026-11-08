@@ -27,8 +27,16 @@ export const RoosterCard: React.FC<RoosterCardProps> = ({
     customMessage: `Hello JP Farms! 🐓 I am viewing Rooster #${rooster.tagId} (${rooster.name}, ${rooster.breed}) on your website. I would love to learn more about its bloodline and plan a farm visit.`,
   });
 
+  const [justAdded, setJustAdded] = React.useState(false);
   const { addToCart, isInCart, openCart } = useCart();
   const inCart = isInCart(rooster.id);
+
+  const handleAddToCart = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    addToCart(rooster, false);
+    setJustAdded(true);
+    setTimeout(() => setJustAdded(false), 2200);
+  };
 
   const price = rooster.price || 9500;
   const originalPrice = rooster.originalPrice || Math.round(price * 1.25);
@@ -180,8 +188,16 @@ export const RoosterCard: React.FC<RoosterCardProps> = ({
         {/* Action Area */}
         <div className="pt-3 border-t border-stone-100 space-y-2">
           
-          {/* PRIMARY E-COMMERCE ACTION: ADD TO CART (Amazon/Flipkart Style) */}
-          {inCart ? (
+          {/* PRIMARY E-COMMERCE ACTION: ADD TO CART (Amazon/Flipkart Style - Stays on page without popup) */}
+          {justAdded ? (
+            <button
+              type="button"
+              className="w-full flex items-center justify-center space-x-2 bg-emerald-500 text-white font-black py-2.5 px-4 rounded-xl text-xs transition shadow-md shadow-emerald-500/30 scale-98"
+            >
+              <Check className="w-4 h-4 text-white animate-bounce" />
+              <span>✓ Added to Cart!</span>
+            </button>
+          ) : inCart ? (
             <button
               type="button"
               onClick={() => openCart()}
@@ -193,7 +209,7 @@ export const RoosterCard: React.FC<RoosterCardProps> = ({
           ) : (
             <button
               type="button"
-              onClick={() => addToCart(rooster)}
+              onClick={handleAddToCart}
               className="w-full flex items-center justify-center space-x-2 bg-gradient-to-r from-amber-500 via-amber-600 to-amber-500 hover:from-amber-400 hover:to-amber-500 text-stone-950 font-black py-2.5 px-4 rounded-xl text-xs transition shadow-md shadow-amber-500/20 active:scale-95 group/btn"
             >
               <ShoppingCart className="w-4 h-4 text-stone-950 group-hover/btn:scale-110 transition" />

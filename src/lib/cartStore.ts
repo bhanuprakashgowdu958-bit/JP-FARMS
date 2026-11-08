@@ -68,7 +68,7 @@ export function useCart() {
     };
   }, []);
 
-  const addToCart = useCallback((rooster: Rooster, openDrawerImmediately: boolean = true) => {
+  const addToCart = useCallback((rooster: Rooster, openDrawerImmediately: boolean = false) => {
     const current = getStoredCart();
     const existingIndex = current.findIndex((item) => item.rooster.id === rooster.id);
 
@@ -92,6 +92,11 @@ export function useCart() {
 
     saveStoredCart(updated);
     setItems(updated);
+
+    // Notify listeners of newly added item (for non-intrusive toast)
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('cart-item-added', { detail: { rooster } }));
+    }
 
     if (openDrawerImmediately) {
       toggleCartDrawer(true);
@@ -162,3 +167,4 @@ export function useCart() {
     cartDiscount,
   };
 }
+

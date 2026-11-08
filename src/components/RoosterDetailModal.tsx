@@ -18,7 +18,8 @@ import {
   Eye, 
   Calendar,
   MapPin,
-  ShoppingCart
+  ShoppingCart,
+  Check
 } from 'lucide-react';
 import { Rooster } from '@/types/rooster';
 import { FARM_INFO } from '@/lib/data';
@@ -43,8 +44,16 @@ export const RoosterDetailModal: React.FC<RoosterDetailModalProps> = ({
   const [selectedPhotoIndex, setSelectedPhotoIndex] = useState(0);
   const [copiedLink, setCopiedLink] = useState(false);
   const [showCertificate, setShowCertificate] = useState(false);
+  const [modalJustAdded, setModalJustAdded] = useState(false);
 
   const { addToCart, isInCart, openCart } = useCart();
+
+  const handleModalAddToCart = () => {
+    if (!rooster) return;
+    addToCart(rooster, false);
+    setModalJustAdded(true);
+    setTimeout(() => setModalJustAdded(false), 2200);
+  };
 
   if (!rooster) return null;
 
@@ -250,14 +259,20 @@ export const RoosterDetailModal: React.FC<RoosterDetailModalProps> = ({
               <div className="flex items-center space-x-2 shrink-0">
                 <button
                   type="button"
-                  onClick={() => {
-                    addToCart(rooster);
-                    onClose();
-                  }}
+                  onClick={handleModalAddToCart}
                   className="inline-flex items-center justify-center space-x-1.5 bg-white hover:bg-stone-100 text-stone-900 border border-stone-300 font-extrabold px-4 py-3 rounded-xl text-xs sm:text-sm shadow-xs transition active:scale-95"
                 >
-                  <ShoppingCart className="w-4 h-4 text-stone-900" />
-                  <span>Add to Cart</span>
+                  {modalJustAdded ? (
+                    <>
+                      <Check className="w-4 h-4 text-emerald-600 animate-bounce" />
+                      <span className="text-emerald-700 font-black">✓ Added to Cart!</span>
+                    </>
+                  ) : (
+                    <>
+                      <ShoppingCart className="w-4 h-4 text-stone-900" />
+                      <span>Add to Cart</span>
+                    </>
+                  )}
                 </button>
 
                 {onBuyNow && (

@@ -659,3 +659,4 @@ Please confirm availability and dispatch schedule. Thank you!`;
     </div>
   );
 };
+

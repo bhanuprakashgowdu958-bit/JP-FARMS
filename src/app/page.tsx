@@ -14,6 +14,7 @@ import { RoosterReelsModal } from '@/components/RoosterReelsModal';
 import { BookingModal } from '@/components/BookingModal';
 import { CheckoutModal } from '@/components/CheckoutModal';
 import { CartSlideOver } from '@/components/CartSlideOver';
+import { CartToast } from '@/components/CartToast';
 import { useRoosters } from '@/lib/roosterStore';
 import { useCart } from '@/lib/cartStore';
 import { Rooster } from '@/types/rooster';
@@ -163,6 +164,9 @@ export default function HomePage() {
 
       {/* 5. Amazon/Flipkart Slide-Over Shopping Cart & Multi-Item Checkout Drawer */}
       <CartSlideOver />
+
+      {/* 6. Non-Intrusive Cart Floating Toast Notification */}
+      <CartToast />
 
       {/* Mobile Sticky Bottom Cart Banner */}
       {cartCount > 0 && (
