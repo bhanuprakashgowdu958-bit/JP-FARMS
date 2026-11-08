@@ -153,6 +153,8 @@ export const ZomatoBannerCarousel: React.FC<ZomatoBannerCarouselProps> = ({
                 decoding="async"
                 className="w-full h-full object-cover object-[center_35%] filter brightness-[1.02] contrast-[1.03] pointer-events-none select-none"
               />
+              {/* Subtle Atmospheric Blend Gradient matching agri-nutro */}
+              <div className="absolute inset-0 pointer-events-none bg-gradient-to-t from-slate-950/60 via-transparent to-black/15" />
             </div>
           ))}
         </div>
