@@ -13,6 +13,7 @@ import { ColorfulShowcaseBanner } from '@/components/ColorfulShowcaseBanner';
 import { RoosterDetailModal } from '@/components/RoosterDetailModal';
 import { RoosterReelsModal } from '@/components/RoosterReelsModal';
 import { BookingModal } from '@/components/BookingModal';
+import { CheckoutModal } from '@/components/CheckoutModal';
 import { useRoosters } from '@/lib/roosterStore';
 import { Rooster } from '@/types/rooster';
 import { PlayCircle, MessageCircle } from 'lucide-react';
@@ -24,6 +25,7 @@ export default function HomePage() {
 
   const [selectedRooster, setSelectedRooster] = useState<Rooster | null>(null);
   const [inquiryRooster, setInquiryRooster] = useState<Rooster | null>(null);
+  const [checkoutRooster, setCheckoutRooster] = useState<Rooster | null>(null);
   const [isReelsOpen, setIsReelsOpen] = useState(false);
   const [reelsInitialId, setReelsInitialId] = useState<string | undefined>(undefined);
 
@@ -37,6 +39,11 @@ export default function HomePage() {
   const handleInquire = (rooster: Rooster) => {
     setSelectedRooster(null); // close detail modal if open
     setInquiryRooster(rooster);
+  };
+
+  const handleBuyNow = (rooster: Rooster) => {
+    setSelectedRooster(null); // close detail modal if open
+    setCheckoutRooster(rooster);
   };
 
   const whatsAppFloatingUrl = generateWhatsAppLink({
@@ -75,6 +82,7 @@ export default function HomePage() {
           onSelectRooster={(rooster) => setSelectedRooster(rooster)}
           onOpenVideo={handleOpenVideo}
           onInquire={handleInquire}
+          onBuyNow={handleBuyNow}
         />
 
         {/* Heritage Breeds Educational Guide */}
@@ -128,6 +136,7 @@ export default function HomePage() {
         rooster={selectedRooster}
         onClose={() => setSelectedRooster(null)}
         onInquire={handleInquire}
+        onBuyNow={handleBuyNow}
       />
 
       {/* 2. Interactive Rooster Reels TV Shorts Player */}
@@ -147,6 +156,13 @@ export default function HomePage() {
       <BookingModal
         rooster={inquiryRooster}
         onClose={() => setInquiryRooster(null)}
+      />
+
+      {/* 4. Express Rooster E-Commerce Checkout Modal (Amazon/Flipkart Style) */}
+      <CheckoutModal
+        rooster={checkoutRooster}
+        isOpen={!!checkoutRooster}
+        onClose={() => setCheckoutRooster(null)}
       />
 
     </div>

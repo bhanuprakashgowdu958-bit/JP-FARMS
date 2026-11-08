@@ -79,9 +79,12 @@ export const Header: React.FC<HeaderProps> = ({ onOpenReels, birdsCount = 7 }) =
           </Link>
 
           {/* Desktop Nav Links */}
-          <nav className="hidden lg:flex items-center space-x-7 text-sm font-medium text-slate-600">
-            <a href="#showcase" className="hover:text-sky-600 transition py-1">
-              Rooster Showcase
+          <nav className="hidden lg:flex items-center space-x-6 text-sm font-medium text-slate-600">
+            <a href="#showcase" className="text-amber-800 font-extrabold hover:text-amber-900 transition py-1 flex items-center space-x-1">
+              <span>Buy Roosters</span>
+              <span className="bg-amber-100 text-amber-950 text-[10px] font-black px-1.5 py-0.2 rounded-full border border-amber-300">
+                Store
+              </span>
             </a>
             <a href="#breeds" className="hover:text-sky-600 transition py-1">
               Pure Breeds
@@ -108,12 +111,19 @@ export const Header: React.FC<HeaderProps> = ({ onOpenReels, birdsCount = 7 }) =
           </nav>
 
           {/* Quick Actions */}
-          <div className="hidden sm:flex items-center space-x-3">
+          <div className="hidden sm:flex items-center space-x-2.5">
+            <a
+              href="#showcase"
+              className="flex items-center space-x-1.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-stone-950 text-xs font-black px-3.5 py-2.5 rounded-xl shadow-md shadow-amber-500/20 transition active:scale-95"
+            >
+              <span>⚡ Buy Now</span>
+            </a>
+
             <a
               href={generalWhatsAppUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center space-x-2 bg-gradient-to-r from-sky-600 to-sky-700 hover:from-sky-500 hover:to-sky-600 text-white text-sm font-semibold px-4 py-2.5 rounded-xl shadow-md shadow-sky-600/20 transition active:scale-95"
+              className="flex items-center space-x-2 bg-gradient-to-r from-sky-600 to-sky-700 hover:from-sky-500 hover:to-sky-600 text-white text-xs font-semibold px-3.5 py-2.5 rounded-xl shadow-md shadow-sky-600/20 transition active:scale-95"
             >
               <MessageCircle className="w-4 h-4" />
               <span>Connect with Farm</span>

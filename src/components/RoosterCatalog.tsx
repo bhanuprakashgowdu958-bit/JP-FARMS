@@ -10,6 +10,7 @@ interface RoosterCatalogProps {
   onSelectRooster: (rooster: Rooster) => void;
   onOpenVideo?: (rooster: Rooster) => void;
   onInquire?: (rooster: Rooster) => void;
+  onBuyNow?: (rooster: Rooster) => void;
 }
 
 const CATEGORIES: { label: string; value: string }[] = [
@@ -36,11 +37,12 @@ export const RoosterCatalog: React.FC<RoosterCatalogProps> = ({
   onSelectRooster,
   onOpenVideo,
   onInquire,
+  onBuyNow,
 }) => {
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [selectedBadge, setSelectedBadge] = useState<'all' | RoosterBadge>('all');
   const [searchQuery, setSearchQuery] = useState<string>('');
-  const [sortBy, setSortBy] = useState<'featured' | 'weight' | 'height' | 'newest'>('featured');
+  const [sortBy, setSortBy] = useState<'featured' | 'price-low' | 'price-high' | 'weight' | 'height' | 'newest'>('featured');
 
   const filteredRoosters = useMemo(() => {
     return roosters
@@ -70,6 +72,12 @@ export const RoosterCatalog: React.FC<RoosterCatalogProps> = ({
         return true;
       })
       .sort((a, b) => {
+        if (sortBy === 'price-low') {
+          return (a.price || 0) - (b.price || 0);
+        }
+        if (sortBy === 'price-high') {
+          return (b.price || 0) - (a.price || 0);
+        }
         if (sortBy === 'newest') return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
         if (sortBy === 'weight') {
           const wA = parseFloat(a.weight) || 0;
@@ -173,6 +181,8 @@ export const RoosterCatalog: React.FC<RoosterCatalogProps> = ({
                 className="bg-sky-50 border-none rounded-xl text-xs font-semibold px-3 py-2 text-slate-800 focus:ring-2 focus:ring-sky-500"
               >
                 <option value="featured">Featured First</option>
+                <option value="price-low">Price: Low to High</option>
+                <option value="price-high">Price: High to Low</option>
                 <option value="weight">Heaviest Weight First</option>
                 <option value="height">Tallest Height First</option>
                 <option value="newest">Newly Documented</option>
@@ -232,6 +242,7 @@ export const RoosterCatalog: React.FC<RoosterCatalogProps> = ({
                 onSelect={onSelectRooster}
                 onOpenVideo={onOpenVideo}
                 onInquire={onInquire}
+                onBuyNow={onBuyNow}
               />
             ))}
           </div>

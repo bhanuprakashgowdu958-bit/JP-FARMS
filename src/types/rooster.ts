@@ -15,6 +15,11 @@ export interface Rooster {
   name: string;
   breed: string;
   category: RoosterCategory;
+  price: number; // e.g. 14500
+  originalPrice?: number; // e.g. 18000
+  inStock?: boolean; // default true
+  rating?: number; // e.g. 4.9
+  reviewsCount?: number; // e.g. 42
   age: string; // e.g. "14 Months"
   weight: string; // e.g. "3.8 Kg"
   height: string; // e.g. "26 Inches"
@@ -33,6 +38,27 @@ export interface Rooster {
   description: string;
   createdAt: string;
   views?: number;
+}
+
+export interface RoosterOrder {
+  id: string; // e.g. "JP-ORD-94821"
+  roosterId: string;
+  roosterTag: string;
+  roosterName: string;
+  roosterBreed: string;
+  roosterImage: string;
+  price: number;
+  customerName: string;
+  phoneNumber: string;
+  deliveryAddress: string;
+  city: string;
+  state: string;
+  pincode: string;
+  deliveryType: 'doorstep_live_crate' | 'farm_pickup';
+  paymentMethod: 'cod' | 'upi' | 'advance_token';
+  notes?: string;
+  orderDate: string;
+  status: 'confirmed' | 'dispatched' | 'delivered';
 }
 
 export interface CustomerInquiry {

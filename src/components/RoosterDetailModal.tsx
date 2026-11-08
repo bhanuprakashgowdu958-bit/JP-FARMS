@@ -28,12 +28,14 @@ interface RoosterDetailModalProps {
   rooster: Rooster | null;
   onClose: () => void;
   onInquire?: (rooster: Rooster) => void;
+  onBuyNow?: (rooster: Rooster) => void;
 }
 
 export const RoosterDetailModal: React.FC<RoosterDetailModalProps> = ({
   rooster,
   onClose,
   onInquire,
+  onBuyNow,
 }) => {
   const [activeMedia, setActiveMedia] = useState<'photo' | 'video'>('photo');
   const [selectedPhotoIndex, setSelectedPhotoIndex] = useState(0);
@@ -41,6 +43,10 @@ export const RoosterDetailModal: React.FC<RoosterDetailModalProps> = ({
   const [showCertificate, setShowCertificate] = useState(false);
 
   if (!rooster) return null;
+
+  const price = rooster.price || 9500;
+  const originalPrice = rooster.originalPrice || Math.round(price * 1.25);
+  const discountPercent = Math.round(((originalPrice - price) / originalPrice) * 100);
 
   const whatsAppUrl = generateWhatsAppLink({
     phone: FARM_INFO.whatsapp,
@@ -215,6 +221,42 @@ export const RoosterDetailModal: React.FC<RoosterDetailModalProps> = ({
               </p>
             </div>
 
+            {/* E-Commerce Price Bar (Amazon/Flipkart Style) */}
+            <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">
+              <div>
+                <span className="text-[11px] font-extrabold text-amber-900 uppercase tracking-wide block">
+                  Online Farm Purchase Price
+                </span>
+                <div className="flex items-baseline space-x-2.5 mt-0.5">
+                  <span className="text-2xl sm:text-3xl font-black text-stone-950">
+                    ₹{price.toLocaleString('en-IN')}
+                  </span>
+                  <span className="text-sm text-stone-400 line-through">
+                    ₹{originalPrice.toLocaleString('en-IN')}
+                  </span>
+                  <span className="text-xs font-black text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded">
+                    {discountPercent}% OFF
+                  </span>
+                </div>
+                <p className="text-[11px] text-emerald-700 font-medium mt-1">
+                  ✓ Free Climate Crate • GPS Live-Bird Transit • Veterinary Health Pass
+                </p>
+              </div>
+
+              {onBuyNow && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    onClose();
+                    onBuyNow(rooster);
+                  }}
+                  className="inline-flex items-center justify-center space-x-2 bg-gradient-to-r from-amber-500 via-amber-600 to-amber-500 hover:from-amber-400 hover:to-amber-500 text-stone-950 font-black px-6 py-3 rounded-xl text-sm shadow-lg shadow-amber-500/20 transition active:scale-95 shrink-0"
+                >
+                  <span>⚡ Buy This Rooster</span>
+                </button>
+              )}
+            </div>
+
             {/* Biological Specifications Matrix */}
             <div>
               <h3 className="text-xs uppercase font-extrabold tracking-wider text-stone-400 mb-3 flex items-center">
@@ -381,15 +423,29 @@ export const RoosterDetailModal: React.FC<RoosterDetailModalProps> = ({
               <span className={`text-xs px-2.5 py-0.5 rounded font-bold ${getBadgeStyle(rooster.badge)}`}>
                 {rooster.badge}
               </span>
-              <p className="text-sm font-extrabold text-white mt-1">TAG: {rooster.tagId}</p>
+              <p className="text-base font-black text-amber-400 mt-1">₹{price.toLocaleString('en-IN')}</p>
             </div>
             <div className="border-l border-stone-800 pl-3">
-              <p className="text-xs text-stone-300 font-medium">{rooster.breed}</p>
-              <p className="text-[11px] text-emerald-400">Verified Bloodline</p>
+              <p className="text-xs text-white font-extrabold">#{rooster.tagId}</p>
+              <p className="text-[11px] text-emerald-400">In Stock • Ready to Ship</p>
             </div>
           </div>
 
           <div className="flex items-center gap-2.5 w-full sm:w-auto">
+            {/* BUY NOW BUTTON (Amazon/Flipkart Style) */}
+            {onBuyNow && (
+              <button
+                type="button"
+                onClick={() => {
+                  onClose();
+                  onBuyNow(rooster);
+                }}
+                className="flex-1 sm:flex-none inline-flex items-center justify-center space-x-2 bg-gradient-to-r from-amber-500 via-amber-600 to-amber-500 hover:from-amber-400 hover:to-amber-500 text-stone-950 font-black px-6 py-3 rounded-xl text-sm shadow-xl shadow-amber-500/25 transition active:scale-95"
+              >
+                <span>⚡ Buy Now</span>
+              </button>
+            )}
+
             {/* Schedule Visit Button */}
             {onInquire && (
               <button
@@ -398,10 +454,10 @@ export const RoosterDetailModal: React.FC<RoosterDetailModalProps> = ({
                   onClose();
                   onInquire(rooster);
                 }}
-                className="flex-1 sm:flex-none inline-flex items-center justify-center space-x-2 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-stone-950 font-bold px-5 py-3 rounded-xl text-sm transition shadow-lg shadow-amber-950"
+                className="flex-1 sm:flex-none inline-flex items-center justify-center space-x-2 bg-stone-800 hover:bg-stone-750 text-stone-200 font-bold px-4 py-3 rounded-xl text-sm transition"
               >
-                <Calendar className="w-4 h-4" />
-                <span>Schedule Visit</span>
+                <Calendar className="w-4 h-4 text-amber-400" />
+                <span>Visit Farm</span>
               </button>
             )}
 
@@ -410,10 +466,10 @@ export const RoosterDetailModal: React.FC<RoosterDetailModalProps> = ({
               href={whatsAppUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex-1 sm:flex-none flex items-center justify-center space-x-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-5 py-3 rounded-xl text-sm shadow-lg transition active:scale-95"
+              className="flex-1 sm:flex-none flex items-center justify-center space-x-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-4 py-3 rounded-xl text-sm shadow-lg transition active:scale-95"
             >
               <MessageCircle className="w-4 h-4" />
-              <span>WhatsApp Farm</span>
+              <span>WhatsApp</span>
             </a>
 
             {/* Direct Call Button */}

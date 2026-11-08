@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Rooster, CustomerInquiry } from '@/types/rooster';
-import { INITIAL_ROOSTERS, INITIAL_INQUIRIES } from './data';
+import { Rooster, CustomerInquiry, RoosterOrder } from '@/types/rooster';
+import { INITIAL_ROOSTERS, INITIAL_INQUIRIES, INITIAL_ORDERS } from './data';
 import { isFirebaseConfigured } from './firebase';
 import { 
   getRoostersFromFirestore, 
@@ -15,6 +15,7 @@ import {
 
 const ROOSTERS_STORAGE_KEY = 'jp_farms_roosters_v1';
 const INQUIRIES_STORAGE_KEY = 'jp_farms_inquiries_v1';
+const ORDERS_STORAGE_KEY = 'jp_farms_orders_v1';
 
 export function getStoredRoosters(): Rooster[] {
   if (typeof window === 'undefined') return INITIAL_ROOSTERS;
@@ -24,7 +25,19 @@ export function getStoredRoosters(): Rooster[] {
       localStorage.setItem(ROOSTERS_STORAGE_KEY, JSON.stringify(INITIAL_ROOSTERS));
       return INITIAL_ROOSTERS;
     }
-    return JSON.parse(saved);
+    const parsed: Rooster[] = JSON.parse(saved);
+    // Ensure all stored roosters have price and stock status populated from initial defaults if missing
+    return parsed.map((r) => {
+      const match = INITIAL_ROOSTERS.find((init) => init.id === r.id);
+      return {
+        ...r,
+        price: r.price || match?.price || 9500,
+        originalPrice: r.originalPrice || match?.originalPrice || (r.price ? Math.round(r.price * 1.25) : 12000),
+        inStock: r.inStock !== undefined ? r.inStock : (match?.inStock ?? true),
+        rating: r.rating || match?.rating || 4.9,
+        reviewsCount: r.reviewsCount || match?.reviewsCount || 35,
+      };
+    });
   } catch (e) {
     return INITIAL_ROOSTERS;
   }
@@ -293,5 +306,73 @@ export function useInquiries() {
     isLoaded,
     addInquiry,
     updateInquiryStatus,
+  };
+}
+
+export function getStoredOrders(): RoosterOrder[] {
+  if (typeof window === 'undefined') return INITIAL_ORDERS;
+  try {
+    const saved = localStorage.getItem(ORDERS_STORAGE_KEY);
+    if (!saved) {
+      localStorage.setItem(ORDERS_STORAGE_KEY, JSON.stringify(INITIAL_ORDERS));
+      return INITIAL_ORDERS;
+    }
+    return JSON.parse(saved);
+  } catch (e) {
+    return INITIAL_ORDERS;
+  }
+}
+
+export function saveStoredOrders(orders: RoosterOrder[]): void {
+  if (typeof window === 'undefined') return;
+  try {
+    localStorage.setItem(ORDERS_STORAGE_KEY, JSON.stringify(orders));
+    window.dispatchEvent(new Event('orders-updated'));
+  } catch (e) {
+    console.error('Failed to save orders', e);
+  }
+}
+
+export function useOrders() {
+  const [orders, setOrders] = useState<RoosterOrder[]>(INITIAL_ORDERS);
+  const [isLoaded, setIsLoaded] = useState(false);
+
+  useEffect(() => {
+    setOrders(getStoredOrders());
+    setIsLoaded(true);
+
+    const handleUpdate = () => {
+      setOrders(getStoredOrders());
+    };
+    window.addEventListener('orders-updated', handleUpdate);
+    return () => window.removeEventListener('orders-updated', handleUpdate);
+  }, []);
+
+  const addOrder = (orderData: Omit<RoosterOrder, 'id' | 'orderDate' | 'status'> & { id?: string; status?: RoosterOrder['status'] }) => {
+    const newOrder: RoosterOrder = {
+      id: orderData.id || `JP-ORD-${Math.floor(10000 + Math.random() * 90000)}`,
+      orderDate: new Date().toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' }),
+      status: orderData.status || 'confirmed',
+      ...orderData,
+    };
+    const current = getStoredOrders();
+    const updated = [newOrder, ...current];
+    saveStoredOrders(updated);
+    setOrders(updated);
+    return newOrder;
+  };
+
+  const updateOrderStatus = (id: string, status: RoosterOrder['status']) => {
+    const current = getStoredOrders();
+    const updated = current.map((o) => (o.id === id ? { ...o, status } : o));
+    saveStoredOrders(updated);
+    setOrders(updated);
+  };
+
+  return {
+    orders,
+    isLoaded,
+    addOrder,
+    updateOrderStatus,
   };
 }

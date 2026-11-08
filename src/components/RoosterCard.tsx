@@ -11,6 +11,7 @@ interface RoosterCardProps {
   onSelect: (rooster: Rooster) => void;
   onOpenVideo?: (rooster: Rooster) => void;
   onInquire?: (rooster: Rooster) => void;
+  onBuyNow?: (rooster: Rooster) => void;
 }
 
 export const RoosterCard: React.FC<RoosterCardProps> = ({
@@ -18,11 +19,18 @@ export const RoosterCard: React.FC<RoosterCardProps> = ({
   onSelect,
   onOpenVideo,
   onInquire,
+  onBuyNow,
 }) => {
   const whatsAppUrl = generateWhatsAppLink({
     phone: FARM_INFO.whatsapp,
     customMessage: `Hello JP Farms! 🐓 I am viewing Rooster #${rooster.tagId} (${rooster.name}, ${rooster.breed}) on your website. I would love to learn more about its bloodline and plan a farm visit.`,
   });
+
+  const price = rooster.price || 9500;
+  const originalPrice = rooster.originalPrice || Math.round(price * 1.25);
+  const discountPercent = Math.round(((originalPrice - price) / originalPrice) * 100);
+  const rating = rooster.rating || 4.9;
+  const reviewsCount = rooster.reviewsCount || 34;
 
   const getBadgeStyle = (badge: Rooster['badge']) => {
     switch (badge) {
@@ -99,14 +107,37 @@ export const RoosterCard: React.FC<RoosterCardProps> = ({
         <div>
           {/* Title & Breed */}
           <div>
-            <h3 
-              onClick={() => onSelect(rooster)}
-              className="text-lg font-bold text-stone-900 group-hover:text-amber-700 transition cursor-pointer leading-snug line-clamp-1"
-              title={rooster.name}
-            >
-              {rooster.name}
-            </h3>
+            <div className="flex items-center justify-between">
+              <h3 
+                onClick={() => onSelect(rooster)}
+                className="text-lg font-bold text-stone-900 group-hover:text-amber-700 transition cursor-pointer leading-snug line-clamp-1"
+                title={rooster.name}
+              >
+                {rooster.name}
+              </h3>
+            </div>
             <p className="text-xs text-stone-500 font-medium mt-0.5">{rooster.breed}</p>
+
+            {/* E-Commerce Price & Deal Display (Amazon/Flipkart Style) */}
+            <div className="mt-2.5 flex items-baseline justify-between">
+              <div className="flex items-baseline space-x-2">
+                <span className="text-xl font-black text-stone-950">
+                  ₹{price.toLocaleString('en-IN')}
+                </span>
+                <span className="text-xs text-stone-400 line-through">
+                  ₹{originalPrice.toLocaleString('en-IN')}
+                </span>
+                <span className="text-[11px] font-black text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200">
+                  {discountPercent}% OFF
+                </span>
+              </div>
+
+              <div className="flex items-center space-x-1 text-xs">
+                <span className="text-amber-500 font-bold">★</span>
+                <span className="font-bold text-stone-800 text-[11px]">{rating}</span>
+                <span className="text-stone-400 text-[10px]">({reviewsCount})</span>
+              </div>
+            </div>
           </div>
 
           {/* Quick Biological Specifications Grid */}
@@ -131,47 +162,48 @@ export const RoosterCard: React.FC<RoosterCardProps> = ({
           </p>
 
           {/* Vaccination & Health Certification */}
-          <div className="mt-2.5 flex items-center space-x-1.5 text-[11px] text-emerald-700 font-medium">
-            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-            <span className="truncate">{rooster.vaccinationStatus}</span>
+          <div className="mt-2.5 flex items-center justify-between text-[11px]">
+            <div className="flex items-center space-x-1.5 text-emerald-700 font-medium">
+              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+              <span className="truncate">{rooster.vaccinationStatus}</span>
+            </div>
+            <span className="font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full text-[10px]">
+              Live Crate Ready
+            </span>
           </div>
         </div>
 
         {/* Action Area */}
-        <div className="pt-3 border-t border-stone-100 space-y-2.5">
+        <div className="pt-3 border-t border-stone-100 space-y-2">
           
-          <div className="flex items-center justify-between text-xs text-stone-500">
-            <span className="font-mono text-[11px] bg-stone-100 px-2 py-0.5 rounded text-stone-700">
-              {rooster.combType.split('(')[0].trim()}
-            </span>
-            <button
-              onClick={() => onSelect(rooster)}
-              className="text-amber-700 hover:text-amber-800 font-bold flex items-center hover:underline"
-            >
-              <Eye className="w-3 h-3 mr-1" />
-              Full Pedigree
-            </button>
-          </div>
+          {/* PRIMARY BUY NOW BUTTON (Amazon/Flipkart Style) */}
+          <button
+            type="button"
+            onClick={() => onBuyNow ? onBuyNow(rooster) : onSelect(rooster)}
+            className="w-full flex items-center justify-center space-x-2 bg-gradient-to-r from-amber-500 via-amber-600 to-amber-500 hover:from-amber-400 hover:to-amber-500 text-stone-950 font-black py-2.5 px-4 rounded-xl text-xs transition shadow-md shadow-amber-500/20 active:scale-95"
+          >
+            <span>⚡ Buy Now (₹{price.toLocaleString('en-IN')})</span>
+          </button>
 
-          {/* Buttons: Inspect & Inquire */}
+          {/* Secondary Actions: Inspect Profile & WhatsApp */}
           <div className="grid grid-cols-2 gap-2">
             <button
               type="button"
               onClick={() => onSelect(rooster)}
-              className="w-full flex items-center justify-center space-x-1.5 bg-stone-900 hover:bg-stone-800 text-amber-400 font-bold py-2.5 px-3 rounded-xl text-xs transition shadow-sm"
+              className="w-full flex items-center justify-center space-x-1.5 bg-stone-100 hover:bg-stone-200 text-stone-800 font-bold py-2 px-3 rounded-xl text-xs transition"
             >
-              <Eye className="w-3.5 h-3.5" />
-              <span>Inspect Profile</span>
+              <Eye className="w-3.5 h-3.5 text-stone-600" />
+              <span>Pedigree</span>
             </button>
 
             <a
               href={whatsAppUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="w-full flex items-center justify-center space-x-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2.5 px-3 rounded-xl text-xs shadow-md shadow-emerald-700/20 transition active:scale-95"
+              className="w-full flex items-center justify-center space-x-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2 px-3 rounded-xl text-xs shadow-sm transition active:scale-95"
             >
               <MessageCircle className="w-3.5 h-3.5" />
-              <span>Ask Breeder</span>
+              <span>WhatsApp</span>
             </a>
           </div>
 
