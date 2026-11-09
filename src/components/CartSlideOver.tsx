@@ -13,7 +13,6 @@ import {
   CheckCircle2, 
   MessageCircle, 
   Sparkles,
-  MapPin,
   Lock,
   Phone,
   Edit2,
@@ -497,46 +496,6 @@ Please confirm availability and dispatch schedule. Thank you!`;
                   <span className="text-xs font-bold text-slate-600">
                     Order Total: <strong className="text-slate-900">₹{cartTotal.toLocaleString('en-IN')}</strong>
                   </span>
-                </div>
-
-                {/* Delivery Type Option */}
-                <div>
-                  <label className="block text-xs font-bold text-slate-800 mb-1.5">
-                    Select Delivery Method:
-                  </label>
-                  <div className="grid grid-cols-2 gap-2">
-                    <button
-                      type="button"
-                      onClick={() => setDeliveryType('doorstep_live_crate')}
-                      className={`p-2.5 rounded-xl border text-left text-xs transition ${
-                        deliveryType === 'doorstep_live_crate'
-                          ? 'border-sky-500 bg-sky-50/80 text-sky-950 font-bold shadow-xs'
-                          : 'border-slate-200 bg-white text-slate-700'
-                      }`}
-                    >
-                      <div className="flex items-center space-x-1.5">
-                        <Truck className="w-3.5 h-3.5 text-sky-600 shrink-0" />
-                        <span>Doorstep Live Crate</span>
-                      </div>
-                      <p className="text-[10px] text-slate-500 mt-0.5">AC vehicle with food/water</p>
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={() => setDeliveryType('farm_pickup')}
-                      className={`p-2.5 rounded-xl border text-left text-xs transition ${
-                        deliveryType === 'farm_pickup'
-                          ? 'border-amber-500 bg-amber-50/80 text-amber-950 font-bold shadow-xs'
-                          : 'border-slate-200 bg-white text-slate-700'
-                      }`}
-                    >
-                      <div className="flex items-center space-x-1.5">
-                        <MapPin className="w-3.5 h-3.5 text-amber-600 shrink-0" />
-                        <span>Farm Pickup</span>
-                      </div>
-                      <p className="text-[10px] text-slate-500 mt-0.5">Direct handoff at estate</p>
-                    </button>
-                  </div>
                 </div>
 
                 {/* Guest Sign-In Notification Banner OR Verified Member Banner */}
