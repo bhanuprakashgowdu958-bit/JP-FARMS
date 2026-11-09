@@ -339,35 +339,7 @@ export const Header: React.FC<HeaderProps> = ({
               {/* Drawer Body Links */}
               <div className="flex-1 overflow-y-auto p-4 space-y-4 text-xs overscroll-contain">
                 
-                {/* 1. My Profile & Account Card */}
-                <button
-                  type="button"
-                  onClick={() => {
-                    setSideMenuOpen(false);
-                    setIsProfileModalOpen(true);
-                  }}
-                  className="w-full flex items-center justify-between p-3 rounded-2xl bg-gradient-to-r from-amber-500/15 via-orange-500/10 to-amber-500/15 border border-amber-300 hover:border-amber-400 font-bold text-slate-900 transition text-left cursor-pointer group shadow-2xs"
-                >
-                  <div className="flex items-center space-x-3">
-                    <div className="w-9 h-9 rounded-xl bg-amber-500 text-stone-950 flex items-center justify-center font-bold shadow-xs">
-                      <User className="w-5 h-5 text-stone-950" />
-                    </div>
-                    <div>
-                      <div className="flex items-center space-x-2">
-                        <span className="text-xs font-black text-slate-900">My Profile</span>
-                        <span className="text-[9px] bg-amber-500/30 text-amber-950 font-black px-1.5 py-0.2 rounded-full uppercase">
-                          Account
-                        </span>
-                      </div>
-                      <p className="text-[11px] text-slate-600 font-medium truncate max-w-[200px]">
-                        {user?.displayName ? `${user.displayName} • Address & Phone` : 'View profile, phone & address'}
-                      </p>
-                    </div>
-                  </div>
-                  <ChevronRight className="w-4 h-4 text-amber-700 group-hover:translate-x-0.5 transition-transform" />
-                </button>
-
-                {/* 2. Shopping Cart Card in Menu */}
+                {/* 1. Shopping Cart Card in Menu */}
                 <button
                   type="button"
                   onClick={() => {
