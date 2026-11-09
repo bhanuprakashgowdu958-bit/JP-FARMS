@@ -41,18 +41,19 @@ export default function SignUpPage() {
   return (
     <div className="min-h-screen relative overflow-hidden flex flex-col">
       
-      {/* Full-Screen Background Image */}
+      {/* Full-Screen Background Image — anchored to the left for cinematic rooster showcase */}
       <img
         src="/banners/signup_roosters_battle.jpg"
         alt="JP Farms Heritage Roosters"
-        className="absolute inset-0 w-full h-full object-cover object-center scale-105 hover:scale-110 transition-transform duration-[3000ms]"
+        className="absolute inset-0 w-full h-full object-cover object-[25%_center] lg:object-[15%_center] scale-100 hover:scale-105 transition-transform duration-[3000ms]"
       />
 
-      {/* Lighter Gradient Overlays — let the image shine through */}
-      <div className="absolute inset-0 bg-gradient-to-b from-stone-950/50 via-stone-950/20 to-stone-950/60"></div>
+      {/* Atmospheric Gradient Overlays — keeps left side vivid & darkens right side for the login card */}
+      <div className="absolute inset-0 bg-gradient-to-t from-stone-950/80 via-transparent to-stone-950/60 lg:bg-gradient-to-r lg:from-transparent lg:via-stone-950/30 lg:to-stone-950/85 pointer-events-none"></div>
+      <div className="absolute inset-0 bg-stone-950/20 pointer-events-none"></div>
 
-      {/* Top Navigation Bar */}
-      <header className="max-w-7xl w-full mx-auto p-4 sm:p-6 flex items-center justify-between relative z-20">
+      {/* Top Navigation Bar — widened so logo & name sit further to the left */}
+      <header className="w-full px-4 sm:px-8 lg:px-12 py-4 sm:py-6 flex items-center justify-between relative z-20">
         <Link href="/" className="flex items-center space-x-3 hover:opacity-90 transition group">
           <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-amber-500 to-amber-600 p-0.5 flex items-center justify-center shadow-lg shadow-amber-500/20 group-hover:scale-105 transition">
             <div className="w-full h-full bg-stone-900 rounded-[14px] flex items-center justify-center">
@@ -83,15 +84,15 @@ export default function SignUpPage() {
         </div>
       </header>
 
-      {/* Centered Glassmorphism Sign-In Card */}
-      <main className="flex-1 flex items-center justify-center px-4 sm:px-6 py-8 relative z-10">
-        <div className="w-full max-w-md relative group">
+      {/* Main Content Area — Picture on Left, Login Details on Right */}
+      <main className="flex-1 w-full px-4 sm:px-8 lg:px-12 xl:px-20 py-8 relative z-10 flex items-center justify-center lg:justify-end">
+        <div className="w-full max-w-md relative group lg:mr-4 xl:mr-12">
 
           {/* Animated Glow Behind Card */}
           <div className="absolute -inset-1 bg-gradient-to-r from-amber-500/30 via-amber-400/20 to-amber-600/30 rounded-[28px] blur-xl opacity-60 group-hover:opacity-80 transition-opacity duration-700"></div>
 
           {/* Glass Card */}
-          <div className="relative bg-stone-950/30 rounded-3xl p-6 sm:p-10 border border-amber-500/20 shadow-2xl shadow-stone-950/50 overflow-hidden">
+          <div className="relative bg-stone-950/40 backdrop-blur-md rounded-3xl p-6 sm:p-10 border border-amber-500/30 shadow-2xl shadow-stone-950/60 overflow-hidden">
 
             {/* Top Amber Accent Line */}
             <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-amber-500 via-amber-400 to-amber-500"></div>
@@ -103,7 +104,7 @@ export default function SignUpPage() {
               {/* Farm Crest & Header */}
               <div className="text-center space-y-2">
                 <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-amber-500 to-amber-600 p-0.5 mx-auto shadow-lg shadow-amber-500/30 flex items-center justify-center">
-                  <div className="w-full h-full bg-stone-950/40 backdrop-blur-sm rounded-[14px] flex items-center justify-center">
+                  <div className="w-full h-full bg-stone-950/60 rounded-[14px] flex items-center justify-center">
                     <Feather className="w-7 h-7 text-amber-400 transform -rotate-12" />
                   </div>
                 </div>
@@ -160,7 +161,7 @@ export default function SignUpPage() {
       </main>
 
       {/* Page Footer */}
-      <footer className="max-w-7xl w-full mx-auto p-4 sm:p-6 text-center text-xs text-stone-400/70 relative z-10 drop-shadow-sm">
+      <footer className="w-full px-4 sm:px-8 lg:px-12 py-4 sm:py-6 text-center lg:text-right text-xs text-stone-400/70 relative z-10 drop-shadow-sm">
         © {new Date().getFullYear()} JP Farms Heritage Estate, Hoskote, Bengaluru • Dedicated to Heritage Poultry Conservation.
       </footer>
 
