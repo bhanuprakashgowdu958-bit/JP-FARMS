@@ -13,6 +13,7 @@ import {
   CheckCircle2, 
   MessageCircle, 
   Sparkles,
+  MapPin,
   Lock,
   Phone,
   Edit2,
@@ -24,6 +25,7 @@ import { useOrders } from '@/lib/roosterStore';
 import { useAuth } from '@/lib/authStore';
 import { GoogleIcon } from './GoogleSignInButton';
 import { PhoneCaptureModal } from '@/components/PhoneCaptureModal';
+import { AddressCaptureModal } from '@/components/AddressCaptureModal';
 import { FARM_INFO } from '@/lib/data';
 import { generateWhatsAppLink } from '@/lib/utils';
 import { RoosterOrder } from '@/types/rooster';
@@ -45,6 +47,7 @@ export const CartSlideOver: React.FC = () => {
   const { addOrder } = useOrders();
   const { user, isAuthenticated, signInWithGoogle, updatePhone, updateAddress } = useAuth();
   const [isPhoneModalOpen, setIsPhoneModalOpen] = useState(false);
+  const [isAddressModalOpen, setIsAddressModalOpen] = useState(false);
 
   const [step, setStep] = useState<'cart' | 'checkout'>('cart');
   const [deliveryType, setDeliveryType] = useState<'doorstep_live_crate' | 'farm_pickup'>('doorstep_live_crate');
@@ -54,6 +57,7 @@ export const CartSlideOver: React.FC = () => {
     name: '',
     phone: '',
     address: '',
+    addressLine2: '',
     city: '',
     state: '',
     pincode: '',
@@ -77,6 +81,11 @@ export const CartSlideOver: React.FC = () => {
 
   const effectivePhone = user?.phoneNumber || formData.phone;
   const hasPhone = Boolean(effectivePhone && effectivePhone.trim().replace(/\D/g, '').length >= 10);
+
+  const effectiveAddress = user?.deliveryAddress || formData.address;
+  const effectiveCity = user?.city || formData.city;
+  const effectivePincode = user?.pincode || formData.pincode;
+  const hasAddress = Boolean(effectiveAddress && effectiveAddress.trim().length >= 5);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [orderCompleted, setOrderCompleted] = useState<RoosterOrder | null>(null);
@@ -114,8 +123,8 @@ export const CartSlideOver: React.FC = () => {
       return;
     }
 
-    if (deliveryType === 'doorstep_live_crate' && (!formData.address || !formData.city)) {
-      alert('Please provide your delivery address and city for live crate dispatch.');
+    if (deliveryType === 'doorstep_live_crate' && !hasAddress) {
+      setIsAddressModalOpen(true);
       return;
     }
 
@@ -135,6 +144,10 @@ export const CartSlideOver: React.FC = () => {
 
       const primaryItem = items[0].rooster;
 
+      const fullAddress = formData.addressLine2?.trim()
+        ? `${effectiveAddress.trim()}, ${formData.addressLine2.trim()}`
+        : effectiveAddress.trim();
+
       // Save to store
       const newOrder = addOrder({
         roosterId: primaryItem.id,
@@ -146,30 +159,20 @@ export const CartSlideOver: React.FC = () => {
         items: orderItems,
         customerName: formData.name.trim(),
         phoneNumber: effectivePhone.trim(),
-        deliveryAddress: formData.address.trim(),
-        city: formData.city.trim(),
-        state: formData.state.trim() || 'India',
-        pincode: formData.pincode.trim() || '560001',
+        deliveryAddress: deliveryType === 'doorstep_live_crate' ? fullAddress : 'Farm Pickup - JP Farms Breeder Estate',
+        city: (effectiveCity || 'Vijayawada').trim(),
+        state: (user?.state || formData.state || 'Andhra Pradesh').trim(),
+        pincode: (effectivePincode || '520010').trim(),
         deliveryType,
         paymentMethod,
         notes: formData.notes.trim(),
         status: 'confirmed',
       });
 
-      // Auto-save phone and delivery address to profile & hardware storage for future 1-click orders
+      // Auto-save phone to profile & hardware storage for future 1-click orders
       if (effectivePhone.trim()) {
         try {
           updatePhone(effectivePhone.trim());
-        } catch (e) {}
-      }
-      if (formData.address) {
-        try {
-          updateAddress({
-            deliveryAddress: formData.address,
-            city: formData.city,
-            state: formData.state,
-            pincode: formData.pincode,
-          });
         } catch (e) {}
       }
 
@@ -192,7 +195,7 @@ export const CartSlideOver: React.FC = () => {
 *Customer Name:* ${formData.name}
 *Phone:* ${effectivePhone}
 *Delivery Type:* ${deliveryType === 'doorstep_live_crate' ? '🚚 Climate-Controlled Live Animal Crate Dispatch' : '🏡 Self Farm Pickup'}
-${deliveryType === 'doorstep_live_crate' ? `*Delivery Address:* ${formData.address}, ${formData.city}, ${formData.state} - ${formData.pincode}` : ''}
+${deliveryType === 'doorstep_live_crate' ? `*Delivery Address:* ${effectiveAddress}${formData.addressLine2?.trim() ? `\n*Landmark / Unit:* ${formData.addressLine2.trim()}` : ''}\n*City & PIN:* ${effectiveCity || 'Vijayawada'}${effectivePincode ? ` - ${effectivePincode}` : ''}` : ''}
 *Payment Method:* ${paymentMethod === 'cod' ? 'Cash on Delivery (COD)' : 'Google Pay / PhonePe UPI'}
 
 📦 *ORDERED BIRDS (${cartCount} items):*
@@ -615,50 +618,115 @@ Please confirm availability and dispatch schedule. Thank you!`;
 
                   {deliveryType === 'doorstep_live_crate' && (
                     <>
-                      <div>
-                        <label className="block text-slate-700 font-semibold mb-1">
-                          Delivery Address <span className="text-rose-500">*</span>
-                        </label>
-                        <input
-                          type="text"
-                          name="address"
-                          required
-                          value={formData.address}
-                          onChange={handleInputChange}
-                          placeholder="House/Plot no., Street, Area"
-                          className="w-full px-3 py-2 rounded-xl border border-slate-300 focus:outline-hidden focus:border-sky-500 text-xs"
-                        />
-                      </div>
+                      {hasAddress ? (
+                        <>
+                          <div>
+                            <div className="flex items-center justify-between mb-1">
+                              <label className="text-slate-700 font-semibold flex items-center space-x-1">
+                                <MapPin className="w-3 h-3 text-amber-600" />
+                                <span>Delivery Address</span>
+                                <span className="text-rose-500">*</span>
+                              </label>
+                              <button
+                                type="button"
+                                onClick={() => setIsAddressModalOpen(true)}
+                                className="text-[11px] text-amber-700 hover:text-amber-800 font-bold hover:underline flex items-center space-x-1"
+                              >
+                                <Edit2 className="w-2.5 h-2.5" />
+                                <span>Change in Profile</span>
+                              </button>
+                            </div>
+                            <div className="relative">
+                              <input
+                                type="text"
+                                name="address"
+                                readOnly
+                                value={effectiveAddress}
+                                className="w-full px-3 py-2 pl-8 pr-28 rounded-xl border border-slate-300 bg-slate-100/90 text-slate-900 text-xs font-semibold select-none cursor-not-allowed shadow-inner"
+                              />
+                              <Lock className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-1/2 -translate-y-1/2" />
+                              <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center space-x-1 bg-emerald-50 border border-emerald-200 text-emerald-700 text-[10px] font-bold px-2 py-0.5 rounded-md">
+                                <CheckCircle2 className="w-2.5 h-2.5 text-emerald-600" />
+                                <span>Profile Verified</span>
+                              </div>
+                            </div>
+                            <p className="text-[10px] text-slate-400 mt-1 flex items-center space-x-1">
+                              <span>🔒 Auto-detected from profile (cannot be edited directly)</span>
+                            </p>
+                          </div>
 
-                      <div className="grid grid-cols-2 gap-2">
+                          {/* Address Line 2 / Landmark / Apartment */}
+                          <div>
+                            <label className="block text-slate-700 font-semibold mb-1">
+                              Address Line 2 / Landmark (Optional)
+                            </label>
+                            <input
+                              type="text"
+                              name="addressLine2"
+                              value={formData.addressLine2}
+                              onChange={handleInputChange}
+                              placeholder="e.g. Landmark, Apartment, Floor, Gate details"
+                              className="w-full px-3 py-2 rounded-xl border border-slate-300 focus:outline-hidden focus:border-amber-500 text-xs"
+                            />
+                          </div>
+
+                          <div className="grid grid-cols-2 gap-2">
+                            <div>
+                              <label className="block text-slate-700 font-semibold mb-1">
+                                City
+                              </label>
+                              <input
+                                type="text"
+                                name="city"
+                                readOnly
+                                value={effectiveCity}
+                                className="w-full px-3 py-2 rounded-xl border border-slate-300 bg-slate-100/90 text-slate-700 text-xs font-medium cursor-not-allowed shadow-inner"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-slate-700 font-semibold mb-1">
+                                Pincode
+                              </label>
+                              <input
+                                type="text"
+                                name="pincode"
+                                readOnly
+                                value={effectivePincode}
+                                className="w-full px-3 py-2 rounded-xl border border-slate-300 bg-slate-100/90 text-slate-700 text-xs font-medium cursor-not-allowed shadow-inner"
+                              />
+                            </div>
+                          </div>
+                        </>
+                      ) : (
                         <div>
-                          <label className="block text-slate-700 font-semibold mb-1">
-                            City <span className="text-rose-500">*</span>
+                          <label className="block text-slate-700 font-semibold mb-1 flex items-center space-x-1">
+                            <MapPin className="w-3 h-3 text-amber-600" />
+                            <span>Delivery Address</span>
+                            <span className="text-rose-500">*</span>
                           </label>
-                          <input
-                            type="text"
-                            name="city"
-                            required
-                            value={formData.city}
-                            onChange={handleInputChange}
-                            placeholder="e.g. Bangalore"
-                            className="w-full px-3 py-2 rounded-xl border border-slate-300 focus:outline-hidden focus:border-sky-500 text-xs"
-                          />
+                          <div className="bg-gradient-to-r from-amber-50 to-orange-50 border-2 border-dashed border-amber-300 rounded-xl p-3 shadow-xs">
+                            <div className="flex items-start space-x-2.5">
+                              <div className="w-7 h-7 rounded-lg bg-amber-500 text-white flex items-center justify-center shrink-0 mt-0.5 shadow-xs">
+                                <AlertTriangle className="w-4 h-4" />
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <p className="text-xs font-bold text-amber-950">Address Not in Profile</p>
+                                <p className="text-[11px] text-amber-800 leading-snug mt-0.5">
+                                  Required for live climate crate dispatch and route planning. Please add your delivery address in your profile.
+                                </p>
+                                <button
+                                  type="button"
+                                  onClick={() => setIsAddressModalOpen(true)}
+                                  className="mt-2 inline-flex items-center space-x-1.5 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-extrabold px-3 py-1.5 rounded-lg text-xs shadow-xs active:scale-95 transition"
+                                >
+                                  <Plus className="w-3.5 h-3.5" />
+                                  <span>Add Delivery Address in Profile</span>
+                                </button>
+                              </div>
+                            </div>
+                          </div>
                         </div>
-                        <div>
-                          <label className="block text-slate-700 font-semibold mb-1">
-                            Pincode
-                          </label>
-                          <input
-                            type="text"
-                            name="pincode"
-                            value={formData.pincode}
-                            onChange={handleInputChange}
-                            placeholder="560001"
-                            className="w-full px-3 py-2 rounded-xl border border-slate-300 focus:outline-hidden focus:border-sky-500 text-xs"
-                          />
-                        </div>
-                      </div>
+                      )}
                     </>
                   )}
 
@@ -777,6 +845,12 @@ Please confirm availability and dispatch schedule. Thank you!`;
       <PhoneCaptureModal
         isOpen={isPhoneModalOpen}
         onClose={() => setIsPhoneModalOpen(false)}
+      />
+
+      {/* Quick In-Place Address Capture Modal (Never Leaves Checkout) */}
+      <AddressCaptureModal
+        isOpen={isAddressModalOpen}
+        onClose={() => setIsAddressModalOpen(false)}
       />
     </div>
   );
