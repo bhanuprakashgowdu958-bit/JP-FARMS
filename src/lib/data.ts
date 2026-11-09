@@ -1,5 +1,13 @@
 import { Rooster, CustomerInquiry, RoosterOrder } from '@/types/rooster';
 
+export const FARM_LOCATION = {
+  name: 'JP Farms Heritage Breeder Estate',
+  lat: 13.175048,
+  lng: 78.905406,
+  maxDeliveryRadiusKm: 20, // 20 km maximum live animal delivery radius
+  mapsUrl: 'https://maps.app.goo.gl/iKmrcYhgf2V9yrTm6',
+};
+
 export const FARM_INFO = {
   name: 'JP Farms',
   tagline: 'India\'s Premier Heritage & Pure Desi Rooster Showcase Estate',
@@ -13,6 +21,7 @@ export const FARM_INFO = {
   totalBirdsDocumented: 350,
   activeBreedingLines: 12,
   guaranteeText: 'Dedicated to Scientific Conservation & Preservation of Pure Indian Avian Genetics',
+  location: FARM_LOCATION,
 };
 
 export const INITIAL_ROOSTERS: Rooster[] = [

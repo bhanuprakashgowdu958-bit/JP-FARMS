@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { FARM_LOCATION } from '@/lib/data';
+import { calculateDistanceKm } from '@/lib/utils';
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
@@ -8,6 +10,14 @@ export async function GET(req: NextRequest) {
   if (!lat || !lng) {
     return NextResponse.json({ error: 'Latitude and Longitude are required' }, { status: 400 });
   }
+
+  const userLat = Number(lat);
+  const userLng = Number(lng);
+  const distanceKm = !isNaN(userLat) && !isNaN(userLng)
+    ? calculateDistanceKm(FARM_LOCATION.lat, FARM_LOCATION.lng, userLat, userLng)
+    : null;
+  const isDeliverable = distanceKm !== null ? distanceKm <= FARM_LOCATION.maxDeliveryRadiusKm : true;
+  const maxRadiusKm = FARM_LOCATION.maxDeliveryRadiusKm;
 
   // 1. Try OpenStreetMap Nominatim
   try {
@@ -49,6 +59,9 @@ export async function GET(req: NextRequest) {
         pincode,
         fullDisplayName: data.display_name,
         source: 'nominatim',
+        distanceKm,
+        isDeliverable,
+        maxRadiusKm,
       });
     }
   } catch (err) {
@@ -71,6 +84,9 @@ export async function GET(req: NextRequest) {
         state: bdcData.principalSubdivision || 'Andhra Pradesh',
         pincode: bdcData.postcode || '',
         source: 'bigdatacloud',
+        distanceKm,
+        isDeliverable,
+        maxRadiusKm,
       });
     }
   } catch (err) {
@@ -85,6 +101,9 @@ export async function GET(req: NextRequest) {
     state: 'Andhra Pradesh',
     pincode: '',
     source: 'coordinates',
+    distanceKm,
+    isDeliverable,
+    maxRadiusKm,
   });
 }
 
