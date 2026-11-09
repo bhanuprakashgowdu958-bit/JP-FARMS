@@ -48,9 +48,8 @@ export default function SignUpPage() {
         className="absolute inset-0 w-full h-full object-cover object-center scale-105 hover:scale-110 transition-transform duration-[3000ms]"
       />
 
-      {/* Dark Gradient Overlays for Readability */}
-      <div className="absolute inset-0 bg-gradient-to-b from-stone-950/70 via-stone-950/40 to-stone-950/80"></div>
-      <div className="absolute inset-0 bg-stone-950/30"></div>
+      {/* Lighter Gradient Overlays — let the image shine through */}
+      <div className="absolute inset-0 bg-gradient-to-b from-stone-950/50 via-stone-950/20 to-stone-950/60"></div>
 
       {/* Top Navigation Bar */}
       <header className="max-w-7xl w-full mx-auto p-4 sm:p-6 flex items-center justify-between relative z-20">
@@ -92,12 +91,11 @@ export default function SignUpPage() {
           <div className="absolute -inset-1 bg-gradient-to-r from-amber-500/30 via-amber-400/20 to-amber-600/30 rounded-[28px] blur-xl opacity-60 group-hover:opacity-80 transition-opacity duration-700"></div>
 
           {/* Glass Card */}
-          <div className="relative bg-stone-950/50 backdrop-blur-xl rounded-3xl p-6 sm:p-10 border border-stone-700/50 shadow-2xl shadow-stone-950/50 overflow-hidden">
+          <div className="relative bg-stone-950/20 backdrop-blur-md rounded-3xl p-6 sm:p-10 border border-amber-500/20 shadow-2xl shadow-stone-950/50 overflow-hidden">
 
             {/* Top Amber Accent Line */}
             <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-amber-500 via-amber-400 to-amber-500"></div>
 
-            {/* Subtle inner glow */}
             <div className="absolute inset-0 bg-gradient-to-b from-amber-500/5 via-transparent to-transparent rounded-3xl pointer-events-none"></div>
 
             <div className="relative space-y-6">
@@ -105,7 +103,7 @@ export default function SignUpPage() {
               {/* Farm Crest & Header */}
               <div className="text-center space-y-2">
                 <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-amber-500 to-amber-600 p-0.5 mx-auto shadow-lg shadow-amber-500/30 flex items-center justify-center">
-                  <div className="w-full h-full bg-stone-900/80 backdrop-blur-sm rounded-[14px] flex items-center justify-center">
+                  <div className="w-full h-full bg-stone-950/40 backdrop-blur-sm rounded-[14px] flex items-center justify-center">
                     <Feather className="w-7 h-7 text-amber-400 transform -rotate-12" />
                   </div>
                 </div>
