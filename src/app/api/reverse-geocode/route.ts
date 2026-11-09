@@ -2,6 +2,82 @@ import { NextRequest, NextResponse } from 'next/server';
 import { FARM_LOCATION } from '@/lib/data';
 import { calculateDistanceKm } from '@/lib/utils';
 
+function formatIndianAddress(addr: any, displayName?: string) {
+  const parts: string[] = [];
+
+  // 1. Street / Road / Landmark / House
+  const streetParts: string[] = [];
+  if (addr.house_number) streetParts.push(addr.house_number);
+  if (addr.building) streetParts.push(addr.building);
+  if (addr.road) streetParts.push(addr.road);
+  if (addr.residential && !streetParts.includes(addr.residential)) streetParts.push(addr.residential);
+
+  const streetStr = streetParts.join(', ');
+  if (streetStr) parts.push(streetStr);
+
+  // 2. Village / Hamlet / Colony / Suburb
+  const villageRaw = addr.village || addr.hamlet || addr.neighbourhood || addr.suburb || '';
+  if (villageRaw) {
+    const isAlreadyVillage = /\b(village|grama|colony|nagar|puram|palli|palem)\b/i.test(villageRaw);
+    const villageFormatted = isAlreadyVillage ? villageRaw : `${villageRaw} Village`;
+    if (!parts.some(p => p.toLowerCase().includes(villageRaw.toLowerCase()))) {
+      parts.push(villageFormatted);
+    }
+  }
+
+  // 3. Mandal / Taluk / Tehsil
+  const mandalRaw = addr.county || addr.subdistrict || addr.town || addr.city_district || '';
+  if (mandalRaw) {
+    const isAlreadyMandal = /\b(mandal|taluk|taluka|tehsil|block)\b/i.test(mandalRaw);
+    const mandalFormatted = isAlreadyMandal ? mandalRaw : `${mandalRaw} Mandal`;
+    if (!parts.some(p => p.toLowerCase().includes(mandalRaw.toLowerCase()))) {
+      parts.push(mandalFormatted);
+    }
+  }
+
+  // 4. District
+  const districtRaw = addr.state_district || addr.district || '';
+  if (districtRaw) {
+    const isAlreadyDistrict = /\b(district|dist)\b/i.test(districtRaw);
+    const districtFormatted = isAlreadyDistrict ? districtRaw : `${districtRaw} District`;
+    if (!parts.some(p => p.toLowerCase().includes(districtRaw.toLowerCase()))) {
+      parts.push(districtFormatted);
+    }
+  }
+
+  // 5. State
+  const stateRaw = addr.state || 'Andhra Pradesh';
+  if (!parts.some(p => p.toLowerCase().includes(stateRaw.toLowerCase()))) {
+    parts.push(stateRaw);
+  }
+
+  // 6. Pincode
+  const pincodeRaw = addr.postcode || '';
+
+  // Combine into final full address
+  let fullAddress = parts.join(', ');
+  if (pincodeRaw && !fullAddress.includes(pincodeRaw)) {
+    fullAddress += ` - ${pincodeRaw}`;
+  }
+
+  // If parts were too few and displayName is available, extract from display_name
+  if (parts.length < 3 && displayName) {
+    const cleanDisplay = displayName.replace(/, India$/, '').trim();
+    if (cleanDisplay.length > fullAddress.length) {
+      fullAddress = cleanDisplay;
+    }
+  }
+
+  return {
+    fullAddress,
+    village: villageRaw,
+    mandal: mandalRaw,
+    district: districtRaw,
+    state: stateRaw,
+    pincode: pincodeRaw,
+  };
+}
+
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const lat = searchParams.get('lat');
@@ -33,30 +109,21 @@ export async function GET(req: NextRequest) {
     if (res.ok) {
       const data = await res.json();
       const addr = data.address || {};
+      const formatted = formatIndianAddress(addr, data.display_name);
 
-      const addressParts: string[] = [];
-      if (addr.house_number) addressParts.push(addr.house_number);
-      if (addr.building) addressParts.push(addr.building);
-      if (addr.road) addressParts.push(addr.road);
-      if (addr.residential) addressParts.push(addr.residential);
-      if (addr.suburb) addressParts.push(addr.suburb);
-      if (addr.neighbourhood && !addressParts.includes(addr.neighbourhood)) addressParts.push(addr.neighbourhood);
-      if (addr.city_district && !addressParts.includes(addr.city_district)) addressParts.push(addr.city_district);
-
-      const streetAddress = addressParts.length > 0 
-        ? addressParts.join(', ')
-        : (data.display_name?.split(',').slice(0, 3).join(', ') || 'Current GPS Location');
-
-      const city = addr.city || addr.town || addr.village || addr.county || addr.state_district || 'Vijayawada';
-      const state = addr.state || 'Andhra Pradesh';
-      const pincode = addr.postcode || '';
+      const city = formatted.mandal 
+        ? (formatted.mandal.toLowerCase().includes('mandal') ? formatted.mandal : `${formatted.mandal} Mandal`)
+        : (addr.city || addr.town || addr.village || 'Palamaner');
 
       return NextResponse.json({
         success: true,
-        address: streetAddress,
-        city,
-        state,
-        pincode,
+        address: formatted.fullAddress,
+        village: formatted.village,
+        mandal: formatted.mandal,
+        district: formatted.district,
+        city: city,
+        state: formatted.state,
+        pincode: formatted.pincode,
         fullDisplayName: data.display_name,
         source: 'nominatim',
         distanceKm,
@@ -75,14 +142,30 @@ export async function GET(req: NextRequest) {
     if (res.ok) {
       const bdcData = await res.json();
       const locality = bdcData.locality || bdcData.city || '';
-      const parts = [bdcData.locality, bdcData.principalSubdivision].filter(Boolean);
+      const state = bdcData.principalSubdivision || 'Andhra Pradesh';
+      const pincode = bdcData.postcode || '';
+      
+      const adminLevels = bdcData.localityInfo?.administrative || [];
+      const districtObj = adminLevels.find((a: any) => a.adminLevel === 5 || a.description?.toLowerCase().includes('district'));
+      const mandalObj = adminLevels.find((a: any) => a.adminLevel === 6 || a.adminLevel === 8 || a.description?.toLowerCase().includes('taluk') || a.description?.toLowerCase().includes('mandal'));
+
+      const village = locality ? `${locality} Village` : '';
+      const mandal = mandalObj?.name ? `${mandalObj.name} Mandal` : '';
+      const district = districtObj?.name ? `${districtObj.name} District` : '';
+
+      const parts = [village, mandal, district, state].filter(Boolean);
+      let address = parts.join(', ');
+      if (pincode) address += ` - ${pincode}`;
 
       return NextResponse.json({
         success: true,
-        address: parts.length > 0 ? parts.join(', ') : 'Current GPS Location',
-        city: locality || 'Vijayawada',
-        state: bdcData.principalSubdivision || 'Andhra Pradesh',
-        pincode: bdcData.postcode || '',
+        address: address || 'Current Location',
+        village: locality,
+        mandal: mandalObj?.name || '',
+        district: districtObj?.name || '',
+        city: mandalObj?.name ? `${mandalObj.name} Mandal` : (locality || 'Palamaner'),
+        state: state,
+        pincode: pincode,
         source: 'bigdatacloud',
         distanceKm,
         isDeliverable,
@@ -96,8 +179,8 @@ export async function GET(req: NextRequest) {
   // 3. Fallback generic coordinates
   return NextResponse.json({
     success: true,
-    address: `GPS Location (${Number(lat).toFixed(4)}, ${Number(lng).toFixed(4)})`,
-    city: 'Vijayawada',
+    address: `GPS Location (${Number(lat).toFixed(4)}, ${Number(lng).toFixed(4)}), Andhra Pradesh`,
+    city: 'Palamaner',
     state: 'Andhra Pradesh',
     pincode: '',
     source: 'coordinates',
