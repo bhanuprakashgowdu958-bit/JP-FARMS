@@ -41,21 +41,18 @@ export default function SignUpPage() {
   return (
     <div className="min-h-screen bg-stone-950 relative overflow-hidden flex flex-col justify-between">
       
-      {/* Background Visual — Positioned on the left side below JP Farms on desktop, full on mobile */}
-      <div className="absolute inset-0 lg:right-auto lg:w-[64vw] pointer-events-none overflow-hidden flex items-center justify-start lg:pl-12 xl:pl-16">
+      {/* Full-bleed Atmospheric Background — Roosters on the left, dramatic smoke extending across the entire screen */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
         <img
           src="/banners/signup_roosters_battle.jpg"
           alt="JP Farms Heritage Roosters"
-          className="w-full h-full lg:h-auto lg:max-h-[82vh] object-cover lg:object-contain object-center lg:object-left scale-100 transition-transform duration-700"
+          className="absolute inset-0 w-full h-full object-cover object-center lg:w-[128vw] lg:max-w-none lg:-translate-x-[16vw] transition-transform duration-[3000ms]"
         />
 
-        {/* Soft horizontal fade on the right (desktop) to blend smoke into dark background */}
-        <div className="hidden lg:block absolute inset-y-0 right-0 w-36 bg-gradient-to-r from-transparent via-stone-950/60 to-stone-950"></div>
-        {/* Top and bottom subtle vignettes */}
-        <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-stone-950 via-stone-950/70 to-transparent"></div>
-        <div className="absolute inset-x-0 top-0 h-28 bg-gradient-to-b from-stone-950/80 via-stone-950/40 to-transparent"></div>
-        {/* Mobile dark overlay for contrast */}
-        <div className="lg:hidden absolute inset-0 bg-stone-950/60"></div>
+        {/* Ambient atmospheric gradients — seamless blend across the entire viewport */}
+        <div className="absolute inset-0 bg-gradient-to-t from-stone-950/90 via-transparent to-stone-950/60"></div>
+        <div className="hidden lg:block absolute inset-0 bg-gradient-to-r from-transparent via-stone-950/20 to-stone-950/50"></div>
+        <div className="lg:hidden absolute inset-0 bg-stone-950/50"></div>
       </div>
 
       {/* Top Navigation Bar — aligned to the left edge */}
@@ -90,76 +87,67 @@ export default function SignUpPage() {
         </div>
       </header>
 
-      {/* Main Content Area — Picture on Left, Login Details on Right */}
+      {/* Main Content Area — Sign-In Details Blended Seamlessly with the Background */}
       <main className="flex-1 w-full px-4 sm:px-8 lg:px-12 xl:px-16 py-8 relative z-10 flex items-center justify-center lg:justify-end">
-        <div className="w-full max-w-md relative group lg:mr-2 xl:mr-8 2xl:mr-16">
+        <div className="w-full max-w-md relative group lg:mr-4 xl:mr-12">
 
-          {/* Animated Glow Behind Card */}
-          <div className="absolute -inset-1 bg-gradient-to-r from-amber-500/30 via-amber-400/20 to-amber-600/30 rounded-[28px] blur-xl opacity-60 group-hover:opacity-80 transition-opacity duration-700"></div>
+          {/* Soft ambient back-glow that melts into the smoky background */}
+          <div className="absolute -inset-6 bg-gradient-to-br from-amber-500/10 via-amber-600/5 to-transparent rounded-[36px] blur-2xl pointer-events-none"></div>
 
-          {/* Glass Card */}
-          <div className="relative bg-stone-950/40 backdrop-blur-md rounded-3xl p-6 sm:p-10 border border-amber-500/30 shadow-2xl shadow-stone-950/60 overflow-hidden">
-
-            {/* Top Amber Accent Line */}
-            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-amber-500 via-amber-400 to-amber-500"></div>
-
-            <div className="absolute inset-0 bg-gradient-to-b from-amber-500/5 via-transparent to-transparent rounded-3xl pointer-events-none"></div>
-
-            <div className="relative space-y-6">
-              
-              {/* Farm Crest & Header */}
-              <div className="text-center space-y-2">
-                <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-amber-500 to-amber-600 p-0.5 mx-auto shadow-lg shadow-amber-500/30 flex items-center justify-center">
-                  <div className="w-full h-full bg-stone-950/60 rounded-[14px] flex items-center justify-center">
-                    <Feather className="w-7 h-7 text-amber-400 transform -rotate-12" />
-                  </div>
-                </div>
-
-                <div>
-                  <div className="flex items-center justify-center space-x-2">
-                    <h1 className="text-2xl font-black tracking-tight text-white drop-shadow-md">JP FARMS</h1>
-                    <span className="text-[10px] uppercase font-bold tracking-widest px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-400/30">
-                      Est. 2016
-                    </span>
-                  </div>
-                  <p className="text-xs text-stone-400 mt-1">
-                    Heritage Desi Rooster Conservation & Breeder Community
-                  </p>
+          {/* Seamless Content Block — Borderless & Glassy, Blending Naturally into the Scene */}
+          <div className="relative bg-stone-950/20 backdrop-blur-xs rounded-3xl p-6 sm:p-8 space-y-6">
+            
+            {/* Farm Crest & Header */}
+            <div className="text-center space-y-2">
+              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-amber-500 to-amber-600 p-0.5 mx-auto shadow-lg shadow-amber-500/20 flex items-center justify-center">
+                <div className="w-full h-full bg-stone-950/60 rounded-[14px] flex items-center justify-center">
+                  <Feather className="w-7 h-7 text-amber-400 transform -rotate-12" />
                 </div>
               </div>
 
-              {/* Headline & Value Pitch */}
-              <div className="text-center space-y-1">
-                <h2 className="text-lg sm:text-xl font-extrabold text-white">
-                  Welcome to JP Farms
-                </h2>
-                <p className="text-xs text-stone-400 max-w-sm mx-auto">
-                  Please sign in with your Google account to enter our live rooster catalog, breeding stock, and farm guides.
+              <div>
+                <div className="flex items-center justify-center space-x-2">
+                  <h1 className="text-2xl font-black tracking-tight text-white drop-shadow-md">JP FARMS</h1>
+                  <span className="text-[10px] uppercase font-bold tracking-widest px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-400/30">
+                    Est. 2016
+                  </span>
+                </div>
+                <p className="text-xs text-stone-300 mt-1 drop-shadow-sm">
+                  Heritage Desi Rooster Conservation & Breeder Community
                 </p>
               </div>
+            </div>
 
-              {/* Google Sign-In Button */}
-              <div className="space-y-3 pt-1">
-                <GoogleSignInButton variant="page" />
-                
-                <div className="flex items-center justify-center space-x-4 text-[11px] text-stone-400">
-                  <span className="flex items-center space-x-1">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
-                    <span>Instant Access</span>
-                  </span>
-                  <span className="text-stone-600">•</span>
-                  <span className="flex items-center space-x-1">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
-                    <span>No Password Needed</span>
-                  </span>
-                  <span className="text-stone-600">•</span>
-                  <span className="flex items-center space-x-1">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
-                    <span>100% Free</span>
-                  </span>
-                </div>
+            {/* Headline & Value Pitch */}
+            <div className="text-center space-y-1">
+              <h2 className="text-lg sm:text-xl font-extrabold text-white drop-shadow-sm">
+                Welcome to JP Farms
+              </h2>
+              <p className="text-xs text-stone-300 max-w-sm mx-auto drop-shadow-sm">
+                Please sign in with your Google account to enter our live rooster catalog, breeding stock, and farm guides.
+              </p>
+            </div>
+
+            {/* Google Sign-In Button */}
+            <div className="space-y-3 pt-1">
+              <GoogleSignInButton variant="page" />
+              
+              <div className="flex items-center justify-center space-x-4 text-[11px] text-stone-300 drop-shadow-sm">
+                <span className="flex items-center space-x-1">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                  <span>Instant Access</span>
+                </span>
+                <span className="text-stone-500">•</span>
+                <span className="flex items-center space-x-1">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                  <span>No Password Needed</span>
+                </span>
+                <span className="text-stone-500">•</span>
+                <span className="flex items-center space-x-1">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                  <span>100% Free</span>
+                </span>
               </div>
-
             </div>
 
           </div>
