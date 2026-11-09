@@ -47,20 +47,11 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
   onOpenOrders,
   onOpenCart,
 }) => {
-  const { user, isAuthenticated, signInWithGoogle, signOut, updatePhone, updateAddress } = useAuth();
+  const { user, isAuthenticated, signInWithGoogle, signOut, updatePhone } = useAuth();
 
   const [mounted, setMounted] = useState(false);
   const [isEditingPhone, setIsEditingPhone] = useState(false);
   const [phoneNumberInput, setPhoneNumberInput] = useState('');
-
-  const [isEditingAddress, setIsEditingAddress] = useState(false);
-  const [addressForm, setAddressForm] = useState({
-    deliveryAddress: '',
-    city: '',
-    state: '',
-    pincode: '',
-  });
-
   const [savedSuccessMsg, setSavedSuccessMsg] = useState<string | null>(null);
 
   useEffect(() => {
@@ -71,12 +62,6 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
   useEffect(() => {
     if (user) {
       setPhoneNumberInput(user.phoneNumber?.replace(/\+91\s?/, '') || '');
-      setAddressForm({
-        deliveryAddress: user.deliveryAddress || '',
-        city: user.city || '',
-        state: user.state || '',
-        pincode: user.pincode || '',
-      });
     }
   }, [user]);
 
@@ -94,11 +79,6 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
 
   const memberCode = user?.uid ? user.uid.slice(0, 8).toUpperCase() : 'JP-EST2016';
 
-  const vipWhatsAppUrl = generateWhatsAppLink({
-    phone: FARM_INFO.whatsapp,
-    customMessage: `Namaste JP Farms! I am ${user?.displayName || 'a member'} (Member ID: #${memberCode}). I would like to inquire regarding my breeder profile & orders.`,
-  });
-
   const handleSavePhone = (e: React.FormEvent) => {
     e.preventDefault();
     const clean = phoneNumberInput.trim().replace(/\D/g, '');
@@ -111,18 +91,6 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
     } else {
       alert('Please enter a valid 10-digit mobile number.');
     }
-  };
-
-  const handleSaveAddress = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!addressForm.deliveryAddress.trim() || !addressForm.city.trim() || !addressForm.pincode.trim()) {
-      alert('Please fill in street address, city, and pincode.');
-      return;
-    }
-    updateAddress(addressForm);
-    setIsEditingAddress(false);
-    setSavedSuccessMsg('Delivery address saved for climate crate dispatches!');
-    setTimeout(() => setSavedSuccessMsg(null), 2500);
   };
 
   return createPortal(
@@ -231,23 +199,10 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                 <p className="text-xs text-slate-500 font-mono mt-0.5 truncate">
                   Member ID: #{memberCode}
                 </p>
-                <div className="flex items-center justify-between gap-1 mt-0.5">
-                  <p className="text-[11px] text-slate-600 truncate flex items-center space-x-1 min-w-0">
-                    <Mail className="w-3 h-3 text-slate-400 shrink-0" />
-                    <span className="truncate">{user.email || 'Google Account'}</span>
-                  </p>
-                  <button
-                    type="button"
-                    onClick={async () => {
-                      await signOut();
-                      signInWithGoogle();
-                    }}
-                    className="text-[10px] text-amber-700 hover:text-amber-900 font-bold underline cursor-pointer shrink-0"
-                    title="Switch Google Account"
-                  >
-                    Switch Account
-                  </button>
-                </div>
+                <p className="text-[11px] text-slate-600 truncate flex items-center space-x-1 mt-0.5">
+                  <Mail className="w-3 h-3 text-slate-400 shrink-0" />
+                  <span className="truncate">{user.email || 'Google Account'}</span>
+                </p>
               </div>
             </div>
 
@@ -303,153 +258,31 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                   </div>
                 </form>
               ) : (
-                <div className="pt-1 flex items-center justify-between text-xs">
+                <div className="pt-1 text-xs">
                   {user.phoneNumber ? (
-                    <span className="font-mono font-bold text-slate-800 bg-slate-50 px-2.5 py-1 rounded-lg border border-slate-200">
+                    <span className="font-mono font-bold text-slate-800 bg-slate-50 px-2.5 py-1 rounded-lg border border-slate-200 inline-block">
                       {formatDisplayPhone(user.phoneNumber)}
                     </span>
                   ) : (
                     <span className="text-slate-400 italic">No phone number added yet</span>
                   )}
-                  <span className="text-[10px] text-emerald-600 font-bold flex items-center space-x-1">
-                    <CheckCircle2 className="w-3 h-3" />
-                    <span>SMS/WhatsApp Tracking Ready</span>
-                  </span>
                 </div>
               )}
             </div>
 
-            {/* Saved Delivery Address Section */}
-            <div className="bg-white rounded-2xl border border-slate-200 p-4 space-y-2 shadow-2xs">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-2">
-                  <MapPin className="w-4 h-4 text-emerald-600" />
-                  <span className="text-xs font-black text-slate-800">Saved Delivery Address</span>
-                </div>
-                {!isEditingAddress && (
-                  <button
-                    type="button"
-                    onClick={() => setIsEditingAddress(true)}
-                    className="text-xs font-bold text-emerald-700 hover:text-emerald-800 flex items-center space-x-1 cursor-pointer"
-                  >
-                    <Edit3 className="w-3.5 h-3.5" />
-                    <span>{user.deliveryAddress ? 'Edit Address' : '+ Add Address'}</span>
-                  </button>
-                )}
-              </div>
-
-              {isEditingAddress ? (
-                <form onSubmit={handleSaveAddress} className="pt-2 space-y-2.5 text-xs">
-                  <div>
-                    <label className="text-[11px] font-bold text-slate-600 block mb-1">House / Farm Address</label>
-                    <textarea
-                      rows={2}
-                      value={addressForm.deliveryAddress}
-                      onChange={(e) => setAddressForm({ ...addressForm, deliveryAddress: e.target.value })}
-                      placeholder="Door No, Street, Landmark..."
-                      className="w-full px-3 py-2 bg-white rounded-xl border border-slate-300 text-xs focus:outline-hidden focus:border-emerald-500"
-                    />
-                  </div>
-                  <div className="grid grid-cols-2 gap-2">
-                    <div>
-                      <label className="text-[11px] font-bold text-slate-600 block mb-1">City / Town</label>
-                      <input
-                        type="text"
-                        value={addressForm.city}
-                        onChange={(e) => setAddressForm({ ...addressForm, city: e.target.value })}
-                        placeholder="e.g. Bangalore"
-                        className="w-full px-3 py-1.5 bg-white rounded-xl border border-slate-300 text-xs focus:outline-hidden focus:border-emerald-500"
-                      />
-                    </div>
-                    <div>
-                      <label className="text-[11px] font-bold text-slate-600 block mb-1">Pincode</label>
-                      <input
-                        type="text"
-                        maxLength={6}
-                        value={addressForm.pincode}
-                        onChange={(e) => setAddressForm({ ...addressForm, pincode: e.target.value })}
-                        placeholder="e.g. 560001"
-                        className="w-full px-3 py-1.5 bg-white rounded-xl border border-slate-300 text-xs font-mono focus:outline-hidden focus:border-emerald-500"
-                      />
-                    </div>
-                  </div>
-                  <div>
-                    <label className="text-[11px] font-bold text-slate-600 block mb-1">State</label>
-                    <input
-                      type="text"
-                      value={addressForm.state}
-                      onChange={(e) => setAddressForm({ ...addressForm, state: e.target.value })}
-                      placeholder="e.g. Karnataka / Andhra Pradesh"
-                      className="w-full px-3 py-1.5 bg-white rounded-xl border border-slate-300 text-xs focus:outline-hidden focus:border-emerald-500"
-                    />
-                  </div>
-                  <div className="flex items-center space-x-2 justify-end pt-1">
-                    <button
-                      type="button"
-                      onClick={() => setIsEditingAddress(false)}
-                      className="px-3 py-1.5 text-xs text-slate-500 hover:text-slate-800 font-bold cursor-pointer"
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      type="submit"
-                      className="px-4 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-xl shadow-xs transition active:scale-95 cursor-pointer"
-                    >
-                      Save Address
-                    </button>
-                  </div>
-                </form>
-              ) : user.deliveryAddress ? (
-                <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-200 text-xs text-slate-700 space-y-0.5">
-                  <p className="font-semibold">{user.deliveryAddress}</p>
-                  <p className="text-slate-500">
-                    {user.city}
-                    {user.state ? `, ${user.state}` : ''}
-                    {user.pincode ? ` - ${user.pincode}` : ''}
-                  </p>
-                </div>
-              ) : (
-                <p className="text-xs text-slate-400 italic">No delivery address saved yet.</p>
-              )}
-            </div>
-
-            {/* Direct VIP WhatsApp & Sign Out */}
-            <div className="pt-2 border-t border-slate-200 flex items-center justify-between gap-2">
-              <a
-                href={vipWhatsAppUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center space-x-1.5 text-xs font-bold text-emerald-800 hover:text-emerald-900 bg-emerald-50 hover:bg-emerald-100 px-3 py-2 rounded-xl transition"
+            {/* Sign Out Button */}
+            <div className="pt-3 border-t border-slate-200 flex items-center justify-end">
+              <button
+                type="button"
+                onClick={() => {
+                  onClose();
+                  signOut();
+                }}
+                className="w-full sm:w-auto inline-flex items-center justify-center space-x-1.5 text-xs font-bold text-red-600 hover:text-red-700 bg-red-50 hover:bg-red-100 px-4 py-2.5 rounded-xl transition cursor-pointer"
               >
-                <MessageCircle className="w-4 h-4 text-emerald-600" />
-                <span>VIP WhatsApp Desk</span>
-              </a>
-
-              <div className="flex items-center space-x-2">
-                <button
-                  type="button"
-                  onClick={async () => {
-                    await signOut();
-                    signInWithGoogle();
-                  }}
-                  className="inline-flex items-center space-x-1 text-xs font-bold text-slate-700 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 px-3 py-2 rounded-xl transition cursor-pointer"
-                  title="Switch Google Account"
-                >
-                  <span>Switch</span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => {
-                    onClose();
-                    signOut();
-                  }}
-                  className="inline-flex items-center space-x-1.5 text-xs font-bold text-red-600 hover:text-red-700 bg-red-50 hover:bg-red-100 px-3.5 py-2 rounded-xl transition cursor-pointer"
-                >
-                  <LogOut className="w-4 h-4" />
-                  <span>Sign Out</span>
-                </button>
-              </div>
+                <LogOut className="w-4 h-4" />
+                <span>Sign Out</span>
+              </button>
             </div>
 
           </div>
