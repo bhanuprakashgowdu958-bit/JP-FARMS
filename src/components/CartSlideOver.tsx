@@ -527,25 +527,7 @@ Please confirm availability and dispatch schedule. Thank you!`;
                       </p>
                     </div>
                   </div>
-                ) : (
-                  <div className="flex items-center justify-between bg-amber-50/70 border border-amber-200/80 rounded-xl p-2.5 text-xs">
-                    <div className="flex items-center space-x-2">
-                      <img
-                        src={user.photoURL || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=120&q=80'}
-                        alt=""
-                        className="w-6 h-6 rounded-full object-cover border border-amber-300"
-                      />
-                      <div>
-                        <p className="font-bold text-slate-900 leading-tight">{user.displayName}</p>
-                        <p className="text-[10px] text-slate-500 font-mono">{user.email}</p>
-                      </div>
-                    </div>
-                    <span className="text-[10px] font-extrabold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-full flex items-center space-x-1">
-                      <CheckCircle2 className="w-3 h-3 text-emerald-600" />
-                      <span>Google Verified</span>
-                    </span>
-                  </div>
-                )}
+                ) : null}
 
                 {/* Customer Information */}
                 <div className="space-y-2.5 text-xs">
