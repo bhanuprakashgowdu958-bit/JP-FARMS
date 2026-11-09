@@ -8,7 +8,9 @@ import {
   CheckCircle2, 
   X,
   ShieldCheck,
-  Building2
+  Building2,
+  Navigation,
+  Loader2
 } from 'lucide-react';
 import { useAuth } from '@/lib/authStore';
 
@@ -31,6 +33,7 @@ export const AddressCaptureModal: React.FC<AddressCaptureModalProps> = ({
 
   const [error, setError] = useState('');
   const [isSuccess, setIsSuccess] = useState(false);
+  const [isLocating, setIsLocating] = useState(false);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -55,6 +58,45 @@ export const AddressCaptureModal: React.FC<AddressCaptureModalProps> = ({
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleDetectGps = () => {
+    if (typeof window === 'undefined' || !navigator.geolocation) {
+      setError('Geolocation is not supported by your browser.');
+      return;
+    }
+
+    setIsLocating(true);
+    setError('');
+
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        try {
+          const res = await fetch(`/api/reverse-geocode?lat=${pos.coords.latitude}&lng=${pos.coords.longitude}`);
+          if (!res.ok) throw new Error('Geocoding failed');
+          const data = await res.json();
+          if (data && data.success) {
+            setFormData({
+              deliveryAddress: data.address || '',
+              city: data.city || '',
+              state: data.state || 'Andhra Pradesh',
+              pincode: data.pincode || '',
+            });
+          } else {
+            setError('Could not detect address from GPS.');
+          }
+        } catch (e) {
+          setError('GPS reverse geocode failed. Please enter manually.');
+        } finally {
+          setIsLocating(false);
+        }
+      },
+      (err) => {
+        setIsLocating(false);
+        setError('GPS permission denied or unavailable. Please type your address manually.');
+      },
+      { enableHighAccuracy: true, timeout: 12000, maximumAge: 0 }
+    );
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -151,6 +193,32 @@ export const AddressCaptureModal: React.FC<AddressCaptureModalProps> = ({
             )}
 
             <form onSubmit={handleSubmit} className="space-y-3 text-xs">
+              {/* Quick Auto-Detect GPS Button */}
+              <button
+                type="button"
+                onClick={handleDetectGps}
+                disabled={isLocating}
+                className="w-full flex items-center justify-center space-x-2 py-2.5 px-3 rounded-xl border border-amber-300 bg-amber-50 hover:bg-amber-100 text-amber-900 font-bold text-xs transition active:scale-95 cursor-pointer disabled:opacity-50 shadow-2xs"
+              >
+                {isLocating ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin text-amber-700" />
+                    <span>Detecting GPS Location...</span>
+                  </>
+                ) : (
+                  <>
+                    <Navigation className="w-3.5 h-3.5 fill-amber-700 text-amber-700" />
+                    <span>Auto-Detect Current GPS Location</span>
+                  </>
+                )}
+              </button>
+
+              <div className="relative flex py-1 items-center">
+                <div className="flex-grow border-t border-slate-200"></div>
+                <span className="shrink-0 mx-2 text-[10px] uppercase font-bold text-slate-400">or enter manually</span>
+                <div className="flex-grow border-t border-slate-200"></div>
+              </div>
+
               <div>
                 <label className="block text-slate-700 font-bold mb-1">
                   Street / Area Address <span className="text-rose-500">*</span>

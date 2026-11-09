@@ -17,7 +17,9 @@ import {
   Lock,
   Phone,
   Edit2,
-  AlertTriangle
+  AlertTriangle,
+  Navigation,
+  Loader2
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { useCart } from '@/lib/cartStore';
@@ -48,6 +50,7 @@ export const CartSlideOver: React.FC = () => {
   const { user, isAuthenticated, signInWithGoogle, updatePhone, updateAddress } = useAuth();
   const [isPhoneModalOpen, setIsPhoneModalOpen] = useState(false);
   const [isAddressModalOpen, setIsAddressModalOpen] = useState(false);
+  const [isLocating, setIsLocating] = useState(false);
 
   const [step, setStep] = useState<'cart' | 'checkout'>('cart');
   const [deliveryType, setDeliveryType] = useState<'doorstep_live_crate' | 'farm_pickup'>('doorstep_live_crate');
@@ -82,10 +85,85 @@ export const CartSlideOver: React.FC = () => {
   const effectivePhone = user?.phoneNumber || formData.phone;
   const hasPhone = Boolean(effectivePhone && effectivePhone.trim().replace(/\D/g, '').length >= 10);
 
-  const effectiveAddress = user?.deliveryAddress || formData.address;
-  const effectiveCity = user?.city || formData.city;
-  const effectivePincode = user?.pincode || formData.pincode;
-  const hasAddress = Boolean(effectiveAddress && effectiveAddress.trim().length >= 5);
+  const effectiveAddress = formData.address || user?.deliveryAddress || '';
+  const effectiveCity = formData.city || user?.city || '';
+  const effectivePincode = formData.pincode || user?.pincode || '';
+  const hasAddress = Boolean(effectiveAddress && effectiveAddress.trim().length >= 3);
+
+  const handleDetectGpsAddress = () => {
+    if (typeof window === 'undefined' || !navigator.geolocation) {
+      alert('Geolocation is not supported by your browser. Please enter address manually.');
+      return;
+    }
+
+    setIsLocating(true);
+
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        try {
+          const { latitude, longitude } = position.coords;
+          const res = await fetch(`/api/reverse-geocode?lat=${latitude}&lng=${longitude}`);
+          if (!res.ok) throw new Error('Failed to resolve coordinates');
+          const data = await res.json();
+
+          if (data && data.success) {
+            const newAddress = data.address || '';
+            const newCity = data.city || '';
+            const newState = data.state || 'Andhra Pradesh';
+            const newPincode = data.pincode || '';
+
+            setFormData((prev) => ({
+              ...prev,
+              address: newAddress,
+              city: newCity,
+              state: newState,
+              pincode: newPincode,
+            }));
+
+            // Also persist to profile & hardware storage for future 1-click orders
+            updateAddress({
+              deliveryAddress: newAddress,
+              city: newCity,
+              state: newState,
+              pincode: newPincode,
+            });
+
+            confetti({
+              particleCount: 60,
+              spread: 60,
+              origin: { y: 0.7 },
+              colors: ['#f59e0b', '#10b981', '#0ea5e9'],
+            });
+          } else {
+            alert('Could not determine address from GPS coordinates. Please update address manually.');
+          }
+        } catch (err) {
+          console.error('GPS reverse geocode error:', err);
+          alert('GPS detected your coordinates, but address lookup failed. Please enter your address manually.');
+        } finally {
+          setIsLocating(false);
+        }
+      },
+      (error) => {
+        setIsLocating(false);
+        console.warn('Geolocation error:', error);
+        if (error.code === error.PERMISSION_DENIED) {
+          alert('Location permission was denied. Please allow location access in your browser settings or enter your address manually.');
+        } else if (error.code === error.POSITION_UNAVAILABLE) {
+          alert('Location position unavailable. Please check your device GPS / network and try again.');
+        } else if (error.code === error.TIMEOUT) {
+          alert('Location request timed out. Please try again.');
+        } else {
+          alert('Failed to detect GPS location. Please enter your address manually.');
+        }
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 12000,
+        maximumAge: 0,
+      }
+    );
+  };
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [orderCompleted, setOrderCompleted] = useState<RoosterOrder | null>(null);
@@ -627,14 +705,36 @@ Please confirm availability and dispatch schedule. Thank you!`;
                                 <span>Delivery Address</span>
                                 <span className="text-rose-500">*</span>
                               </label>
-                              <button
-                                type="button"
-                                onClick={() => setIsAddressModalOpen(true)}
-                                className="text-[11px] text-amber-700 hover:text-amber-800 font-bold hover:underline flex items-center space-x-1"
-                              >
-                                <Edit2 className="w-2.5 h-2.5" />
-                                <span>Change in Profile</span>
-                              </button>
+                              <div className="flex items-center space-x-2">
+                                <button
+                                  type="button"
+                                  onClick={handleDetectGpsAddress}
+                                  disabled={isLocating}
+                                  className="text-[11px] text-amber-800 hover:text-amber-950 font-bold flex items-center space-x-1 bg-amber-100/90 hover:bg-amber-200/90 px-2.5 py-0.5 rounded-lg border border-amber-300 transition active:scale-95 cursor-pointer disabled:opacity-50 shadow-2xs"
+                                  title="Auto-detect current delivery address via device GPS"
+                                >
+                                  {isLocating ? (
+                                    <>
+                                      <Loader2 className="w-2.5 h-2.5 animate-spin text-amber-700" />
+                                      <span>Detecting GPS...</span>
+                                    </>
+                                  ) : (
+                                    <>
+                                      <Navigation className="w-2.5 h-2.5 fill-amber-700 text-amber-700" />
+                                      <span>Auto-Detect GPS</span>
+                                    </>
+                                  )}
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => setIsAddressModalOpen(true)}
+                                  className="text-[11px] text-slate-500 hover:text-slate-800 font-semibold hover:underline flex items-center space-x-0.5 cursor-pointer"
+                                  title="Edit manually in profile"
+                                >
+                                  <Edit2 className="w-2.5 h-2.5" />
+                                  <span>Edit</span>
+                                </button>
+                              </div>
                             </div>
                             <div className="relative">
                               <input
@@ -651,7 +751,7 @@ Please confirm availability and dispatch schedule. Thank you!`;
                               </div>
                             </div>
                             <p className="text-[10px] text-slate-400 mt-1 flex items-center space-x-1">
-                              <span>🔒 Auto-detected from profile (cannot be edited directly)</span>
+                              <span>🔒 Auto-detected via GPS & profile (cannot be edited directly)</span>
                             </p>
                           </div>
 
@@ -712,16 +812,36 @@ Please confirm availability and dispatch schedule. Thank you!`;
                               <div className="flex-1 min-w-0">
                                 <p className="text-xs font-bold text-amber-950">Address Not in Profile</p>
                                 <p className="text-[11px] text-amber-800 leading-snug mt-0.5">
-                                  Required for live climate crate dispatch and route planning. Please add your delivery address in your profile.
+                                  Required for live climate crate dispatch and route planning. Please auto-detect via GPS or enter your address.
                                 </p>
-                                <button
-                                  type="button"
-                                  onClick={() => setIsAddressModalOpen(true)}
-                                  className="mt-2 inline-flex items-center space-x-1.5 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-extrabold px-3 py-1.5 rounded-lg text-xs shadow-xs active:scale-95 transition"
-                                >
-                                  <Plus className="w-3.5 h-3.5" />
-                                  <span>Add Delivery Address in Profile</span>
-                                </button>
+                                <div className="mt-2.5 flex items-center space-x-2">
+                                  <button
+                                    type="button"
+                                    onClick={handleDetectGpsAddress}
+                                    disabled={isLocating}
+                                    className="inline-flex items-center space-x-1.5 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-extrabold px-3 py-1.5 rounded-lg text-xs shadow-xs active:scale-95 transition cursor-pointer disabled:opacity-50"
+                                  >
+                                    {isLocating ? (
+                                      <>
+                                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                        <span>Detecting GPS...</span>
+                                      </>
+                                    ) : (
+                                      <>
+                                        <Navigation className="w-3.5 h-3.5 fill-current" />
+                                        <span>Auto-Detect GPS</span>
+                                      </>
+                                    )}
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => setIsAddressModalOpen(true)}
+                                    className="inline-flex items-center space-x-1 bg-white hover:bg-slate-50 border border-slate-300 text-slate-700 font-semibold px-2.5 py-1.5 rounded-lg text-xs transition cursor-pointer"
+                                  >
+                                    <Plus className="w-3 h-3" />
+                                    <span>Type Manually</span>
+                                  </button>
+                                </div>
                               </div>
                             </div>
                           </div>
