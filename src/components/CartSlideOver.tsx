@@ -19,8 +19,10 @@ import {
   Edit2,
   AlertTriangle,
   Navigation,
-  Loader2
+  Loader2,
+  Map
 } from 'lucide-react';
+import dynamic from 'next/dynamic';
 import confetti from 'canvas-confetti';
 import { useCart } from '@/lib/cartStore';
 import { useOrders } from '@/lib/roosterStore';
@@ -31,6 +33,20 @@ import { AddressCaptureModal } from '@/components/AddressCaptureModal';
 import { FARM_INFO, FARM_LOCATION } from '@/lib/data';
 import { generateWhatsAppLink, calculateDistanceKm } from '@/lib/utils';
 import { RoosterOrder } from '@/types/rooster';
+import type { LocationSelectResult } from './DeliveryZoneMap';
+
+const DeliveryZoneMap = dynamic(
+  () => import('./DeliveryZoneMap').then((mod) => mod.DeliveryZoneMap),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="mt-2.5 h-44 rounded-2xl border-2 border-slate-200 bg-slate-100 flex items-center justify-center text-xs text-slate-500 space-x-2">
+        <Loader2 className="w-4 h-4 animate-spin text-amber-600" />
+        <span>Loading 20 km Delivery Radius Map...</span>
+      </div>
+    ),
+  }
+);
 
 export const CartSlideOver: React.FC = () => {
   const { 
@@ -52,6 +68,8 @@ export const CartSlideOver: React.FC = () => {
   const [isAddressModalOpen, setIsAddressModalOpen] = useState(false);
   const [isLocating, setIsLocating] = useState(false);
   const [deliveryDistanceKm, setDeliveryDistanceKm] = useState<number | null>(null);
+  const [mapCoords, setMapCoords] = useState<{ lat: number; lng: number } | null>(null);
+  const [showMap, setShowMap] = useState(true);
 
   const [step, setStep] = useState<'cart' | 'checkout'>('cart');
   const [deliveryType, setDeliveryType] = useState<'doorstep_live_crate' | 'farm_pickup'>('doorstep_live_crate');
@@ -103,6 +121,7 @@ export const CartSlideOver: React.FC = () => {
       async (position) => {
         try {
           const { latitude, longitude } = position.coords;
+          setMapCoords({ lat: latitude, lng: longitude });
           const dist = calculateDistanceKm(
             FARM_LOCATION.lat,
             FARM_LOCATION.lng,
@@ -172,6 +191,29 @@ export const CartSlideOver: React.FC = () => {
         maximumAge: 0,
       }
     );
+  };
+
+  const handleMapLocationSelect = (result: LocationSelectResult) => {
+    setDeliveryDistanceKm(result.distanceKm);
+    setMapCoords({ lat: result.lat, lng: result.lng });
+
+    if (result.address) {
+      setFormData((prev) => ({
+        ...prev,
+        address: result.address || prev.address,
+        city: result.city || prev.city,
+        state: result.state || prev.state,
+        pincode: result.pincode || prev.pincode,
+      }));
+      try {
+        updateAddress({
+          deliveryAddress: result.address,
+          city: result.city || '',
+          state: result.state || 'Andhra Pradesh',
+          pincode: result.pincode || '',
+        });
+      } catch (e) {}
+    }
   };
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -800,6 +842,31 @@ Please confirm availability and dispatch schedule. Thank you!`;
                                 </div>
                               )
                             )}
+
+                            {/* Interactive 20 km Delivery Zone Map with Draggable Pin */}
+                            <div className="mt-2.5">
+                              <div className="flex items-center justify-between mb-1">
+                                <span className="text-[11px] font-bold text-slate-700 flex items-center space-x-1">
+                                  <Map className="w-3 h-3 text-amber-600" />
+                                  <span>20 km Delivery Radius Map (Drag Pin Anywhere)</span>
+                                </span>
+                                <button
+                                  type="button"
+                                  onClick={() => setShowMap(!showMap)}
+                                  className="text-[10px] text-amber-800 hover:text-amber-950 font-bold hover:underline cursor-pointer"
+                                >
+                                  {showMap ? 'Hide Map' : 'Show Map'}
+                                </button>
+                              </div>
+
+                              {showMap && (
+                                <DeliveryZoneMap
+                                  initialLat={mapCoords?.lat || null}
+                                  initialLng={mapCoords?.lng || null}
+                                  onLocationSelect={handleMapLocationSelect}
+                                />
+                              )}
+                            </div>
                           </div>
 
                           {/* Address Line 2 / Landmark / Apartment */}
@@ -888,6 +955,15 @@ Please confirm availability and dispatch schedule. Thank you!`;
                                     <Plus className="w-3 h-3" />
                                     <span>Type Manually</span>
                                   </button>
+                                </div>
+
+                                {/* Interactive Map in Address Fallback */}
+                                <div className="mt-3">
+                                  <DeliveryZoneMap
+                                    initialLat={mapCoords?.lat || null}
+                                    initialLng={mapCoords?.lng || null}
+                                    onLocationSelect={handleMapLocationSelect}
+                                  />
                                 </div>
                               </div>
                             </div>
