@@ -158,100 +158,34 @@ export const Header: React.FC<HeaderProps> = ({
             </div>
           </Link>
 
-          {/* Desktop Center Navigation Links */}
-          <nav className="hidden xl:flex items-center space-x-6 text-xs font-bold text-slate-700">
-            <a href="#showcase" className="hover:text-amber-600 transition flex items-center space-x-1">
-              <span>🐓 Rooster Showcase</span>
-            </a>
-            <a href="#breeds" className="hover:text-amber-600 transition flex items-center space-x-1">
-              <span>🛡️ Heritage Breeds</span>
-            </a>
-            <a href="#biosecurity" className="hover:text-amber-600 transition flex items-center space-x-1">
-              <span>🌿 Bio-Security & Diet</span>
-            </a>
-            <a href="#delivery" className="hover:text-amber-600 transition flex items-center space-x-1">
-              <span>🚚 Live AC Crate Delivery</span>
-            </a>
-            <a href="#visit-guide" className="hover:text-amber-600 transition flex items-center space-x-1">
-              <span>📍 Visit Estate</span>
-            </a>
-          </nav>
-
-          {/* Top Right Actions (Desktop): Profile, Cart & Menu Bar */}
-          <div className="flex items-center space-x-2.5 shrink-0">
-            {/* Unified My Profile Button (Profile Icon / Google Avatar directly in My Profile) */}
-            <button
-              type="button"
-              onClick={() => setIsProfileModalOpen(true)}
-              className="flex items-center space-x-2 bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold pl-2.5 pr-3.5 py-1.5 rounded-xl border border-amber-500/40 hover:border-amber-400 shadow-sm transition active:scale-95 whitespace-nowrap group cursor-pointer"
-              title={user ? `My Profile (${user.displayName || user.email})` : 'Sign In / My Profile'}
-            >
-              {user ? (
-                <>
-                  <div className="relative shrink-0">
-                    <img
-                      src={user.photoURL || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=120&q=80'}
-                      alt=""
-                      className="w-6 h-6 rounded-full object-cover border border-amber-400 group-hover:scale-105 transition"
-                    />
-                    <span className="absolute -bottom-0.5 -right-0.5 w-2 h-2 bg-emerald-500 rounded-full border border-slate-900" />
-                  </div>
-                  <div className="flex flex-col text-left leading-tight">
-                    <span className="text-white text-[11px] font-black truncate max-w-[90px]">
-                      {user.displayName?.split(' ')[0] || 'Breeder'}
-                    </span>
-                    <span className="text-[9px] text-amber-400 font-extrabold">
-                      My Profile
-                    </span>
-                  </div>
-                </>
-              ) : (
-                <>
-                  <div className="w-6 h-6 rounded-full bg-slate-800 text-amber-400 flex items-center justify-center border border-amber-500/30 group-hover:border-amber-400 transition shrink-0">
-                    <User className="w-3.5 h-3.5" />
-                  </div>
-                  <span className="text-amber-300 group-hover:text-white transition">My Profile</span>
-                </>
-              )}
-            </button>
-
-            {/* Shopping Cart Button */}
-            <button
-              type="button"
-              onClick={openCart}
-              className="relative flex items-center space-x-1.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-stone-950 text-xs font-black px-4 py-2.5 rounded-xl shadow-md shadow-amber-500/20 transition active:scale-95 whitespace-nowrap group cursor-pointer"
-              title="View Shopping Cart"
-            >
-              <ShoppingCart className="w-4 h-4 text-stone-950 group-hover:scale-110 transition" />
-              <span>Cart</span>
-              {cartCount > 0 && (
-                <span className="bg-stone-950 text-amber-300 text-[10px] font-black px-1.5 py-0.5 rounded-full min-w-[18px] text-center border border-amber-400/50 animate-pulse">
-                  {cartCount}
-                </span>
-              )}
-            </button>
-
-            {/* Menu Bar Button (Contains My Orders, Catalog, Profile) */}
+          {/* Desktop Navigation Links & Action Strip removed to keep UI clear — Moved to Menu Drawer */}
+          {/* Top Right Action: Clean Menu Button */}
+          <div className="flex items-center space-x-3 shrink-0">
             <button
               type="button"
               onClick={(e) => {
                 e.stopPropagation();
                 setSideMenuOpen(true);
               }}
-              className="flex items-center space-x-1.5 bg-slate-900 hover:bg-slate-800 text-amber-400 hover:text-white px-3.5 py-2.5 rounded-xl border border-amber-500/30 hover:border-amber-400 transition active:scale-95 text-xs font-extrabold shadow-xs whitespace-nowrap group cursor-pointer"
-              title="Open Navigation Menu (My Orders, Catalog, Estate)"
+              className="flex items-center space-x-2 bg-slate-900 hover:bg-slate-850 text-white px-4 py-2.5 rounded-2xl border border-amber-500/40 hover:border-amber-400 transition active:scale-95 text-xs font-extrabold shadow-sm whitespace-nowrap group cursor-pointer"
+              title="Open Navigation Menu (My Profile, Cart, Orders, Estate)"
               aria-label="Open menu"
             >
               <Menu className="w-4 h-4 text-amber-400 group-hover:scale-110 transition duration-200" />
-              <span>Menu</span>
-              {activeOrdersCount > 0 ? (
-                <span className="bg-amber-500 text-stone-950 text-[10px] font-black px-1.5 py-0.5 rounded-full min-w-[18px] text-center flex items-center space-x-1 shadow-xs">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-pulse"></span>
-                  <span>{activeOrdersCount}</span>
+              <span className="text-amber-300 group-hover:text-white transition">Menu</span>
+              
+              {/* Cart Count Badge */}
+              {cartCount > 0 && (
+                <span className="bg-amber-500 text-stone-950 text-[10px] font-black px-1.5 py-0.5 rounded-full min-w-[18px] text-center shadow-xs">
+                  {cartCount}
                 </span>
-              ) : (
-                <span className="text-[10px] bg-amber-400/20 text-amber-300 px-1.5 py-0.5 rounded-md font-bold">
-                  {birdsCount}
+              )}
+
+              {/* Active Orders Badge */}
+              {activeOrdersCount > 0 && (
+                <span className="bg-emerald-500 text-white text-[10px] font-black px-1.5 py-0.5 rounded-full min-w-[18px] text-center flex items-center space-x-1 shadow-xs">
+                  <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse"></span>
+                  <span>{activeOrdersCount}</span>
                 </span>
               )}
             </button>
@@ -431,6 +365,47 @@ export const Header: React.FC<HeaderProps> = ({
                     </div>
                   </div>
                   <ChevronRight className="w-4 h-4 text-amber-700 group-hover:translate-x-0.5 transition-transform" />
+                </button>
+
+                {/* 2. Shopping Cart Card in Menu */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSideMenuOpen(false);
+                    openCart();
+                  }}
+                  className="w-full flex items-center justify-between p-3 rounded-2xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-stone-950 font-black transition text-left cursor-pointer group shadow-md shadow-amber-500/20 active:scale-95"
+                >
+                  <div className="flex items-center space-x-3">
+                    <div className="w-9 h-9 rounded-xl bg-stone-950 text-amber-300 flex items-center justify-center font-bold shadow-xs">
+                      <ShoppingCart className="w-5 h-5 text-amber-300" />
+                    </div>
+                    <div>
+                      <div className="flex items-center space-x-2">
+                        <span className="text-xs font-black text-stone-950">Shopping Cart</span>
+                        {cartCount > 0 ? (
+                          <span className="text-[9px] bg-stone-950 text-amber-300 font-black px-1.5 py-0.2 rounded-full uppercase">
+                            {cartCount} {cartCount === 1 ? 'Bird' : 'Birds'}
+                          </span>
+                        ) : (
+                          <span className="text-[9px] bg-stone-950/20 text-stone-950 font-bold px-1.5 py-0.2 rounded-full uppercase">
+                            Empty
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-[11px] text-stone-950/80 font-semibold truncate max-w-[200px]">
+                        {cartCount > 0 ? 'Proceed to checkout & reserve' : 'Add roosters from catalog'}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center space-x-1.5">
+                    {cartCount > 0 && (
+                      <span className="bg-stone-950 text-amber-300 text-[10px] font-black px-2 py-0.5 rounded-full border border-amber-400">
+                        {cartCount}
+                      </span>
+                    )}
+                    <ChevronRight className="w-4 h-4 text-stone-950 group-hover:translate-x-0.5 transition-transform" />
+                  </div>
                 </button>
 
                 {/* 2. My Orders Highlight Card in Menu Bar */}
