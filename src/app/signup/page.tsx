@@ -39,21 +39,27 @@ export default function SignUpPage() {
   }
 
   return (
-    <div className="min-h-screen relative overflow-hidden flex flex-col">
+    <div className="min-h-screen bg-stone-950 relative overflow-hidden flex flex-col justify-between">
       
-      {/* Full-Screen Background Image — anchored to the left for cinematic rooster showcase */}
-      <img
-        src="/banners/signup_roosters_battle.jpg"
-        alt="JP Farms Heritage Roosters"
-        className="absolute inset-0 w-full h-full object-cover object-[25%_center] lg:object-[15%_center] scale-100 hover:scale-105 transition-transform duration-[3000ms]"
-      />
+      {/* Background Visual — Positioned on the left side below JP Farms on desktop, full on mobile */}
+      <div className="absolute inset-0 lg:right-auto lg:w-[64vw] pointer-events-none overflow-hidden flex items-center justify-start lg:pl-12 xl:pl-16">
+        <img
+          src="/banners/signup_roosters_battle.jpg"
+          alt="JP Farms Heritage Roosters"
+          className="w-full h-full lg:h-auto lg:max-h-[82vh] object-cover lg:object-contain object-center lg:object-left scale-100 transition-transform duration-700"
+        />
 
-      {/* Atmospheric Gradient Overlays — keeps left side vivid & darkens right side for the login card */}
-      <div className="absolute inset-0 bg-gradient-to-t from-stone-950/80 via-transparent to-stone-950/60 lg:bg-gradient-to-r lg:from-transparent lg:via-stone-950/30 lg:to-stone-950/85 pointer-events-none"></div>
-      <div className="absolute inset-0 bg-stone-950/20 pointer-events-none"></div>
+        {/* Soft horizontal fade on the right (desktop) to blend smoke into dark background */}
+        <div className="hidden lg:block absolute inset-y-0 right-0 w-36 bg-gradient-to-r from-transparent via-stone-950/60 to-stone-950"></div>
+        {/* Top and bottom subtle vignettes */}
+        <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-stone-950 via-stone-950/70 to-transparent"></div>
+        <div className="absolute inset-x-0 top-0 h-28 bg-gradient-to-b from-stone-950/80 via-stone-950/40 to-transparent"></div>
+        {/* Mobile dark overlay for contrast */}
+        <div className="lg:hidden absolute inset-0 bg-stone-950/60"></div>
+      </div>
 
-      {/* Top Navigation Bar — widened so logo & name sit further to the left */}
-      <header className="w-full px-4 sm:px-8 lg:px-12 py-4 sm:py-6 flex items-center justify-between relative z-20">
+      {/* Top Navigation Bar — aligned to the left edge */}
+      <header className="w-full px-4 sm:px-8 lg:px-12 xl:px-16 py-4 sm:py-6 flex items-center justify-between relative z-20">
         <Link href="/" className="flex items-center space-x-3 hover:opacity-90 transition group">
           <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-amber-500 to-amber-600 p-0.5 flex items-center justify-center shadow-lg shadow-amber-500/20 group-hover:scale-105 transition">
             <div className="w-full h-full bg-stone-900 rounded-[14px] flex items-center justify-center">
@@ -85,8 +91,8 @@ export default function SignUpPage() {
       </header>
 
       {/* Main Content Area — Picture on Left, Login Details on Right */}
-      <main className="flex-1 w-full px-4 sm:px-8 lg:px-12 xl:px-20 py-8 relative z-10 flex items-center justify-center lg:justify-end">
-        <div className="w-full max-w-md relative group lg:mr-4 xl:mr-12">
+      <main className="flex-1 w-full px-4 sm:px-8 lg:px-12 xl:px-16 py-8 relative z-10 flex items-center justify-center lg:justify-end">
+        <div className="w-full max-w-md relative group lg:mr-2 xl:mr-8 2xl:mr-16">
 
           {/* Animated Glow Behind Card */}
           <div className="absolute -inset-1 bg-gradient-to-r from-amber-500/30 via-amber-400/20 to-amber-600/30 rounded-[28px] blur-xl opacity-60 group-hover:opacity-80 transition-opacity duration-700"></div>
@@ -161,7 +167,7 @@ export default function SignUpPage() {
       </main>
 
       {/* Page Footer */}
-      <footer className="w-full px-4 sm:px-8 lg:px-12 py-4 sm:py-6 text-center lg:text-right text-xs text-stone-400/70 relative z-10 drop-shadow-sm">
+      <footer className="w-full px-4 sm:px-8 lg:px-12 xl:px-16 py-4 sm:py-6 text-center lg:text-right text-xs text-stone-400/70 relative z-10 drop-shadow-sm">
         © {new Date().getFullYear()} JP Farms Heritage Estate, Hoskote, Bengaluru • Dedicated to Heritage Poultry Conservation.
       </footer>
 
