@@ -805,7 +805,7 @@ Please confirm availability and dispatch schedule. Thank you!`;
                                   </span>
                                 </div>
                               ) : (
-                                <div className="mt-2 bg-gradient-to-br from-rose-50 via-amber-50 to-orange-50 border-2 border-dashed border-rose-300 rounded-xl p-3 shadow-xs space-y-2">
+                                <div className="mt-2 bg-gradient-to-br from-rose-50 via-amber-50 to-orange-50 border-2 border-dashed border-rose-300 rounded-xl p-3 shadow-xs">
                                   <div className="flex items-start space-x-2">
                                     <AlertTriangle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
                                     <div className="flex-1 min-w-0">
@@ -816,28 +816,6 @@ Please confirm availability and dispatch schedule. Thank you!`;
                                         Your address is <strong>~{deliveryDistanceKm} km</strong> from JP Farms Estate (exceeds our <strong>20 km</strong> safe live animal transit radius).
                                       </p>
                                     </div>
-                                  </div>
-
-                                  <div className="pt-1 border-t border-rose-200/70 flex flex-col sm:flex-row gap-2">
-                                    <button
-                                      type="button"
-                                      onClick={() => setDeliveryType('farm_pickup')}
-                                      className="flex-1 bg-amber-500 hover:bg-amber-600 text-stone-950 font-black py-2 px-2.5 rounded-lg text-xs transition active:scale-95 text-center shadow-xs cursor-pointer"
-                                    >
-                                      🏡 Switch to Farm Pickup (Free)
-                                    </button>
-                                    <a
-                                      href={generateWhatsAppLink({
-                                        phone: FARM_INFO.whatsapp,
-                                        customMessage: `Hello JP Farms! 🐓\n\nI want to order roosters from your website, but my delivery address (${effectiveAddress}) is ~${deliveryDistanceKm} km away (outside the 20 km local radius).\n\nCan we arrange a special long-distance AC vehicle or train dispatch?`
-                                      })}
-                                      target="_blank"
-                                      rel="noopener noreferrer"
-                                      className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 px-2.5 rounded-lg text-xs transition active:scale-95 text-center flex items-center justify-center space-x-1 shadow-xs"
-                                    >
-                                      <MessageCircle className="w-3.5 h-3.5" />
-                                      <span>Special Transit Inquiry</span>
-                                    </a>
                                   </div>
                                 </div>
                               )
@@ -1042,11 +1020,11 @@ Please confirm availability and dispatch schedule. Thank you!`;
                 ) : deliveryType === 'doorstep_live_crate' && deliveryDistanceKm !== null && deliveryDistanceKm > FARM_LOCATION.maxDeliveryRadiusKm ? (
                   <button
                     type="button"
-                    onClick={() => setDeliveryType('farm_pickup')}
-                    className="w-full flex items-center justify-center space-x-2 bg-gradient-to-r from-rose-500 via-rose-600 to-amber-600 hover:from-rose-600 hover:to-amber-700 text-white font-black py-3 px-4 rounded-xl text-xs transition shadow-lg shadow-rose-500/25 active:scale-95 cursor-pointer"
+                    disabled
+                    className="w-full flex items-center justify-center space-x-2 bg-slate-300 text-slate-600 font-bold py-3.5 px-4 rounded-xl text-xs cursor-not-allowed select-none shadow-none"
                   >
-                    <AlertTriangle className="w-4 h-4" />
-                    <span>Outside 20 km Delivery Radius • Switch to Farm Pickup</span>
+                    <AlertTriangle className="w-4 h-4 text-slate-500" />
+                    <span>Outside 20 km Delivery Radius (Undeliverable)</span>
                   </button>
                 ) : (
                   <button
