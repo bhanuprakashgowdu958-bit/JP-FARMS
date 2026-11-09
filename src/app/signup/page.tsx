@@ -43,8 +43,8 @@ export default function SignUpPage() {
       
       {/* Full-Screen Background Image */}
       <img
-        src="/banners/ad_rooster_golden_grains_commercial.jpg"
-        alt="JP Farms Heritage Rooster"
+        src="/banners/signup_roosters_battle.jpg"
+        alt="JP Farms Heritage Roosters"
         className="absolute inset-0 w-full h-full object-cover object-center scale-105 hover:scale-110 transition-transform duration-[3000ms]"
       />
 
