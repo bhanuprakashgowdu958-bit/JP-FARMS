@@ -4,7 +4,6 @@ import React, { useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { 
-  Feather, 
   CheckCircle2, 
   MessageCircle
 } from 'lucide-react';
@@ -26,8 +25,8 @@ export default function SignUpPage() {
     return (
       <div className="min-h-screen bg-stone-950 flex flex-col items-center justify-center p-6 text-center">
         <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-amber-500 to-amber-600 p-0.5 shadow-xl shadow-amber-500/20 mb-4 animate-pulse flex items-center justify-center">
-          <div className="w-full h-full bg-stone-900 rounded-[14px] flex items-center justify-center">
-            <Feather className="w-8 h-8 text-amber-500 transform -rotate-12" />
+          <div className="w-full h-full bg-stone-900 rounded-[14px] overflow-hidden flex items-center justify-center">
+            <img src="/logo-square.png" alt="JP Farms Logo" className="w-full h-full object-cover" />
           </div>
         </div>
         <h1 className="text-2xl font-black text-white tracking-tight">JP FARMS</h1>
@@ -58,8 +57,8 @@ export default function SignUpPage() {
       <header className="w-full px-4 sm:px-8 lg:px-12 xl:px-16 py-4 sm:py-6 flex items-center justify-between relative z-20">
         <Link href="/" className="flex items-center space-x-3 hover:opacity-90 transition group">
           <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-amber-500 to-amber-600 p-0.5 flex items-center justify-center shadow-lg shadow-amber-500/20 group-hover:scale-105 transition">
-            <div className="w-full h-full bg-stone-900 rounded-[14px] flex items-center justify-center">
-              <Feather className="w-5 h-5 text-amber-400 transform -rotate-12" />
+            <div className="w-full h-full bg-stone-900 rounded-[14px] overflow-hidden flex items-center justify-center">
+              <img src="/logo-square.png" alt="JP Farms Logo" className="w-full h-full object-cover" />
             </div>
           </div>
           <div>
@@ -98,9 +97,9 @@ export default function SignUpPage() {
             
             {/* Farm Crest & Header */}
             <div className="text-center space-y-2">
-              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-amber-500 to-amber-600 p-0.5 mx-auto shadow-lg shadow-amber-500/20 flex items-center justify-center">
-                <div className="w-full h-full bg-stone-950/60 rounded-[14px] flex items-center justify-center">
-                  <Feather className="w-7 h-7 text-amber-400 transform -rotate-12" />
+              <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-amber-500 to-amber-600 p-0.5 mx-auto shadow-lg shadow-amber-500/20 flex items-center justify-center">
+                <div className="w-full h-full bg-stone-950/60 rounded-[14px] overflow-hidden flex items-center justify-center">
+                  <img src="/logo-square.png" alt="JP Farms Logo" className="w-full h-full object-cover" />
                 </div>
               </div>
 

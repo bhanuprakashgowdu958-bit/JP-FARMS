@@ -21,7 +21,7 @@ import { CartToast } from '@/components/CartToast';
 import { useRoosters } from '@/lib/roosterStore';
 import { useCart } from '@/lib/cartStore';
 import { Rooster } from '@/types/rooster';
-import { PlayCircle, MessageCircle, ShoppingBag, ArrowRight, Feather } from 'lucide-react';
+import { PlayCircle, MessageCircle, ShoppingBag, ArrowRight } from 'lucide-react';
 import { FARM_INFO } from '@/lib/data';
 import { generateWhatsAppLink } from '@/lib/utils';
 
@@ -79,8 +79,8 @@ export default function HomePage() {
     return (
       <div className="min-h-screen bg-stone-950 flex flex-col items-center justify-center p-6 text-center">
         <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-amber-500 to-amber-600 p-0.5 shadow-xl shadow-amber-500/20 mb-4 animate-pulse flex items-center justify-center">
-          <div className="w-full h-full bg-stone-900 rounded-[14px] flex items-center justify-center">
-            <Feather className="w-8 h-8 text-amber-500 transform -rotate-12" />
+          <div className="w-full h-full bg-stone-900 rounded-[14px] overflow-hidden flex items-center justify-center">
+            <img src="/logo-square.png" alt="JP Farms Logo" className="w-full h-full object-cover" />
           </div>
         </div>
         <h1 className="text-2xl font-black text-white tracking-tight">JP FARMS</h1>

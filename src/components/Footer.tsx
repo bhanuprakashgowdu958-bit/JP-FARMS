@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Feather, Phone, MessageCircle, Mail, MapPin, Clock, ShieldCheck, Heart } from 'lucide-react';
+import { Phone, MessageCircle, Mail, MapPin, Clock, ShieldCheck, Heart } from 'lucide-react';
 import { FARM_INFO } from '@/lib/data';
 import { generateWhatsAppLink } from '@/lib/utils';
 
@@ -21,8 +21,8 @@ export const Footer: React.FC = () => {
           <div className="space-y-4">
             <div className="flex items-center space-x-3">
               <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500 to-amber-600 p-0.5 shadow-lg">
-                <div className="w-full h-full bg-slate-950 rounded-[10px] flex items-center justify-center">
-                  <Feather className="w-5 h-5 text-amber-500 transform -rotate-12" />
+                <div className="w-full h-full bg-slate-950 rounded-[10px] overflow-hidden flex items-center justify-center">
+                  <img src="/logo-square.png" alt="JP Farms Logo" className="w-full h-full object-cover" />
                 </div>
               </div>
               <span className="font-extrabold text-2xl tracking-tight text-white">

@@ -11,7 +11,6 @@ import {
   Menu, 
   X, 
   Settings, 
-  Feather, 
   Sparkles, 
   MapPin, 
   ShoppingCart, 
@@ -140,8 +139,8 @@ export const Header: React.FC<HeaderProps> = ({
           {/* Logo (Desktop) */}
           <Link href="/" className="flex items-center space-x-3 group shrink-0">
             <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-amber-500 to-amber-600 p-0.5 shadow-md shadow-amber-500/20 group-hover:scale-105 transition duration-200 shrink-0">
-              <div className="w-full h-full bg-white rounded-[10px] flex items-center justify-center">
-                <Feather className="w-6 h-6 text-amber-600 transform -rotate-12" />
+              <div className="w-full h-full bg-stone-900 rounded-[10px] overflow-hidden flex items-center justify-center">
+                <img src="/logo-square.png" alt="JP Farms Logo" className="w-full h-full object-cover" />
               </div>
             </div>
             <div className="shrink-0">
@@ -283,8 +282,8 @@ export const Header: React.FC<HeaderProps> = ({
             {/* Mobile Brand Logo */}
             <Link href="/" className="flex items-center space-x-2 group min-w-0">
               <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-amber-500 to-amber-600 p-0.5 shadow-sm shadow-amber-500/20 shrink-0">
-                <div className="w-full h-full bg-white rounded-[7px] flex items-center justify-center">
-                  <Feather className="w-4 h-4 text-amber-600 transform -rotate-12" />
+                <div className="w-full h-full bg-stone-900 rounded-[7px] overflow-hidden flex items-center justify-center">
+                  <img src="/logo-square.png" alt="JP Farms Logo" className="w-full h-full object-cover" />
                 </div>
               </div>
               <span className="font-black text-lg tracking-tight text-slate-900 truncate">
