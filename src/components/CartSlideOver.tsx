@@ -219,6 +219,17 @@ export const CartSlideOver: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [orderCompleted, setOrderCompleted] = useState<RoosterOrder | null>(null);
 
+  // Prevent background page from scrolling when shopping cart is open
+  useEffect(() => {
+    if (!isOpen) return;
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+
+    return () => {
+      document.body.style.overflow = originalOverflow;
+    };
+  }, [isOpen]);
+
   if (!isOpen) return null;
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
@@ -365,7 +376,7 @@ Please confirm availability and dispatch schedule. Thank you!`;
   };
 
   return (
-    <div className="fixed inset-0 z-50 overflow-hidden">
+    <div className="fixed inset-0 z-50 overflow-hidden overscroll-contain">
       {/* Backdrop */}
       <div 
         className="absolute inset-0 bg-slate-950/60 backdrop-blur-sm transition-opacity"
@@ -373,7 +384,7 @@ Please confirm availability and dispatch schedule. Thank you!`;
       />
 
       <div className="fixed inset-y-0 right-0 max-w-full flex pl-3 sm:pl-10">
-        <div className="w-screen max-w-md bg-white shadow-2xl flex flex-col">
+        <div className="w-screen max-w-md bg-white shadow-2xl flex flex-col overscroll-contain">
           
           {/* Drawer Header */}
           <div className="px-5 py-4 bg-sky-50/80 border-b border-sky-100 flex items-center justify-between">
@@ -410,7 +421,7 @@ Please confirm availability and dispatch schedule. Thank you!`;
           </div>
 
           {/* Drawer Body */}
-          <div className="flex-1 overflow-y-auto p-5 space-y-4">
+          <div className="flex-1 overflow-y-auto p-5 space-y-4 overscroll-contain">
             
             {/* SUCCESS SCREEN */}
             {orderCompleted ? (
