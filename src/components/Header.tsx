@@ -108,7 +108,7 @@ export const Header: React.FC<HeaderProps> = ({
     <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-sky-100 text-slate-800 shadow-xs">
       {/* Top Banner: Farm Heritage & Helpline */}
       <div className="bg-sky-50/90 border-b border-sky-100/80 text-[11px] sm:text-xs px-3 sm:px-4 py-1 sm:py-1.5 text-sky-950">
-        <div className="max-w-7xl mx-auto flex items-center justify-between gap-2">
+        <div className="w-full px-1 sm:px-3 lg:px-6 flex items-center justify-between gap-2">
           <div className="flex items-center space-x-2 truncate">
             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shrink-0"></span>
             <span className="text-sky-800 font-semibold truncate">
@@ -130,8 +130,8 @@ export const Header: React.FC<HeaderProps> = ({
         </div>
       </div>
 
-      {/* Main Navigation Bar Container */}
-      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
+      {/* Main Navigation Bar Container — Full width to eliminate left/right gap */}
+      <div className="w-full px-3 sm:px-6 lg:px-8">
         
         {/* 1. Desktop Navigation Bar (h-20, hidden on mobile) */}
         <div className="hidden sm:flex items-center justify-between h-20">
