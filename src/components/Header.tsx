@@ -158,9 +158,25 @@ export const Header: React.FC<HeaderProps> = ({
             </div>
           </Link>
 
-          {/* Desktop Navigation Links & Action Strip removed to keep UI clear — Moved to Menu Drawer */}
-          {/* Top Right Action: Clean Menu Button */}
-          <div className="flex items-center space-x-3 shrink-0">
+          {/* Top Right Action: Cart & Menu Bar */}
+          <div className="flex items-center space-x-2.5 shrink-0">
+            {/* Shopping Cart Button — Placed next to Menu Bar */}
+            <button
+              type="button"
+              onClick={openCart}
+              className="relative flex items-center space-x-2 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-stone-950 text-xs font-black px-4 py-2.5 rounded-2xl shadow-md shadow-amber-500/20 transition active:scale-95 whitespace-nowrap group cursor-pointer"
+              title="View Shopping Cart"
+            >
+              <ShoppingCart className="w-4 h-4 text-stone-950 group-hover:scale-110 transition" />
+              <span>Cart</span>
+              {cartCount > 0 && (
+                <span className="bg-stone-950 text-amber-300 text-[10px] font-black px-1.5 py-0.5 rounded-full min-w-[18px] text-center border border-amber-400/50 animate-pulse">
+                  {cartCount}
+                </span>
+              )}
+            </button>
+
+            {/* Menu Bar Button */}
             <button
               type="button"
               onClick={(e) => {
@@ -168,18 +184,11 @@ export const Header: React.FC<HeaderProps> = ({
                 setSideMenuOpen(true);
               }}
               className="flex items-center space-x-2 bg-slate-900 hover:bg-slate-850 text-white px-4 py-2.5 rounded-2xl border border-amber-500/40 hover:border-amber-400 transition active:scale-95 text-xs font-extrabold shadow-sm whitespace-nowrap group cursor-pointer"
-              title="Open Navigation Menu (My Profile, Cart, Orders, Estate)"
+              title="Open Navigation Menu"
               aria-label="Open menu"
             >
               <Menu className="w-4 h-4 text-amber-400 group-hover:scale-110 transition duration-200" />
               <span className="text-amber-300 group-hover:text-white transition">Menu</span>
-              
-              {/* Cart Count Badge */}
-              {cartCount > 0 && (
-                <span className="bg-amber-500 text-stone-950 text-[10px] font-black px-1.5 py-0.5 rounded-full min-w-[18px] text-center shadow-xs">
-                  {cartCount}
-                </span>
-              )}
 
               {/* Active Orders Badge */}
               {activeOrdersCount > 0 && (
@@ -339,48 +348,7 @@ export const Header: React.FC<HeaderProps> = ({
               {/* Drawer Body Links */}
               <div className="flex-1 overflow-y-auto p-4 space-y-4 text-xs overscroll-contain">
                 
-                {/* 1. Shopping Cart Card in Menu */}
-                <button
-                  type="button"
-                  onClick={() => {
-                    setSideMenuOpen(false);
-                    openCart();
-                  }}
-                  className="w-full flex items-center justify-between p-3 rounded-2xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-stone-950 font-black transition text-left cursor-pointer group shadow-md shadow-amber-500/20 active:scale-95"
-                >
-                  <div className="flex items-center space-x-3">
-                    <div className="w-9 h-9 rounded-xl bg-stone-950 text-amber-300 flex items-center justify-center font-bold shadow-xs">
-                      <ShoppingCart className="w-5 h-5 text-amber-300" />
-                    </div>
-                    <div>
-                      <div className="flex items-center space-x-2">
-                        <span className="text-xs font-black text-stone-950">Shopping Cart</span>
-                        {cartCount > 0 ? (
-                          <span className="text-[9px] bg-stone-950 text-amber-300 font-black px-1.5 py-0.2 rounded-full uppercase">
-                            {cartCount} {cartCount === 1 ? 'Bird' : 'Birds'}
-                          </span>
-                        ) : (
-                          <span className="text-[9px] bg-stone-950/20 text-stone-950 font-bold px-1.5 py-0.2 rounded-full uppercase">
-                            Empty
-                          </span>
-                        )}
-                      </div>
-                      <p className="text-[11px] text-stone-950/80 font-semibold truncate max-w-[200px]">
-                        {cartCount > 0 ? 'Proceed to checkout & reserve' : 'Add roosters from catalog'}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex items-center space-x-1.5">
-                    {cartCount > 0 && (
-                      <span className="bg-stone-950 text-amber-300 text-[10px] font-black px-2 py-0.5 rounded-full border border-amber-400">
-                        {cartCount}
-                      </span>
-                    )}
-                    <ChevronRight className="w-4 h-4 text-stone-950 group-hover:translate-x-0.5 transition-transform" />
-                  </div>
-                </button>
-
-                {/* 2. My Orders Highlight Card in Menu Bar */}
+                {/* 1. My Orders Highlight Card in Menu Bar */}
                 <div className="bg-gradient-to-r from-amber-500/15 via-orange-500/10 to-amber-500/15 border border-amber-300 rounded-2xl p-3.5 shadow-xs">
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-[11px] font-extrabold uppercase tracking-wider text-amber-950 flex items-center space-x-1.5">
