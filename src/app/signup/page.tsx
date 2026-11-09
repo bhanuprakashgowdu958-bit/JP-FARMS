@@ -41,18 +41,17 @@ export default function SignUpPage() {
   return (
     <div className="min-h-screen bg-stone-950 relative overflow-hidden flex flex-col justify-between">
       
-      {/* Full-bleed Atmospheric Background — Roosters on the left, dramatic smoke extending across the entire screen */}
+      {/* Full-bleed Atmospheric Background — Centered cinematic roosters with atmospheric smoke */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
         <img
           src="/banners/signup_roosters_battle.jpg"
           alt="JP Farms Heritage Roosters"
-          className="absolute inset-0 w-full h-full object-cover object-center lg:w-[128vw] lg:max-w-none lg:-translate-x-[16vw] transition-transform duration-[3000ms]"
+          className="absolute inset-0 w-full h-full object-cover object-center scale-100 hover:scale-105 transition-transform duration-[3000ms]"
         />
 
-        {/* Ambient atmospheric gradients — seamless blend across the entire viewport */}
-        <div className="absolute inset-0 bg-gradient-to-t from-stone-950/90 via-transparent to-stone-950/60"></div>
-        <div className="hidden lg:block absolute inset-0 bg-gradient-to-r from-transparent via-stone-950/20 to-stone-950/50"></div>
-        <div className="lg:hidden absolute inset-0 bg-stone-950/50"></div>
+        {/* Ambient atmospheric gradients — soft vignettes preserving background visibility while enhancing readability */}
+        <div className="absolute inset-0 bg-gradient-to-t from-stone-950/80 via-stone-950/20 to-stone-950/60"></div>
+        <div className="absolute inset-0 bg-stone-950/30"></div>
       </div>
 
       {/* Top Navigation Bar — aligned to the left edge */}
@@ -87,9 +86,9 @@ export default function SignUpPage() {
         </div>
       </header>
 
-      {/* Main Content Area — Sign-In Details Blended Seamlessly with the Background */}
-      <main className="flex-1 w-full px-4 sm:px-8 lg:px-12 xl:px-16 py-8 relative z-10 flex items-center justify-center lg:justify-end">
-        <div className="w-full max-w-md relative group lg:mr-4 xl:mr-12">
+      {/* Main Content Area — Sign-In Details Centered and Blended Seamlessly with the Background */}
+      <main className="flex-1 w-full px-4 sm:px-6 py-8 relative z-10 flex items-center justify-center">
+        <div className="w-full max-w-md relative group mx-auto">
 
           {/* Soft ambient back-glow that melts into the smoky background */}
           <div className="absolute -inset-6 bg-gradient-to-br from-amber-500/10 via-amber-600/5 to-transparent rounded-[36px] blur-2xl pointer-events-none"></div>
@@ -155,7 +154,7 @@ export default function SignUpPage() {
       </main>
 
       {/* Page Footer */}
-      <footer className="w-full px-4 sm:px-8 lg:px-12 xl:px-16 py-4 sm:py-6 text-center lg:text-right text-xs text-stone-400/70 relative z-10 drop-shadow-sm">
+      <footer className="w-full px-4 sm:px-8 lg:px-12 xl:px-16 py-4 sm:py-6 text-center text-xs text-stone-400/70 relative z-10 drop-shadow-sm">
         © {new Date().getFullYear()} JP Farms Heritage Estate, Hoskote, Bengaluru • Dedicated to Heritage Poultry Conservation.
       </footer>
 
