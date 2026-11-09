@@ -705,36 +705,25 @@ Please confirm availability and dispatch schedule. Thank you!`;
                                 <span>Delivery Address</span>
                                 <span className="text-rose-500">*</span>
                               </label>
-                              <div className="flex items-center space-x-2">
-                                <button
-                                  type="button"
-                                  onClick={handleDetectGpsAddress}
-                                  disabled={isLocating}
-                                  className="text-[11px] text-amber-800 hover:text-amber-950 font-bold flex items-center space-x-1 bg-amber-100/90 hover:bg-amber-200/90 px-2.5 py-0.5 rounded-lg border border-amber-300 transition active:scale-95 cursor-pointer disabled:opacity-50 shadow-2xs"
-                                  title="Auto-detect current delivery address via device GPS"
-                                >
-                                  {isLocating ? (
-                                    <>
-                                      <Loader2 className="w-2.5 h-2.5 animate-spin text-amber-700" />
-                                      <span>Detecting GPS...</span>
-                                    </>
-                                  ) : (
-                                    <>
-                                      <Navigation className="w-2.5 h-2.5 fill-amber-700 text-amber-700" />
-                                      <span>Auto-Detect GPS</span>
-                                    </>
-                                  )}
-                                </button>
-                                <button
-                                  type="button"
-                                  onClick={() => setIsAddressModalOpen(true)}
-                                  className="text-[11px] text-slate-500 hover:text-slate-800 font-semibold hover:underline flex items-center space-x-0.5 cursor-pointer"
-                                  title="Edit manually in profile"
-                                >
-                                  <Edit2 className="w-2.5 h-2.5" />
-                                  <span>Edit</span>
-                                </button>
-                              </div>
+                              <button
+                                type="button"
+                                onClick={handleDetectGpsAddress}
+                                disabled={isLocating}
+                                className="text-[11px] text-amber-800 hover:text-amber-950 font-bold flex items-center space-x-1 bg-amber-100/90 hover:bg-amber-200/90 px-2.5 py-0.5 rounded-lg border border-amber-300 transition active:scale-95 cursor-pointer disabled:opacity-50 shadow-2xs"
+                                title="Auto-detect current delivery address via device GPS"
+                              >
+                                {isLocating ? (
+                                  <>
+                                    <Loader2 className="w-2.5 h-2.5 animate-spin text-amber-700" />
+                                    <span>Detecting GPS...</span>
+                                  </>
+                                ) : (
+                                  <>
+                                    <Navigation className="w-2.5 h-2.5 fill-amber-700 text-amber-700" />
+                                    <span>Auto-Detect GPS</span>
+                                  </>
+                                )}
+                              </button>
                             </div>
                             <div className="relative">
                               <input
@@ -742,13 +731,9 @@ Please confirm availability and dispatch schedule. Thank you!`;
                                 name="address"
                                 readOnly
                                 value={effectiveAddress}
-                                className="w-full px-3 py-2 pl-8 pr-28 rounded-xl border border-slate-300 bg-slate-100/90 text-slate-900 text-xs font-semibold select-none cursor-not-allowed shadow-inner"
+                                className="w-full px-3 py-2 pl-8 pr-3 rounded-xl border border-slate-300 bg-slate-100/90 text-slate-900 text-xs font-semibold select-none cursor-not-allowed shadow-inner"
                               />
                               <Lock className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-1/2 -translate-y-1/2" />
-                              <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center space-x-1 bg-emerald-50 border border-emerald-200 text-emerald-700 text-[10px] font-bold px-2 py-0.5 rounded-md">
-                                <CheckCircle2 className="w-2.5 h-2.5 text-emerald-600" />
-                                <span>Profile Verified</span>
-                              </div>
                             </div>
                             <p className="text-[10px] text-slate-400 mt-1 flex items-center space-x-1">
                               <span>🔒 Auto-detected via GPS & profile (cannot be edited directly)</span>
