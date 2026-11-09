@@ -220,3 +220,4 @@ export const AddressCaptureModal: React.FC<AddressCaptureModalProps> = ({
     document.body
   );
 };
+
