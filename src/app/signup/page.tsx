@@ -91,7 +91,7 @@ export default function SignUpPage() {
           <div className="absolute -inset-1 bg-gradient-to-r from-amber-500/30 via-amber-400/20 to-amber-600/30 rounded-[28px] blur-xl opacity-60 group-hover:opacity-80 transition-opacity duration-700"></div>
 
           {/* Glass Card */}
-          <div className="relative bg-stone-950/20 backdrop-blur-md rounded-3xl p-6 sm:p-10 border border-amber-500/20 shadow-2xl shadow-stone-950/50 overflow-hidden">
+          <div className="relative bg-stone-950/30 rounded-3xl p-6 sm:p-10 border border-amber-500/20 shadow-2xl shadow-stone-950/50 overflow-hidden">
 
             {/* Top Amber Accent Line */}
             <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-amber-500 via-amber-400 to-amber-500"></div>
