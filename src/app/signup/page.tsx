@@ -5,16 +5,9 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { 
   Feather, 
-  ArrowLeft, 
-  ArrowRight,
-  ShieldCheck, 
-  Truck, 
   Award, 
-  Sparkles, 
   CheckCircle2, 
-  MessageCircle, 
-  HeartHandshake,
-  Users
+  MessageCircle
 } from 'lucide-react';
 import { useAuth } from '@/lib/authStore';
 import { GoogleSignInButton } from '@/components/GoogleSignInButton';
@@ -214,64 +207,7 @@ export default function SignUpPage() {
                 </div>
               )}
 
-              {/* 4 Member Privileges */}
-              <div className="bg-stone-50 rounded-2xl p-4 sm:p-5 border border-stone-100 space-y-3">
-                <span className="block text-[10px] font-black uppercase tracking-wider text-stone-500">
-                  Exclusive Member Privileges
-                </span>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-                  
-                  <div className="flex items-start space-x-2.5">
-                    <div className="w-7 h-7 rounded-lg bg-amber-100 text-amber-800 flex items-center justify-center shrink-0 mt-0.5">
-                      <Award className="w-4 h-4" />
-                    </div>
-                    <div>
-                      <p className="font-bold text-stone-900">Priority Drops</p>
-                      <p className="text-[11px] text-stone-500">Reserve newly hatched purebred chicks first</p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-start space-x-2.5">
-                    <div className="w-7 h-7 rounded-lg bg-emerald-100 text-emerald-800 flex items-center justify-center shrink-0 mt-0.5">
-                      <ShieldCheck className="w-4 h-4" />
-                    </div>
-                    <div>
-                      <p className="font-bold text-stone-900">Health Passes</p>
-                      <p className="text-[11px] text-stone-500">Download digital vaccination certificates</p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-start space-x-2.5">
-                    <div className="w-7 h-7 rounded-lg bg-sky-100 text-sky-800 flex items-center justify-center shrink-0 mt-0.5">
-                      <Truck className="w-4 h-4" />
-                    </div>
-                    <div>
-                      <p className="font-bold text-stone-900">Live Crate GPS</p>
-                      <p className="text-[11px] text-stone-500">Real-time door delivery tracking alerts</p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-start space-x-2.5">
-                    <div className="w-7 h-7 rounded-lg bg-purple-100 text-purple-800 flex items-center justify-center shrink-0 mt-0.5">
-                      <MessageCircle className="w-4 h-4" />
-                    </div>
-                    <div>
-                      <p className="font-bold text-stone-900">VIP Advisory</p>
-                      <p className="text-[11px] text-stone-500">Direct WhatsApp consultation with masters</p>
-                    </div>
-                  </div>
-
-                </div>
-              </div>
-
-            </div>
-
-            {/* Bottom Footer Notice */}
-            <div className="pt-6 border-t border-stone-100 text-center space-y-1">
-              <p className="text-[11px] text-stone-400">
-                Fast & secure 1-click Google sign-in. By entering, you agree to JP Farms bio-security and live transit policies.
-              </p>
             </div>
 
           </div>
