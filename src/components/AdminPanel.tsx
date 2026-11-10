@@ -42,7 +42,8 @@ import {
 } from 'lucide-react';
 import { Rooster, RoosterCategory, RoosterBadge, CustomerInquiry, RoosterOrder } from '@/types/rooster';
 import { useRoosters, useInquiries, useOrders } from '@/lib/roosterStore';
-import { getRegisteredCustomers, RegisteredCustomer } from '@/lib/authStore';
+import { getRegisteredCustomers, RegisteredCustomer, useAuth, isBhanuEmail } from '@/lib/authStore';
+import { GoogleIcon } from '@/components/GoogleSignInButton';
 import { generateWhatsAppLink } from '@/lib/utils';
 import { FARM_INFO } from '@/lib/data';
 import { isFirebaseConfigured } from '@/lib/firebase';
@@ -75,16 +76,20 @@ export const AdminPanel: React.FC = () => {
   const [uploadProgress, setUploadProgress] = useState<number>(0);
 
   // Owner Authentication Gate (Security Lock)
+  const { user, signInWithGoogle, signOut: signOutUser } = useAuth();
+  const isOwnerAdmin = Boolean(user?.email && isBhanuEmail(user.email));
+
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [authChecking, setAuthChecking] = useState<boolean>(true);
   const [enteredPin, setEnteredPin] = useState('');
   const [authError, setAuthError] = useState('');
   const [showPin, setShowPin] = useState(false);
+  const [isVerifying, setIsVerifying] = useState(false);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const storedAuth = sessionStorage.getItem('jp_farms_admin_auth');
-      if (storedAuth === 'granted') {
+      if (storedAuth === 'granted' || (user?.email && isBhanuEmail(user.email))) {
         setIsAuthenticated(true);
       }
       setAuthChecking(false);
@@ -105,19 +110,33 @@ export const AdminPanel: React.FC = () => {
         window.removeEventListener('customers-updated', handleCustomersUpdate);
       };
     }
-  }, []);
+  }, [user]);
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    const cleanPin = enteredPin.trim().toLowerCase();
-    // Master Keys: 778899, jpfarms777, jpfarms
-    if (cleanPin === '778899' || cleanPin === 'jpfarms777' || cleanPin === 'jpfarms') {
-      sessionStorage.setItem('jp_farms_admin_auth', 'granted');
-      setIsAuthenticated(true);
-      setAuthError('');
-    } else {
-      setAuthError('Access Denied: Incorrect Master PIN. Authorized personnel only.');
-      setEnteredPin('');
+    if (!enteredPin.trim()) return;
+    setIsVerifying(true);
+    setAuthError('');
+
+    try {
+      const res = await fetch('/api/admin-auth', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ pin: enteredPin, email: user?.email }),
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        sessionStorage.setItem('jp_farms_admin_auth', 'granted');
+        setIsAuthenticated(true);
+        setAuthError('');
+      } else {
+        setAuthError(data.error || 'Access Denied: Incorrect Master PIN. Authorized personnel only.');
+        setEnteredPin('');
+      }
+    } catch {
+      setAuthError('Authentication verification failed. Please try again.');
+    } finally {
+      setIsVerifying(false);
     }
   };
 
@@ -409,9 +428,60 @@ export const AdminPanel: React.FC = () => {
               JP Farms • Owner Access Only
             </h2>
             <p className="text-xs text-stone-400">
-              Restricted administrative portal. Enter your Master Security PIN to view orders, revenue, and customer dispatches.
+              Restricted administrative portal. Verified owner authorization required to view orders, revenue, and customer dispatches.
             </p>
           </div>
+
+          {/* Owner Google Account Quick Unlock */}
+          {user && isOwnerAdmin ? (
+            <div className="bg-amber-500/10 border border-amber-500/30 rounded-2xl p-4 text-center space-y-3">
+              <div className="flex items-center justify-center space-x-2 text-amber-400 text-xs font-bold">
+                <ShieldCheck className="w-4 h-4 text-emerald-400" />
+                <span>Verified Owner Google Account ({user.email})</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  sessionStorage.setItem('jp_farms_admin_auth', 'granted');
+                  setIsAuthenticated(true);
+                }}
+                className="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-stone-950 font-black py-3 rounded-xl text-xs uppercase tracking-wider shadow-lg shadow-amber-500/20 transition active:scale-95 cursor-pointer flex items-center justify-center space-x-2"
+              >
+                <Unlock className="w-4 h-4" />
+                <span>Unlock as Owner ({user.displayName || 'Bhanu'})</span>
+              </button>
+            </div>
+          ) : user && !isOwnerAdmin ? (
+            <div className="bg-rose-950/40 border border-rose-800/60 rounded-2xl p-3.5 text-center space-y-2">
+              <p className="text-xs text-rose-300 font-bold">Access Restricted</p>
+              <p className="text-[11px] text-rose-400">
+                You are currently signed in as <strong>{user.email}</strong>, which does not have estate administrator privileges.
+              </p>
+              <button
+                type="button"
+                onClick={() => signOutUser()}
+                className="text-xs text-amber-400 hover:text-amber-300 underline font-semibold cursor-pointer"
+              >
+                Sign out & switch account
+              </button>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              <button
+                type="button"
+                onClick={() => signInWithGoogle()}
+                className="w-full bg-stone-800 hover:bg-stone-750 text-white font-bold py-3 rounded-xl text-xs transition border border-stone-700 flex items-center justify-center space-x-2 shadow-xs cursor-pointer active:scale-95"
+              >
+                <GoogleIcon className="w-4 h-4 shrink-0" />
+                <span>Sign in with Owner Google Account</span>
+              </button>
+              <div className="flex items-center space-x-2 my-2 text-stone-600 text-[10px] uppercase font-bold tracking-wider">
+                <div className="flex-1 h-px bg-stone-800" />
+                <span>or enter master pin</span>
+                <div className="flex-1 h-px bg-stone-800" />
+              </div>
+            </div>
+          )}
 
           <form onSubmit={handleLogin} className="space-y-4">
             <div className="space-y-1.5">
@@ -451,10 +521,11 @@ export const AdminPanel: React.FC = () => {
 
             <button
               type="submit"
-              className="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-stone-950 font-black py-3 rounded-xl text-xs uppercase tracking-wider shadow-lg shadow-amber-500/10 transition flex items-center justify-center space-x-2"
+              disabled={isVerifying}
+              className="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-stone-950 font-black py-3 rounded-xl text-xs uppercase tracking-wider shadow-lg shadow-amber-500/10 transition flex items-center justify-center space-x-2 cursor-pointer disabled:opacity-50"
             >
               <Unlock className="w-4 h-4" />
-              <span>Unlock Admin Portal</span>
+              <span>{isVerifying ? 'Verifying PIN...' : 'Unlock Admin Portal'}</span>
             </button>
           </form>
 

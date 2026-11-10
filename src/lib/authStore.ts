@@ -447,7 +447,11 @@ async function syncProfileToServer(user: AppUser) {
   try {
     await fetch('/api/profile', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 
+        'Content-Type': 'application/json',
+        'x-user-email': user.email,
+        'x-user-uid': user.uid || '',
+      },
       body: JSON.stringify({
         email: user.email,
         uid: user.uid,
@@ -466,9 +470,16 @@ async function fetchProfileFromServer(identifier: { email?: string | null; uid?:
   if (typeof window === 'undefined' || !identifier.email) return null;
   try {
     const params = new URLSearchParams();
-    if (identifier.email) params.append('email', identifier.email);
-    if (identifier.uid) params.append('uid', identifier.uid);
-    const res = await fetch(`/api/profile?${params.toString()}`);
+    const headers: Record<string, string> = {};
+    if (identifier.email) {
+      params.append('email', identifier.email);
+      headers['x-user-email'] = identifier.email;
+    }
+    if (identifier.uid) {
+      params.append('uid', identifier.uid);
+      headers['x-user-uid'] = identifier.uid;
+    }
+    const res = await fetch(`/api/profile?${params.toString()}`, { headers });
     if (res.ok) {
       const json = await res.json();
       if (json.success && json.data) {

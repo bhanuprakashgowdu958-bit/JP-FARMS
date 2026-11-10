@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { readFile, writeFile } from 'fs/promises';
 import path from 'path';
+import { isBhanuEmail } from '@/lib/authStore';
 
 const DATA_FILE = path.join(process.cwd(), 'data', 'user_profiles.json');
 
@@ -57,17 +58,30 @@ let inMemoryProfiles: Record<string, ProfileData> = {
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
-    const email = searchParams.get('email')?.toLowerCase();
-    const uid = searchParams.get('uid');
+    const targetEmail = searchParams.get('email')?.toLowerCase()?.trim();
+    const targetUid = searchParams.get('uid')?.trim();
+
+    // Security Check: Requester can only read their own profile unless requester is Admin
+    const authHeaderEmail = req.headers.get('x-user-email')?.toLowerCase()?.trim();
+    const authHeaderUid = req.headers.get('x-user-uid')?.trim();
+    const isAdmin = isBhanuEmail(authHeaderEmail);
+
+    if (!isAdmin) {
+      const matchesEmail = authHeaderEmail && targetEmail && authHeaderEmail === targetEmail;
+      const matchesUid = authHeaderUid && targetUid && authHeaderUid === targetUid;
+      if (!matchesEmail && !matchesUid) {
+        return NextResponse.json({ success: false, error: 'Unauthorized: You can only access your own profile.' }, { status: 403 });
+      }
+    }
 
     const fileProfiles = await getProfiles();
     const merged = { ...fileProfiles, ...inMemoryProfiles };
 
     let found: ProfileData | null = null;
-    if (email && merged[email]) {
-      found = merged[email];
-    } else if (uid && merged[uid]) {
-      found = merged[uid];
+    if (targetEmail && merged[targetEmail]) {
+      found = merged[targetEmail];
+    } else if (targetUid && merged[targetUid]) {
+      found = merged[targetUid];
     }
 
     if (found) {
@@ -83,19 +97,38 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const email = body.email?.toLowerCase();
-    const uid = body.uid;
+    const email = body.email?.toLowerCase()?.trim();
+    const uid = body.uid?.trim();
 
     if (!email && !uid) {
       return NextResponse.json({ success: false, error: 'Email or UID required' }, { status: 400 });
     }
 
+    // Security Check: Requester can only update their own profile unless requester is Admin
+    const authHeaderEmail = req.headers.get('x-user-email')?.toLowerCase()?.trim();
+    const authHeaderUid = req.headers.get('x-user-uid')?.trim();
+    const isAdmin = isBhanuEmail(authHeaderEmail);
+
+    if (!isAdmin) {
+      const matchesEmail = authHeaderEmail && email && authHeaderEmail === email;
+      const matchesUid = authHeaderUid && uid && authHeaderUid === uid;
+      if (!matchesEmail && !matchesUid) {
+        return NextResponse.json({ success: false, error: 'Unauthorized: Cannot update another user profile.' }, { status: 403 });
+      }
+    }
+
     const fileProfiles = await getProfiles();
     const existing = (email && fileProfiles[email]) || (uid && fileProfiles[uid]) || inMemoryProfiles[email] || {};
 
+    // Sanitize input fields
     const updated: ProfileData = {
       ...existing,
-      ...body,
+      name: body.name ? String(body.name).slice(0, 100) : existing.name,
+      phoneNumber: body.phoneNumber ? String(body.phoneNumber).slice(0, 20) : existing.phoneNumber,
+      deliveryAddress: body.deliveryAddress ? String(body.deliveryAddress).slice(0, 300) : existing.deliveryAddress,
+      city: body.city ? String(body.city).slice(0, 100) : existing.city,
+      state: body.state ? String(body.state).slice(0, 100) : existing.state,
+      pincode: body.pincode ? String(body.pincode).slice(0, 12) : existing.pincode,
       updatedAt: new Date().toISOString(),
     };
 

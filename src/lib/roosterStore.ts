@@ -13,6 +13,7 @@ import {
   subscribeToRoostersRealtime 
 } from './firebaseService';
 import { pushNotification } from './notificationStore';
+import { getStoredUser } from './authStore';
 
 const ROOSTERS_STORAGE_KEY = 'jp_farms_roosters_v1';
 const INQUIRIES_STORAGE_KEY = 'jp_farms_inquiries_v1';
@@ -144,7 +145,10 @@ export function useRoosters() {
       try {
         await fetch('/api/roosters', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 
+            'Content-Type': 'application/json',
+            'x-admin-email': getStoredUser()?.email || '',
+          },
           body: JSON.stringify(created),
         });
       } catch (e) {
@@ -171,7 +175,10 @@ export function useRoosters() {
       try {
         await fetch('/api/roosters', {
           method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 
+            'Content-Type': 'application/json',
+            'x-admin-email': getStoredUser()?.email || '',
+          },
           body: JSON.stringify({ id, ...updates }),
         });
       } catch (e) {
@@ -194,8 +201,11 @@ export function useRoosters() {
       }
     } else {
       try {
-        await fetch(`/api/roosters?id=${id}`, {
+        await fetch(`/api/roosters?id=${encodeURIComponent(id)}`, {
           method: 'DELETE',
+          headers: {
+            'x-admin-email': getStoredUser()?.email || '',
+          },
         });
       } catch (e) {
         console.error('Failed to sync rooster deletion to server', e);
@@ -231,10 +241,16 @@ export function useInquiries() {
     setInquiries(getStoredInquiries());
     setIsLoaded(true);
 
-    fetch('/api/inquiries')
+    const adminUser = getStoredUser();
+    const headers: Record<string, string> = {};
+    if (adminUser?.email) {
+      headers['x-admin-email'] = adminUser.email;
+    }
+
+    fetch('/api/inquiries', { headers })
       .then(res => res.json())
       .then(result => {
-        if (result.success && Array.isArray(result.data) && result.data.length > 0) {
+        if (result.success && Array.isArray(result.data)) {
           setInquiries(result.data);
           saveStoredInquiries(result.data);
         }
@@ -292,9 +308,15 @@ export function useInquiries() {
     setInquiries(updated);
 
     try {
+      const adminUser = getStoredUser();
+      const patchHeaders: Record<string, string> = { 'Content-Type': 'application/json' };
+      if (adminUser?.email) {
+        patchHeaders['x-admin-email'] = adminUser.email;
+      }
+
       await fetch('/api/inquiries', {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
+        headers: patchHeaders,
         body: JSON.stringify({ id, status }),
       });
     } catch (e) {

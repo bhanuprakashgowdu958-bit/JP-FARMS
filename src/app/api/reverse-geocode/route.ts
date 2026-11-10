@@ -89,6 +89,10 @@ export async function GET(req: NextRequest) {
 
   const userLat = Number(lat);
   const userLng = Number(lng);
+
+  if (isNaN(userLat) || isNaN(userLng) || userLat < -90 || userLat > 90 || userLng < -180 || userLng > 180) {
+    return NextResponse.json({ error: 'Valid numerical coordinates are required (lat: -90..90, lng: -180..180)' }, { status: 400 });
+  }
   const distanceKm = !isNaN(userLat) && !isNaN(userLng)
     ? calculateDistanceKm(FARM_LOCATION.lat, FARM_LOCATION.lng, userLat, userLng)
     : null;
