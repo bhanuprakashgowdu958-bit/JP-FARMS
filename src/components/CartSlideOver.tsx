@@ -11,7 +11,6 @@ import {
   ShieldCheck, 
   Truck, 
   CheckCircle2, 
-  MessageCircle, 
   Sparkles,
   MapPin,
   Lock,
@@ -31,7 +30,7 @@ import { GoogleIcon } from './GoogleSignInButton';
 import { PhoneCaptureModal } from '@/components/PhoneCaptureModal';
 import { AddressCaptureModal } from '@/components/AddressCaptureModal';
 import { FARM_INFO, FARM_LOCATION } from '@/lib/data';
-import { generateWhatsAppLink, calculateDistanceKm } from '@/lib/utils';
+import { calculateDistanceKm } from '@/lib/utils';
 import { RoosterOrder } from '@/types/rooster';
 import type { LocationSelectResult } from './DeliveryZoneMap';
 
@@ -357,43 +356,13 @@ export const CartSlideOver: React.FC = () => {
         colors: ['#f59e0b', '#10b981', '#0284c7', '#ec4899'],
       });
 
-      // Prepare WhatsApp message
-      const itemsListText = items.map((item, idx) => 
-        `${idx + 1}. *${item.rooster.name}* (Tag #${item.rooster.tagId}) - ₹${(item.rooster.price || 9500).toLocaleString('en-IN')} x ${item.quantity}`
-      ).join('\n');
-
-      const whatsAppMsg = `🐓 *NEW ORDER PLACED ON JP FARMS WEBSITE!*
-
-*Order ID:* ${newOrder.id}
-*Customer Name:* ${formData.name}
-*Phone:* ${effectivePhone}
-*Delivery Type:* ${deliveryType === 'doorstep_live_crate' ? '🚚 Climate-Controlled Live Animal Crate Dispatch' : '🏡 Self Farm Pickup'}
-${deliveryType === 'doorstep_live_crate' ? `*Delivery Address:* ${effectiveAddress}${formData.addressLine2?.trim() ? `\n*Landmark / Unit:* ${formData.addressLine2.trim()}` : ''}\n*City & PIN:* ${effectiveCity || 'Palamaner'}${effectivePincode ? ` - ${effectivePincode}` : ''}` : ''}
-*Payment Method:* ${paymentMethod === 'cod' ? 'Cash on Delivery (COD)' : 'Google Pay / PhonePe UPI'}
-
-📦 *ORDERED BIRDS (${cartCount} items):*
-${itemsListText}
-
-💰 *TOTAL PAYABLE:* ₹${cartTotal.toLocaleString('en-IN')}
-
-Please confirm availability and dispatch schedule. Thank you!`;
-
-      const whatsAppUrl = generateWhatsAppLink({
-        phone: FARM_INFO.whatsapp,
-        customMessage: whatsAppMsg,
-      });
-
       setOrderCompleted(newOrder);
       clearCart();
       setIsSubmitting(false);
-
-      // Open WhatsApp in new tab
-      window.open(whatsAppUrl, '_blank');
-
     } catch (err) {
       console.error('Order placement failed', err);
       setIsSubmitting(false);
-      alert('Order could not be saved. Please try again or WhatsApp us directly.');
+      alert('Order could not be saved. Please try again.');
     }
   };
 
@@ -459,44 +428,63 @@ Please confirm availability and dispatch schedule. Thank you!`;
                 </div>
                 
                 <div>
-                  <span className="text-xs uppercase font-bold tracking-widest text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
-                    Order Registered
+                  <span className="text-xs uppercase font-extrabold tracking-widest text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200">
+                    ✓ Order Confirmed
                   </span>
                   <h3 className="text-xl font-black text-slate-900 mt-2">
-                    Thank You, {orderCompleted.customerName}!
+                    Order Placed Successfully!
                   </h3>
                   <p className="text-xs text-slate-600 mt-1 max-w-xs mx-auto">
-                    Your order <strong>#{orderCompleted.id}</strong> has been logged in JP Farms dispatch queue.
+                    Thank you, <strong>{orderCompleted.customerName}</strong>! Your order <strong>#{orderCompleted.id}</strong> is confirmed and submitted to JP Farms.
                   </p>
                 </div>
 
-                <div className="bg-sky-50 border border-sky-100 rounded-2xl p-4 text-left space-y-2 text-xs">
-                  <div className="flex justify-between">
-                    <span className="text-slate-500">Order Amount:</span>
-                    <span className="font-bold text-slate-900">₹{orderCompleted.price.toLocaleString('en-IN')}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-slate-500">Delivery:</span>
-                    <span className="font-bold text-slate-900">
-                      {orderCompleted.deliveryType === 'doorstep_live_crate' ? 'Live Crate Transit' : 'Farm Pickup'}
+                <div className="bg-emerald-50/60 border border-emerald-200/80 rounded-2xl p-4 text-left space-y-2.5 text-xs shadow-xs">
+                  <div className="flex justify-between items-center pb-2 border-b border-emerald-100">
+                    <span className="text-emerald-950 font-black text-sm">Order #{orderCompleted.id}</span>
+                    <span className="bg-emerald-600 text-white text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-wide">
+                      Confirmed
                     </span>
                   </div>
                   <div className="flex justify-between">
+                    <span className="text-slate-500">Total Amount:</span>
+                    <span className="font-extrabold text-slate-900">₹{orderCompleted.price.toLocaleString('en-IN')}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-500">Delivery Mode:</span>
+                    <span className="font-bold text-slate-900">
+                      {orderCompleted.deliveryType === 'doorstep_live_crate' ? '🚚 Climate Crate Doorstep' : '🏡 Farm Gate Pickup'}
+                    </span>
+                  </div>
+                  {orderCompleted.deliveryType === 'doorstep_live_crate' && (
+                    <div className="flex justify-between text-[11px]">
+                      <span className="text-slate-500">Destination:</span>
+                      <span className="font-medium text-slate-800 text-right max-w-[200px] truncate">
+                        {orderCompleted.deliveryAddress}, {orderCompleted.city}
+                      </span>
+                    </div>
+                  )}
+                  <div className="flex justify-between">
                     <span className="text-slate-500">Payment:</span>
                     <span className="font-bold text-slate-900">
-                      {orderCompleted.paymentMethod === 'cod' ? 'Cash on Delivery' : 'UPI Payment'}
+                      {orderCompleted.paymentMethod === 'cod' ? 'Cash on Delivery (Pay at Unboxing)' : 'UPI Payment'}
                     </span>
                   </div>
                 </div>
 
-                <p className="text-[11px] text-slate-500 leading-relaxed">
-                  Our farm dispatch manager will verify the crate preparation and coordinate live GPS tracking with you on WhatsApp.
-                </p>
+                <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 text-left">
+                  <div className="flex items-start space-x-2">
+                    <CheckCircle2 className="w-4 h-4 text-amber-700 shrink-0 mt-0.5" />
+                    <p className="text-[11px] text-amber-950 leading-snug">
+                      Farm dispatch manager has received your order. You will receive live status updates in the <strong>Alerts</strong> bell icon above as your birds are prepared and dispatched.
+                    </p>
+                  </div>
+                </div>
 
                 <button
                   type="button"
                   onClick={handleFinish}
-                  className="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-3 rounded-xl text-xs transition"
+                  className="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-3 rounded-xl text-xs transition active:scale-95 cursor-pointer shadow-md"
                 >
                   Continue Browsing Farm
                 </button>
@@ -1101,8 +1089,8 @@ Please confirm availability and dispatch schedule. Thank you!`;
                     disabled={isSubmitting}
                     className="w-full flex items-center justify-center space-x-2 bg-gradient-to-r from-amber-500 via-amber-600 to-amber-500 hover:from-amber-400 hover:to-amber-500 text-stone-950 font-black py-3 px-4 rounded-xl text-xs transition shadow-lg shadow-amber-500/25 active:scale-95 disabled:opacity-50"
                   >
-                    <MessageCircle className="w-4 h-4" />
-                    <span>{isSubmitting ? 'Placing Order...' : `Confirm & Place Order (₹${cartTotal.toLocaleString('en-IN')})`}</span>
+                    <CheckCircle2 className="w-4 h-4" />
+                    <span>{isSubmitting ? 'Confirming Order...' : `Confirm & Place Order (₹${cartTotal.toLocaleString('en-IN')})`}</span>
                   </button>
                 )}
 
