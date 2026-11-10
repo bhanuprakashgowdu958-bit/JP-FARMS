@@ -163,6 +163,8 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
             quantity: 1,
           },
         ],
+        userId: user?.uid,
+        userEmail: user?.email || undefined,
         customerName: customerName.trim(),
         phoneNumber: effectivePhone.trim(),
         deliveryAddress: deliveryAddress.trim() || 'JP Farms Estate Gate Pickup',

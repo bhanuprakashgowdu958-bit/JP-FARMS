@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import Link from 'next/link';
 import { 
@@ -27,7 +27,7 @@ import { FARM_INFO } from '@/lib/data';
 import { generateWhatsAppLink } from '@/lib/utils';
 import { useCart } from '@/lib/cartStore';
 import { useOrders } from '@/lib/roosterStore';
-import { useAuth } from '@/lib/authStore';
+import { useAuth, isBhanuEmail } from '@/lib/authStore';
 import { useNotifications, checkAndNotifyOrders } from '@/lib/notificationStore';
 import { NotificationPopover } from './NotificationPopover';
 import { UserProfileModal } from './UserProfileModal';
@@ -50,7 +50,34 @@ export const Header: React.FC<HeaderProps> = ({
   const { cartCount, openCart } = useCart();
   const { orders } = useOrders();
   const { user, signOut } = useAuth();
-  const { unreadCount } = useNotifications();
+  const { notifications, unreadCount: rawUnreadCount } = useNotifications();
+
+  const isAdmin = isBhanuEmail(user?.email);
+  const userPhoneDigits = user?.phoneNumber?.replace(/\D/g, '') || '';
+  const userDisplayName = user?.displayName?.toLowerCase().trim() || '';
+
+  const userOrderIds = useMemo(() => {
+    if (isAdmin) return null;
+    if (!user) return new Set<string>();
+    return new Set(
+      orders
+        .filter((order) => {
+          const orderPhone = (order.phoneNumber || '').replace(/\D/g, '');
+          const matchesPhone = userPhoneDigits.length >= 10 && (orderPhone.endsWith(userPhoneDigits.slice(-10)) || userPhoneDigits.endsWith(orderPhone.slice(-10)));
+          const matchesUserId = Boolean(user.uid && order.userId === user.uid);
+          const matchesEmail = Boolean(user.email && order.userEmail && order.userEmail.toLowerCase() === user.email.toLowerCase());
+          const matchesName = Boolean(userDisplayName && order.customerName && order.customerName.toLowerCase().trim() === userDisplayName);
+          return matchesPhone || matchesUserId || matchesEmail || matchesName;
+        })
+        .map((o) => o.id)
+    );
+  }, [orders, user, isAdmin, userPhoneDigits, userDisplayName]);
+
+  const unreadCount = useMemo(() => {
+    if (isAdmin) return rawUnreadCount;
+    if (!user) return 0;
+    return notifications.filter((n) => !n.read && n.orderId && userOrderIds?.has(n.orderId)).length;
+  }, [isAdmin, user, rawUnreadCount, notifications, userOrderIds]);
 
   useEffect(() => {
     setMounted(true);

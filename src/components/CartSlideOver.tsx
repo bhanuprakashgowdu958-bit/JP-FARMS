@@ -352,6 +352,8 @@ export const CartSlideOver: React.FC = () => {
         roosterImage: primaryItem.images[0] || '',
         price: cartTotal,
         items: orderItems,
+        userId: user?.uid,
+        userEmail: user?.email || undefined,
         customerName: formData.name.trim(),
         phoneNumber: effectivePhone.trim(),
         deliveryAddress: deliveryType === 'doorstep_live_crate' ? fullAddress : 'Farm Pickup - JP Farms Breeder Estate',

@@ -22,7 +22,8 @@ import {
 } from 'lucide-react';
 import { RoosterOrder } from '@/types/rooster';
 import { useOrders } from '@/lib/roosterStore';
-import { useAuth } from '@/lib/authStore';
+import { useAuth, isBhanuEmail } from '@/lib/authStore';
+import { GoogleIcon } from '@/components/GoogleSignInButton';
 import { FARM_INFO } from '@/lib/data';
 
 interface OrdersTrackingDrawerProps {
@@ -58,13 +59,38 @@ export const OrdersTrackingDrawer: React.FC<OrdersTrackingDrawerProps> = ({
 
   if (!isOpen) return null;
 
+  const isAdmin = isBhanuEmail(user?.email);
+
   // Clean user digits for phone matching
   const userPhoneDigits = user?.phoneNumber?.replace(/\D/g, '') || '';
   const userDisplayName = user?.displayName?.toLowerCase().trim() || '';
 
-  // Filter orders
+  // Filter orders strictly by customer privacy
   const filteredOrders = orders.filter((order) => {
-    // 1. Text search query
+    // 1. Customer Privacy Isolation:
+    // If not Admin, ONLY allow orders that belong to this customer
+    if (!isAdmin) {
+      if (!user) {
+        // If guest, only show order if they searched by exact Order ID or phone number
+        if (!searchQuery.trim()) return false;
+        const q = searchQuery.toLowerCase().trim();
+        const matchesExactId = order.id.toLowerCase() === q;
+        const matchesExactPhone = order.phoneNumber.replace(/\D/g, '').length >= 10 && order.phoneNumber.replace(/\D/g, '') === q.replace(/\D/g, '');
+        if (!matchesExactId && !matchesExactPhone) return false;
+      } else {
+        const orderPhone = (order.phoneNumber || '').replace(/\D/g, '');
+        const matchesPhone = userPhoneDigits.length >= 10 && (orderPhone.endsWith(userPhoneDigits.slice(-10)) || userPhoneDigits.endsWith(orderPhone.slice(-10)));
+        const matchesUserId = Boolean(user.uid && order.userId === user.uid);
+        const matchesEmail = Boolean(user.email && order.userEmail && order.userEmail.toLowerCase() === user.email.toLowerCase());
+        const matchesName = Boolean(userDisplayName && order.customerName && order.customerName.toLowerCase().trim() === userDisplayName);
+
+        if (!matchesPhone && !matchesUserId && !matchesEmail && !matchesName) {
+          return false;
+        }
+      }
+    }
+
+    // 2. Text search query
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase().trim();
       const matchesId = order.id.toLowerCase().includes(q);
@@ -77,7 +103,7 @@ export const OrdersTrackingDrawer: React.FC<OrdersTrackingDrawerProps> = ({
       }
     }
 
-    // 2. Status filter
+    // 3. Status filter
     if (filterStatus !== 'all' && order.status !== filterStatus) {
       return false;
     }

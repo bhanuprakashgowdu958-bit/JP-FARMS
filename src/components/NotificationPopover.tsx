@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useRef, useEffect, useState } from 'react';
+import React, { useRef, useEffect, useState, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { 
   Bell, 
@@ -21,6 +21,8 @@ import {
   Check
 } from 'lucide-react';
 import { useNotifications, AppNotification, NotificationType } from '@/lib/notificationStore';
+import { useAuth, isBhanuEmail } from '@/lib/authStore';
+import { useOrders } from '@/lib/roosterStore';
 
 interface NotificationDrawerProps {
   isOpen: boolean;
@@ -94,9 +96,37 @@ export const NotificationPopover: React.FC<NotificationDrawerProps> = ({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isOpen, onClose]);
 
+  const { user } = useAuth();
+  const { orders } = useOrders();
+  const isAdmin = isBhanuEmail(user?.email);
+  const userPhoneDigits = user?.phoneNumber?.replace(/\D/g, '') || '';
+  const userDisplayName = user?.displayName?.toLowerCase().trim() || '';
+
+  const userOrderIds = useMemo(() => {
+    if (isAdmin) return null; // Admin sees all
+    if (!user) return new Set<string>();
+    return new Set(
+      orders
+        .filter((order) => {
+          const orderPhone = (order.phoneNumber || '').replace(/\D/g, '');
+          const matchesPhone = userPhoneDigits.length >= 10 && (orderPhone.endsWith(userPhoneDigits.slice(-10)) || userPhoneDigits.endsWith(orderPhone.slice(-10)));
+          const matchesUserId = Boolean(user.uid && order.userId === user.uid);
+          const matchesEmail = Boolean(user.email && order.userEmail && order.userEmail.toLowerCase() === user.email.toLowerCase());
+          const matchesName = Boolean(userDisplayName && order.customerName && order.customerName.toLowerCase().trim() === userDisplayName);
+          return matchesPhone || matchesUserId || matchesEmail || matchesName;
+        })
+        .map((o) => o.id)
+    );
+  }, [orders, user, isAdmin, userPhoneDigits, userDisplayName]);
+
   if (!isOpen || !mounted || typeof document === 'undefined') return null;
 
   const filteredNotifications = notifications.filter((n) => {
+    // Strict Privacy: Non-admin customers only see notifications for their own orders
+    if (!isAdmin) {
+      if (!user) return false;
+      if (n.orderId && !userOrderIds?.has(n.orderId)) return false;
+    }
     if (filter === 'unread') return !n.read;
     if (filter === 'transit') return n.type === 'dispatched';
     return true;

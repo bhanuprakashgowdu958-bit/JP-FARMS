@@ -263,48 +263,7 @@ export const INITIAL_ROOSTERS: Rooster[] = [
   },
 ];
 
-export const INITIAL_ORDERS: RoosterOrder[] = [
-  {
-    id: 'JP-ORD-92812',
-    roosterId: 'jp-101',
-    roosterTag: 'JP-AS-101',
-    roosterName: 'Sikandar - Pure Peela Aseel',
-    roosterBreed: 'Pure Aseel (Peela)',
-    roosterImage: 'https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?auto=format&fit=crop&w=1200&q=80',
-    price: 14500,
-    customerName: 'Kishore Varma',
-    phoneNumber: '+91 98480 12345',
-    deliveryAddress: 'Flat 402, Green Meadows, Road No 12, Banjara Hills',
-    city: 'Hyderabad',
-    state: 'Telangana',
-    pincode: '500034',
-    deliveryType: 'doorstep_live_crate',
-    paymentMethod: 'cod',
-    notes: 'Please call before dispatching live crate.',
-    orderDate: '2026-11-08 11:20 AM',
-    status: 'confirmed',
-  },
-  {
-    id: 'JP-ORD-92408',
-    roosterId: 'jp-204',
-    roosterTag: 'JP-KN-204',
-    roosterName: 'Kaal Bhairav - Pure Kadaknath',
-    roosterBreed: 'Original Kadaknath (Jhabua Line)',
-    roosterImage: 'https://images.unsplash.com/photo-1589332278453-611a91e5e04d?auto=format&fit=crop&w=1200&q=80',
-    price: 6500,
-    customerName: 'Anil Kumar',
-    phoneNumber: '+91 97012 34567',
-    deliveryAddress: 'Plot 18, Sri Rama Colony, Benz Circle',
-    city: 'Vijayawada',
-    state: 'Andhra Pradesh',
-    pincode: '520010',
-    deliveryType: 'doorstep_live_crate',
-    paymentMethod: 'upi',
-    notes: 'UPI Paid. Please include vaccine certificate in crate pocket.',
-    orderDate: '2026-11-07 04:45 PM',
-    status: 'dispatched',
-  },
-];
+export const INITIAL_ORDERS: RoosterOrder[] = [];
 
 export const INITIAL_INQUIRIES: CustomerInquiry[] = [
   {

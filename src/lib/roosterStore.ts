@@ -318,7 +318,20 @@ export function getStoredOrders(): RoosterOrder[] {
       localStorage.setItem(ORDERS_STORAGE_KEY, JSON.stringify(INITIAL_ORDERS));
       return INITIAL_ORDERS;
     }
-    return JSON.parse(saved);
+    const parsed: RoosterOrder[] = JSON.parse(saved);
+    // Purge legacy demo orders
+    const cleaned = parsed.filter(
+      (o) =>
+        o.id !== 'JP-ORD-92812' &&
+        o.id !== 'JP-ORD-92408' &&
+        o.id !== 'JP-ORD-27663' &&
+        o.customerName !== 'Kishore Varma' &&
+        o.customerName !== 'Anil Kumar'
+    );
+    if (cleaned.length !== parsed.length) {
+      localStorage.setItem(ORDERS_STORAGE_KEY, JSON.stringify(cleaned));
+    }
+    return cleaned;
   } catch (e) {
     return INITIAL_ORDERS;
   }

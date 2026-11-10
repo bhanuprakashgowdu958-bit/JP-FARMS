@@ -59,6 +59,8 @@ export interface RoosterOrder {
   roosterImage: string;
   price: number;
   items?: RoosterOrderItem[];
+  userId?: string;
+  userEmail?: string;
   customerName: string;
   phoneNumber: string;
   deliveryAddress: string;

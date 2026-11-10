@@ -23,32 +23,7 @@ export interface AppNotification {
   rejectionReason?: string;
 }
 
-const DEFAULT_NOTIFICATIONS: AppNotification[] = [
-  {
-    id: 'notif-init-2',
-    orderId: 'JP-ORD-92812',
-    type: 'dispatched',
-    title: 'Order Dispatched: #JP-ORD-92812',
-    message: 'Sikandar (Pure Peela Aseel) is on the way in our Climate Crate. Bio-secure GPS transit active.',
-    createdAt: new Date(Date.now() - 35 * 60 * 1000).toISOString(),
-    read: false,
-    roosterName: 'Sikandar - Pure Peela Aseel',
-    roosterTag: 'JP-AS-101',
-    deliveryType: 'doorstep_live_crate',
-  },
-  {
-    id: 'notif-init-1',
-    orderId: 'JP-ORD-88341',
-    type: 'confirmed',
-    title: 'Order Confirmed: #JP-ORD-88341',
-    message: 'Your order for Rudra - Black Aseel Fighter is confirmed. Health warranty pass generated.',
-    createdAt: new Date(Date.now() - 3 * 3600 * 1000).toISOString(),
-    read: false,
-    roosterName: 'Rudra - Black Aseel Fighter',
-    roosterTag: 'JP-AS-102',
-    deliveryType: 'doorstep_live_crate',
-  },
-];
+const DEFAULT_NOTIFICATIONS: AppNotification[] = [];
 
 export function getStoredSoundEnabled(): boolean {
   if (typeof window === 'undefined') return true;
@@ -136,7 +111,19 @@ export function getStoredNotifications(): AppNotification[] {
       localStorage.setItem(NOTIFICATIONS_STORAGE_KEY, JSON.stringify(DEFAULT_NOTIFICATIONS));
       return DEFAULT_NOTIFICATIONS;
     }
-    return JSON.parse(saved);
+    const parsed: AppNotification[] = JSON.parse(saved);
+    // Purge legacy demo notifications
+    const cleaned = parsed.filter(
+      (n) =>
+        !n.id.startsWith('notif-init-') &&
+        n.orderId !== 'JP-ORD-92812' &&
+        n.orderId !== 'JP-ORD-88341' &&
+        n.orderId !== 'JP-ORD-92408'
+    );
+    if (cleaned.length !== parsed.length) {
+      localStorage.setItem(NOTIFICATIONS_STORAGE_KEY, JSON.stringify(cleaned));
+    }
+    return cleaned;
   } catch (e) {
     console.error('Failed to parse notifications', e);
     return DEFAULT_NOTIFICATIONS;
