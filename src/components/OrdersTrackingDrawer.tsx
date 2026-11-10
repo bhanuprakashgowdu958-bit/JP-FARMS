@@ -9,13 +9,11 @@ import {
   Clock, 
   MapPin, 
   Phone, 
-  MessageCircle, 
   ShieldCheck, 
   Calendar, 
   ChevronRight, 
   Copy, 
   ExternalLink, 
-  FileText, 
   Sparkles, 
   Search, 
   ArrowRight,
@@ -26,7 +24,6 @@ import { RoosterOrder } from '@/types/rooster';
 import { useOrders } from '@/lib/roosterStore';
 import { useAuth } from '@/lib/authStore';
 import { FARM_INFO } from '@/lib/data';
-import { generateWhatsAppLink } from '@/lib/utils';
 
 interface OrdersTrackingDrawerProps {
   isOpen: boolean;
@@ -47,7 +44,6 @@ export const OrdersTrackingDrawer: React.FC<OrdersTrackingDrawerProps> = ({
   const [searchQuery, setSearchQuery] = useState('');
   const [filterStatus, setFilterStatus] = useState<'all' | 'pending_approval' | 'confirmed' | 'dispatched' | 'delivered' | 'rejected'>('all');
   const [copiedId, setCopiedId] = useState<string | null>(null);
-  const [selectedHealthPassOrder, setSelectedHealthPassOrder] = useState<RoosterOrder | null>(null);
 
   const handleBack = () => {
     onClose();
@@ -95,20 +91,6 @@ export const OrdersTrackingDrawer: React.FC<OrdersTrackingDrawerProps> = ({
       setCopiedId(id);
       setTimeout(() => setCopiedId(null), 1800);
     }
-  };
-
-  const getWhatsAppTrackingUrl = (order: RoosterOrder) => {
-    const text = `Hello JP Farms Dispatch Team! 🚚
-I am tracking my rooster order on your website:
-*Order ID:* ${order.id}
-*Rooster:* ${order.roosterName} (${order.roosterTag})
-*Delivery To:* ${order.customerName}, ${order.city}
-
-Please share the live AC vehicle GPS transit location and a quick video update of my bird. Thank you!`;
-    return generateWhatsAppLink({
-      phone: FARM_INFO.whatsapp,
-      customMessage: text,
-    });
   };
 
   return (
@@ -548,28 +530,6 @@ Please share the live AC vehicle GPS transit location and a quick video update o
                         )}
                       </div>
 
-                      {/* Action Buttons Row */}
-                      <div className="grid grid-cols-2 gap-2 pt-1">
-                        <a
-                          href={getWhatsAppTrackingUrl(order)}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex items-center justify-center space-x-1.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold py-2.5 px-3 rounded-xl text-xs shadow-xs transition active:scale-95 text-center"
-                        >
-                          <MessageCircle className="w-3.5 h-3.5 shrink-0" />
-                          <span className="truncate">WhatsApp Live GPS</span>
-                        </a>
-
-                        <button
-                          type="button"
-                          onClick={() => setSelectedHealthPassOrder(order)}
-                          className="flex items-center justify-center space-x-1.5 bg-white hover:bg-slate-50 text-slate-800 font-bold py-2.5 px-3 rounded-xl border border-slate-300 text-xs shadow-2xs transition active:scale-95 text-center"
-                        >
-                          <FileText className="w-3.5 h-3.5 text-amber-600 shrink-0" />
-                          <span className="truncate">Avian Health Pass</span>
-                        </button>
-                      </div>
-
                     </div>
                   </div>
                 );
@@ -594,70 +554,6 @@ Please share the live AC vehicle GPS transit location and a quick video update o
 
         </div>
       </div>
-
-      {/* Avian Health Passport Modal */}
-      {selectedHealthPassOrder && (
-        <div className="fixed inset-0 z-60 bg-slate-950/70 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white w-full max-w-md rounded-2xl p-5 shadow-2xl space-y-4 border border-slate-200 animate-in zoom-in-95 duration-200">
-            <div className="flex items-center justify-between border-b pb-3">
-              <div className="flex items-center space-x-2">
-                <div className="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center">
-                  <ShieldCheck className="w-5 h-5" />
-                </div>
-                <div>
-                  <h3 className="font-extrabold text-sm text-slate-900">Digital Avian Health Passport</h3>
-                  <p className="text-[10px] text-slate-500">JP Farms Certified Heritage Lineage</p>
-                </div>
-              </div>
-              <button
-                onClick={() => setSelectedHealthPassOrder(null)}
-                className="text-slate-400 hover:text-slate-700"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            <div className="space-y-2 text-xs">
-              <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-200 flex justify-between">
-                <span className="text-slate-500">Rooster Tag:</span>
-                <span className="font-mono font-bold text-slate-900">{selectedHealthPassOrder.roosterTag}</span>
-              </div>
-              <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-200 flex justify-between">
-                <span className="text-slate-500">Strain / Bloodline:</span>
-                <span className="font-bold text-amber-800">{selectedHealthPassOrder.roosterBreed}</span>
-              </div>
-              <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-200 flex justify-between">
-                <span className="text-slate-500">Marek's Disease Vaccine:</span>
-                <span className="font-bold text-emerald-700">✓ Administered (Batch #MK-24)</span>
-              </div>
-              <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-200 flex justify-between">
-                <span className="text-slate-500">Ranikhet (ND) Vaccine:</span>
-                <span className="font-bold text-emerald-700">✓ Lasota Booster Confirmed</span>
-              </div>
-              <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-200 flex justify-between">
-                <span className="text-slate-500">Deworming & Parasite Clear:</span>
-                <span className="font-bold text-emerald-700">✓ Completed 48h Pre-Dispatch</span>
-              </div>
-              <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-200 flex justify-between">
-                <span className="text-slate-500">Transit Crate Bio-Seal:</span>
-                <span className="font-bold text-sky-700">✓ Sanitized AC Crate with Diet</span>
-              </div>
-            </div>
-
-            <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-xs text-emerald-900 leading-snug">
-              <span className="font-bold">Veterinary Warranty:</span> Every rooster dispatched by JP Farms is covered by our 7-day post-delivery health guarantee against infectious transit stress.
-            </div>
-
-            <button
-              type="button"
-              onClick={() => setSelectedHealthPassOrder(null)}
-              className="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-2.5 rounded-xl text-xs transition"
-            >
-              Close Health Pass
-            </button>
-          </div>
-        </div>
-      )}
     </div>
   );
 };
