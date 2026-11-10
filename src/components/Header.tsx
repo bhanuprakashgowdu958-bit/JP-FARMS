@@ -20,13 +20,16 @@ import {
   LogOut,
   ExternalLink,
   HelpCircle,
-  User
+  User,
+  Bell
 } from 'lucide-react';
 import { FARM_INFO } from '@/lib/data';
 import { generateWhatsAppLink } from '@/lib/utils';
 import { useCart } from '@/lib/cartStore';
 import { useOrders } from '@/lib/roosterStore';
 import { useAuth } from '@/lib/authStore';
+import { useNotifications, checkAndNotifyOrders } from '@/lib/notificationStore';
+import { NotificationPopover } from './NotificationPopover';
 import { UserProfileModal } from './UserProfileModal';
 
 interface HeaderProps {
@@ -42,15 +45,25 @@ export const Header: React.FC<HeaderProps> = ({
 }) => {
   const [sideMenuOpen, setSideMenuOpen] = useState(false);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
+  const [isNotificationOpen, setIsNotificationOpen] = useState(false);
+  const [isMobileNotificationOpen, setIsMobileNotificationOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
   const { cartCount, openCart } = useCart();
   const { orders } = useOrders();
   const { user, signOut } = useAuth();
+  const { unreadCount } = useNotifications();
 
   useEffect(() => {
     setMounted(true);
     return () => setMounted(false);
   }, []);
+
+  // Sync orders with notifications
+  useEffect(() => {
+    if (orders && orders.length > 0) {
+      checkAndNotifyOrders(orders);
+    }
+  }, [orders]);
 
   // Listen for programmatic side menu open events (e.g. Back from Orders Drawer)
   useEffect(() => {
@@ -158,8 +171,33 @@ export const Header: React.FC<HeaderProps> = ({
             </div>
           </Link>
 
-          {/* Top Right Action: Cart & Menu Bar */}
+          {/* Top Right Action: Notifications, Cart & Menu Bar */}
           <div className="flex items-center space-x-2.5 shrink-0">
+            {/* Notifications Button & Popover */}
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => setIsNotificationOpen((prev) => !prev)}
+                className="relative flex items-center space-x-1.5 bg-slate-900 hover:bg-slate-850 text-amber-400 hover:text-amber-300 px-3.5 py-2.5 rounded-2xl border border-amber-500/40 hover:border-amber-400 transition active:scale-95 text-xs font-bold shadow-sm whitespace-nowrap cursor-pointer group"
+                title="Order & Transit Notifications"
+                aria-label="View notifications"
+              >
+                <Bell className="w-4 h-4 text-amber-400 group-hover:scale-110 group-hover:rotate-12 transition duration-200" />
+                <span className="hidden md:inline text-amber-300 font-extrabold">Alerts</span>
+                {unreadCount > 0 && (
+                  <span className="bg-red-500 text-white text-[10px] font-black px-1.5 py-0.2 rounded-full min-w-[18px] text-center border border-slate-900 animate-pulse">
+                    {unreadCount > 9 ? '9+' : unreadCount}
+                  </span>
+                )}
+              </button>
+
+              <NotificationPopover
+                isOpen={isNotificationOpen}
+                onClose={() => setIsNotificationOpen(false)}
+                onOpenOrders={onOpenOrders}
+              />
+            </div>
+
             {/* Shopping Cart Button — Placed next to Menu Bar */}
             <button
               type="button"
@@ -235,8 +273,32 @@ export const Header: React.FC<HeaderProps> = ({
             </Link>
           </div>
 
-          {/* Right: Profile Avatar & Cart (Zero-Overflow Flipkart/Amazon Action Strip) */}
-          <div className="flex items-center space-x-2.5 shrink-0">
+          {/* Right: Notifications, Profile Avatar & Cart (Zero-Overflow Flipkart/Amazon Action Strip) */}
+          <div className="flex items-center space-x-2 shrink-0">
+            {/* Mobile Notification Bell */}
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => setIsMobileNotificationOpen((prev) => !prev)}
+                className="relative p-2 rounded-xl bg-slate-900 hover:bg-slate-850 text-amber-400 border border-amber-500/40 transition active:scale-95 flex items-center justify-center cursor-pointer shrink-0"
+                title="Notifications"
+                aria-label="View notifications"
+              >
+                <Bell className="w-4.5 h-4.5 text-amber-400" />
+                {unreadCount > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[9px] font-black w-4 h-4 rounded-full flex items-center justify-center border border-slate-900 animate-pulse">
+                    {unreadCount > 9 ? '9+' : unreadCount}
+                  </span>
+                )}
+              </button>
+
+              <NotificationPopover
+                isOpen={isMobileNotificationOpen}
+                onClose={() => setIsMobileNotificationOpen(false)}
+                onOpenOrders={onOpenOrders}
+              />
+            </div>
+
             {/* Mobile Profile Avatar & Sanctuary Button (Tap to open My Profile) */}
             <button
               type="button"

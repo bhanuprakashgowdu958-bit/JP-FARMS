@@ -12,6 +12,7 @@ import {
   addInquiryToFirestore,
   subscribeToRoostersRealtime 
 } from './firebaseService';
+import { pushNotification } from './notificationStore';
 
 const ROOSTERS_STORAGE_KEY = 'jp_farms_roosters_v1';
 const INQUIRIES_STORAGE_KEY = 'jp_farms_inquiries_v1';
@@ -359,14 +360,69 @@ export function useOrders() {
     const updated = [newOrder, ...current];
     saveStoredOrders(updated);
     setOrders(updated);
+
+    // Push notification and play chime
+    try {
+      pushNotification({
+        orderId: newOrder.id,
+        type: newOrder.status === 'dispatched' ? 'dispatched' : newOrder.status === 'delivered' ? 'delivered' : 'confirmed',
+        title: `Order Confirmed: #${newOrder.id}`,
+        message: `Your order for ${newOrder.roosterName || 'Heritage Rooster'} is confirmed. Health certification & crate prep in progress.`,
+        roosterName: newOrder.roosterName,
+        roosterTag: newOrder.roosterTag,
+        deliveryType: newOrder.deliveryType,
+      });
+    } catch (e) {
+      console.warn('Could not push order notification', e);
+    }
+
     return newOrder;
   };
 
   const updateOrderStatus = (id: string, status: RoosterOrder['status']) => {
     const current = getStoredOrders();
+    const targetOrder = current.find((o) => o.id === id);
     const updated = current.map((o) => (o.id === id ? { ...o, status } : o));
     saveStoredOrders(updated);
     setOrders(updated);
+
+    if (targetOrder) {
+      try {
+        if (status === 'dispatched') {
+          pushNotification({
+            orderId: targetOrder.id,
+            type: 'dispatched',
+            title: `Order Dispatched: #${targetOrder.id}`,
+            message: `${targetOrder.roosterName || 'Your rooster'} is on the way in our Climate Crate with live GPS transit tracking.`,
+            roosterName: targetOrder.roosterName,
+            roosterTag: targetOrder.roosterTag,
+            deliveryType: targetOrder.deliveryType,
+          });
+        } else if (status === 'delivered') {
+          pushNotification({
+            orderId: targetOrder.id,
+            type: 'delivered',
+            title: `Rooster Delivered: #${targetOrder.id}`,
+            message: `Bio-secure doorstep handoff completed for ${targetOrder.roosterName || 'your rooster'}. Heritage pass verified!`,
+            roosterName: targetOrder.roosterName,
+            roosterTag: targetOrder.roosterTag,
+            deliveryType: targetOrder.deliveryType,
+          });
+        } else if (status === 'confirmed') {
+          pushNotification({
+            orderId: targetOrder.id,
+            type: 'confirmed',
+            title: `Order Confirmed: #${targetOrder.id}`,
+            message: `Order for ${targetOrder.roosterName || 'Heritage Rooster'} is confirmed. Health pass & crate prep in progress.`,
+            roosterName: targetOrder.roosterName,
+            roosterTag: targetOrder.roosterTag,
+            deliveryType: targetOrder.deliveryType,
+          });
+        }
+      } catch (e) {
+        console.warn('Could not push order update notification', e);
+      }
+    }
   };
 
   const deleteOrder = (id: string) => {
