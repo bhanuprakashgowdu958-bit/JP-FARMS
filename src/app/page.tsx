@@ -21,7 +21,7 @@ import { CartToast } from '@/components/CartToast';
 import { useRoosters } from '@/lib/roosterStore';
 import { useCart } from '@/lib/cartStore';
 import { Rooster } from '@/types/rooster';
-import { PlayCircle, MessageCircle, ShoppingBag, ArrowRight } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 import { FARM_INFO } from '@/lib/data';
 import { generateWhatsAppLink } from '@/lib/utils';
 
@@ -68,11 +68,6 @@ export default function HomePage() {
     setSelectedRooster(null); // close detail modal if open
     setCheckoutRooster(rooster);
   };
-
-  const whatsAppFloatingUrl = generateWhatsAppLink({
-    phone: FARM_INFO.whatsapp,
-    customMessage: 'Hello JP Farms! I am browsing your website and want to inquire about visiting your farm and seeing your desi roosters.',
-  });
 
   // Splash screen while checking auth or redirecting unauthenticated users to /signup
   if (isLoading || !isAuthenticated) {
@@ -135,35 +130,6 @@ export default function HomePage() {
 
       {/* Footer */}
       <Footer />
-
-      {/* Floating Action Buttons (Mobile / Quick Access) - auto-lifts on mobile when cart banner appears */}
-      <div className={`fixed right-3.5 sm:right-5 z-40 flex flex-col space-y-2.5 transition-all duration-300 ${cartCount > 0 ? 'bottom-20 sm:bottom-5' : 'bottom-4 sm:bottom-5'}`}>
-        
-        {/* Watch Reels Floating Trigger */}
-        <button
-          onClick={() => setIsReelsOpen(true)}
-          className="flex items-center space-x-2 bg-white/95 hover:bg-white text-sky-800 font-bold px-3.5 py-2.5 rounded-full shadow-2xl border border-sky-300 backdrop-blur-md transition hover:scale-105 group"
-          title="Watch Rooster Videos"
-        >
-          <PlayCircle className="w-5 h-5 text-sky-600 group-hover:scale-110 transition" />
-          <span className="text-xs hidden sm:inline">Rooster TV</span>
-          <span className="bg-sky-600 text-white text-[9px] font-extrabold px-1.5 py-0.5 rounded-full uppercase">
-            Live
-          </span>
-        </button>
-
-        {/* WhatsApp Direct Floating Button */}
-        <a
-          href={whatsAppFloatingUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="flex items-center justify-center w-13 h-13 rounded-full bg-emerald-600 hover:bg-emerald-500 text-white shadow-2xl transition hover:scale-105 active:scale-95 border-2 border-white"
-          title="Chat with JP Farms on WhatsApp"
-        >
-          <MessageCircle className="w-7 h-7" />
-        </a>
-
-      </div>
 
       {/* Modals */}
       {/* 1. Full Rooster Biological & Specs Inspection Modal */}
