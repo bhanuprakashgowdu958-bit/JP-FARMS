@@ -59,14 +59,17 @@ export const AdminPanel: React.FC = () => {
   } = useRoosters();
 
   const { inquiries, updateInquiryStatus } = useInquiries();
-  const { orders, updateOrderStatus, deleteOrder } = useOrders();
+  const { orders, updateOrderStatus, deleteOrder, acceptOrder, rejectOrder } = useOrders();
   const [customers, setCustomers] = useState<RegisteredCustomer[]>([]);
 
   const [activeTab, setActiveTab] = useState<'roosters' | 'orders' | 'customers' | 'inquiries' | 'add'>('roosters');
   const [searchFilter, setSearchFilter] = useState('');
-  const [orderStatusFilter, setOrderStatusFilter] = useState<'all' | 'confirmed' | 'dispatched' | 'delivered'>('all');
+  const [orderStatusFilter, setOrderStatusFilter] = useState<'all' | 'pending_approval' | 'confirmed' | 'dispatched' | 'delivered' | 'rejected'>('all');
   const [orderSearchQuery, setOrderSearchQuery] = useState('');
   const [printingOrder, setPrintingOrder] = useState<RoosterOrder | null>(null);
+  const [rejectingOrder, setRejectingOrder] = useState<RoosterOrder | null>(null);
+  const [selectedRejectReason, setSelectedRejectReason] = useState<string>('Destination address exceeds 20 km live animal delivery radius');
+  const [customRejectReason, setCustomRejectReason] = useState<string>('');
   const [editingRooster, setEditingRooster] = useState<Rooster | null>(null);
   const [uploadingField, setUploadingField] = useState<string | null>(null);
   const [uploadProgress, setUploadProgress] = useState<number>(0);
@@ -293,10 +296,12 @@ export const AdminPanel: React.FC = () => {
   const totalInquiries = inquiries.length;
 
   // Order Metrics
+  const pendingOrdersCount = orders.filter((o) => o.status === 'pending_approval').length;
   const confirmedOrdersCount = orders.filter((o) => o.status === 'confirmed').length;
   const dispatchedOrdersCount = orders.filter((o) => o.status === 'dispatched').length;
   const deliveredOrdersCount = orders.filter((o) => o.status === 'delivered').length;
-  const totalRevenue = orders.reduce((sum, o) => sum + o.price, 0);
+  const rejectedOrdersCount = orders.filter((o) => o.status === 'rejected').length;
+  const totalRevenue = orders.filter((o) => o.status !== 'rejected').reduce((sum, o) => sum + o.price, 0);
 
   const filteredRoosters = roosters.filter(r => 
     r.tagId.toLowerCase().includes(searchFilter.toLowerCase()) ||
@@ -627,9 +632,14 @@ export const AdminPanel: React.FC = () => {
             </div>
 
             <div className="bg-white p-5 rounded-2xl border border-stone-200 shadow-sm">
-              <p className="text-xs font-semibold text-stone-500 uppercase">Total Orders</p>
-              <p className="text-3xl font-black text-stone-900 mt-1">{orders.length}</p>
-              <p className="text-[11px] text-stone-400 mt-1">Live customer orders</p>
+              <p className="text-xs font-semibold text-stone-500 uppercase">Awaiting Approval</p>
+              <div className="flex items-center space-x-2 mt-1">
+                <p className="text-3xl font-black text-amber-500">{pendingOrdersCount}</p>
+                {pendingOrdersCount > 0 && (
+                  <span className="w-2.5 h-2.5 rounded-full bg-amber-500 animate-ping" />
+                )}
+              </div>
+              <p className="text-[11px] text-stone-400 mt-1">Requires accept or reject decision</p>
             </div>
 
             <div className="bg-white p-5 rounded-2xl border border-stone-200 shadow-sm">
@@ -639,9 +649,9 @@ export const AdminPanel: React.FC = () => {
             </div>
 
             <div className="bg-white p-5 rounded-2xl border border-stone-200 shadow-sm">
-              <p className="text-xs font-semibold text-stone-500 uppercase">Pending Dispatch</p>
-              <p className="text-3xl font-black text-amber-600 mt-1">{confirmedOrdersCount}</p>
-              <p className="text-[11px] text-stone-400 mt-1">Requires crate packing & vet check</p>
+              <p className="text-xs font-semibold text-stone-500 uppercase">Delivered & Closed</p>
+              <p className="text-3xl font-black text-emerald-600 mt-1">{deliveredOrdersCount}</p>
+              <p className="text-[11px] text-stone-400 mt-1">Completed bio-secure handoffs</p>
             </div>
           </div>
         ) : (
@@ -892,14 +902,26 @@ export const AdminPanel: React.FC = () => {
                   </button>
 
                   <button
+                    onClick={() => setOrderStatusFilter('pending_approval')}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center space-x-1.5 whitespace-nowrap ${
+                      orderStatusFilter === 'pending_approval'
+                        ? 'bg-amber-500 text-stone-950 font-black shadow-xs ring-2 ring-amber-300'
+                        : 'bg-amber-50 text-amber-900 hover:bg-amber-100 border border-amber-300'
+                    }`}
+                  >
+                    <span className={`w-2 h-2 rounded-full bg-amber-500 ${pendingOrdersCount > 0 ? 'animate-ping' : ''}`}></span>
+                    <span>Pending Review ({pendingOrdersCount})</span>
+                  </button>
+
+                  <button
                     onClick={() => setOrderStatusFilter('confirmed')}
                     className={`px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center space-x-1.5 whitespace-nowrap ${
                       orderStatusFilter === 'confirmed'
-                        ? 'bg-amber-500 text-stone-950 font-black shadow-xs'
-                        : 'bg-amber-50 text-amber-900 hover:bg-amber-100 border border-amber-200'
+                        ? 'bg-emerald-600 text-white font-black shadow-xs'
+                        : 'bg-emerald-50 text-emerald-900 hover:bg-emerald-100 border border-emerald-200'
                     }`}
                   >
-                    <span className="w-2 h-2 rounded-full bg-amber-500"></span>
+                    <CheckCircle2 className="w-3.5 h-3.5" />
                     <span>Confirmed ({confirmedOrdersCount})</span>
                   </button>
 
@@ -919,12 +941,24 @@ export const AdminPanel: React.FC = () => {
                     onClick={() => setOrderStatusFilter('delivered')}
                     className={`px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center space-x-1.5 whitespace-nowrap ${
                       orderStatusFilter === 'delivered'
-                        ? 'bg-emerald-600 text-white shadow-xs'
-                        : 'bg-emerald-50 text-emerald-900 hover:bg-emerald-100 border border-emerald-200'
+                        ? 'bg-teal-700 text-white shadow-xs'
+                        : 'bg-teal-50 text-teal-900 hover:bg-teal-100 border border-teal-200'
                     }`}
                   >
-                    <CheckCircle2 className="w-3.5 h-3.5" />
+                    <Lock className="w-3.5 h-3.5" />
                     <span>Delivered ({deliveredOrdersCount})</span>
+                  </button>
+
+                  <button
+                    onClick={() => setOrderStatusFilter('rejected')}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center space-x-1.5 whitespace-nowrap ${
+                      orderStatusFilter === 'rejected'
+                        ? 'bg-rose-600 text-white shadow-xs'
+                        : 'bg-rose-50 text-rose-900 hover:bg-rose-100 border border-rose-200'
+                    }`}
+                  >
+                    <X className="w-3.5 h-3.5" />
+                    <span>Rejected ({rejectedOrdersCount})</span>
                   </button>
                 </div>
               </div>
@@ -1012,21 +1046,36 @@ Our live transport driver will call you 2 hours prior to arrival. Thank you for 
                             </p>
                           </div>
 
-                          <select
-                            value={order.status}
-                            onChange={(e) => updateOrderStatus(order.id, e.target.value as any)}
-                            className={`text-xs font-extrabold rounded-xl px-3 py-1.5 border shadow-xs transition ${
-                              order.status === 'confirmed'
-                                ? 'bg-amber-50 text-amber-900 border-amber-300 ring-2 ring-amber-200/50'
-                                : order.status === 'dispatched'
-                                ? 'bg-sky-50 text-sky-900 border-sky-300 ring-2 ring-sky-200/50'
-                                : 'bg-emerald-50 text-emerald-900 border-emerald-300 ring-2 ring-emerald-200/50'
-                            }`}
-                          >
-                            <option value="confirmed">🟡 Order Confirmed (New)</option>
-                            <option value="dispatched">🚚 Dispatched / In Transit</option>
-                            <option value="delivered">🟢 Delivered & Complete</option>
-                          </select>
+                          {order.status === 'delivered' ? (
+                            <div className="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl text-xs font-black bg-emerald-100 text-emerald-900 border border-emerald-300 shadow-xs" title="Delivered orders are locked and cannot be edited">
+                              <Lock className="w-3.5 h-3.5 text-emerald-700" />
+                              <span>🟢 Delivered (Locked)</span>
+                            </div>
+                          ) : order.status === 'rejected' ? (
+                            <div className="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl text-xs font-black bg-rose-100 text-rose-900 border border-rose-300 shadow-xs">
+                              <X className="w-3.5 h-3.5 text-rose-700" />
+                              <span>🔴 Rejected</span>
+                            </div>
+                          ) : order.status === 'pending_approval' ? (
+                            <div className="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl text-xs font-black bg-amber-100 text-amber-950 border border-amber-400 shadow-xs ring-2 ring-amber-300/50 animate-pulse">
+                              <Clock className="w-3.5 h-3.5 text-amber-800" />
+                              <span>⏳ Pending Decision</span>
+                            </div>
+                          ) : (
+                            <select
+                              value={order.status}
+                              onChange={(e) => updateOrderStatus(order.id, e.target.value as any)}
+                              className={`text-xs font-extrabold rounded-xl px-3 py-1.5 border shadow-xs transition ${
+                                order.status === 'confirmed'
+                                  ? 'bg-amber-50 text-amber-900 border-amber-300 ring-2 ring-amber-200/50'
+                                  : 'bg-sky-50 text-sky-900 border-sky-300 ring-2 ring-sky-200/50'
+                              }`}
+                            >
+                              <option value="confirmed">🟡 Order Confirmed (Accepted)</option>
+                              <option value="dispatched">🚚 Dispatched / In Transit</option>
+                              <option value="delivered">🟢 Delivered & Complete (Locks Order)</option>
+                            </select>
+                          )}
                         </div>
                       </div>
 
@@ -1122,47 +1171,87 @@ Our live transport driver will call you 2 hours prior to arrival. Thank you for 
                       </div>
 
                       {/* Action Toolbar */}
-                      <div className="flex flex-wrap items-center gap-2 pt-1 border-t border-stone-100">
-                        <a
-                          href={dispatchWhatsAppUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex-1 min-w-[200px] flex items-center justify-center space-x-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2 px-3 rounded-xl text-xs transition shadow-xs"
-                          title="Open WhatsApp with pre-filled dispatch tracking message"
-                        >
-                          <MessageCircle className="w-3.5 h-3.5" />
-                          <span>WhatsApp Dispatch Update</span>
-                        </a>
+                      <div className="flex flex-wrap items-center justify-between gap-2.5 pt-3 border-t border-stone-100">
+                        {order.status === 'pending_approval' ? (
+                          <div className="flex items-center space-x-2">
+                            {/* Accept Order Button */}
+                            <button
+                              type="button"
+                              onClick={() => acceptOrder(order.id)}
+                              className="flex items-center justify-center space-x-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold py-2 px-4 rounded-xl text-xs transition active:scale-95 shadow-sm cursor-pointer"
+                              title="Accept & Confirm Order (Sends live alert to customer)"
+                            >
+                              <CheckCircle2 className="w-4 h-4 text-white" />
+                              <span>Accept Order</span>
+                            </button>
 
-                        <button
-                          onClick={() => setPrintingOrder(order)}
-                          className="flex items-center justify-center space-x-1.5 bg-stone-900 hover:bg-stone-800 text-white font-bold py-2 px-3.5 rounded-xl text-xs transition shadow-xs"
-                          title="Generate printable bio-secure crate dispatch slip & veterinary certificate"
-                        >
-                          <Printer className="w-3.5 h-3.5 text-amber-400" />
-                          <span>Print Crate Pass</span>
-                        </button>
+                            {/* Reject Order Button */}
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setRejectingOrder(order);
+                                setSelectedRejectReason('Destination address exceeds 20 km live animal delivery radius');
+                                setCustomRejectReason('');
+                              }}
+                              className="flex items-center justify-center space-x-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 font-bold py-2 px-3.5 rounded-xl text-xs transition active:scale-95 cursor-pointer"
+                              title="Reject this order and choose/type reason"
+                            >
+                              <X className="w-4 h-4 text-rose-600" />
+                              <span>Reject Order</span>
+                            </button>
+                          </div>
+                        ) : order.status === 'confirmed' ? (
+                          <div className="flex items-center space-x-2">
+                            <button
+                              type="button"
+                              onClick={() => updateOrderStatus(order.id, 'dispatched')}
+                              className="flex items-center justify-center space-x-1.5 bg-sky-600 hover:bg-sky-500 text-white font-bold py-2 px-3.5 rounded-xl text-xs transition shadow-xs cursor-pointer"
+                              title="Dispatch rooster in Climate Crate (notifies customer)"
+                            >
+                              <Truck className="w-3.5 h-3.5 text-white" />
+                              <span>Mark In-Transit (Dispatched)</span>
+                            </button>
+                            <span className="text-[11px] text-stone-400">Accepted by Admin</span>
+                          </div>
+                        ) : order.status === 'dispatched' ? (
+                          <div className="flex items-center space-x-2">
+                            <button
+                              type="button"
+                              onClick={() => updateOrderStatus(order.id, 'delivered')}
+                              className="flex items-center justify-center space-x-1.5 bg-teal-700 hover:bg-teal-600 text-white font-bold py-2 px-3.5 rounded-xl text-xs transition shadow-xs cursor-pointer"
+                              title="Mark delivered (locks this order permanently)"
+                            >
+                              <CheckCircle2 className="w-3.5 h-3.5 text-white" />
+                              <span>Mark Delivered & Handed Over</span>
+                            </button>
+                            <span className="text-[11px] text-sky-600 font-medium">Live GPS Crate Active</span>
+                          </div>
+                        ) : order.status === 'delivered' ? (
+                          <div className="flex items-center space-x-2 text-xs font-bold text-emerald-800 bg-emerald-50 border border-emerald-200 px-3 py-1.5 rounded-xl">
+                            <Lock className="w-3.5 h-3.5 text-emerald-600" />
+                            <span>Bio-Secure Handoff Complete • Order Record Locked</span>
+                          </div>
+                        ) : order.status === 'rejected' ? (
+                          <div className="flex items-center space-x-2 text-xs font-semibold text-rose-800 bg-rose-50 border border-rose-200 px-3 py-1.5 rounded-xl">
+                            <AlertCircle className="w-3.5 h-3.5 text-rose-600 shrink-0" />
+                            <span>
+                              Rejected: <strong>{order.rejectionReason || 'Not approved by farm management'}</strong>
+                            </span>
+                          </div>
+                        ) : null}
 
-                        <a
-                          href={`tel:${order.phoneNumber}`}
-                          className="flex items-center justify-center space-x-1.5 bg-stone-100 hover:bg-stone-200 text-stone-800 font-semibold py-2 px-3.5 rounded-xl text-xs transition"
-                          title="Call buyer directly"
-                        >
-                          <Phone className="w-3.5 h-3.5 text-stone-600" />
-                          <span>Call</span>
-                        </a>
-
-                        <button
-                          onClick={() => {
-                            if (confirm(`Are you sure you want to delete order ${order.id}?`)) {
-                              deleteOrder(order.id);
-                            }
-                          }}
-                          className="p-2 text-stone-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition"
-                          title="Delete Order"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
+                        {/* Print Crate Pass */}
+                        {order.status !== 'rejected' && (
+                          <button
+                            type="button"
+                            onClick={() => setPrintingOrder(order)}
+                            className="flex items-center justify-center space-x-1.5 bg-stone-900 hover:bg-stone-800 text-white font-bold py-2 px-3.5 rounded-xl text-xs transition shadow-xs cursor-pointer ml-auto"
+                            title="Generate printable bio-secure crate dispatch slip & veterinary certificate"
+                          >
+                            <Printer className="w-3.5 h-3.5 text-amber-400" />
+                            <span>Print Crate Pass</span>
+                          </button>
+                        )}
                       </div>
 
                     </div>
@@ -1941,6 +2030,122 @@ Our live transport driver will call you 2 hours prior to arrival. Thank you for 
 
             </div>
 
+          </div>
+        </div>
+      )}
+
+      {/* REJECT ORDER WITH DOCUMENTED REASON MODAL */}
+      {rejectingOrder && (
+        <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto animate-in fade-in duration-200">
+          <div className="bg-white text-stone-900 rounded-3xl max-w-lg w-full p-6 sm:p-7 shadow-2xl relative border border-rose-200 space-y-5 animate-in zoom-in-95 duration-200">
+            {/* Modal Header */}
+            <div className="flex items-start justify-between pb-3 border-b border-stone-200">
+              <div className="flex items-center space-x-3">
+                <div className="w-10 h-10 rounded-2xl bg-rose-100 text-rose-600 flex items-center justify-center font-bold">
+                  <X className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="font-black text-stone-900 text-base">Reject Customer Order</h3>
+                  <p className="text-xs text-stone-500 font-mono">Order #{rejectingOrder.id} • {rejectingOrder.customerName}</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setRejectingOrder(null)}
+                className="p-1.5 text-stone-400 hover:text-stone-700 hover:bg-stone-100 rounded-xl transition"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Order Brief Summary */}
+            <div className="bg-stone-50 rounded-2xl p-3.5 border border-stone-200 text-xs space-y-1.5">
+              <div className="flex justify-between text-stone-600">
+                <span>Consigned Bird:</span>
+                <span className="font-bold text-stone-900">{rejectingOrder.roosterName}</span>
+              </div>
+              <div className="flex justify-between text-stone-600">
+                <span>Destination:</span>
+                <span className="font-medium text-stone-900">{rejectingOrder.city}, {rejectingOrder.state}</span>
+              </div>
+              <div className="flex justify-between text-stone-600">
+                <span>Payable Amount:</span>
+                <span className="font-bold text-emerald-700">₹{rejectingOrder.price.toLocaleString('en-IN')}</span>
+              </div>
+            </div>
+
+            {/* Select Rejection Reason */}
+            <div className="space-y-3">
+              <label className="block text-xs font-bold text-stone-800 uppercase tracking-wide">
+                Select Reason for Rejection <span className="text-rose-500">*</span>
+              </label>
+
+              <div className="space-y-2">
+                {[
+                  'Destination address exceeds 20 km live animal delivery radius',
+                  'Selected rooster is currently undergoing 14-day avian quarantine',
+                  'Customer requested cancellation or duplicate order placed',
+                  'Customer unreachable for doorstep bio-secure delivery confirmation',
+                  'Other (specify custom reason below)',
+                ].map((reason) => (
+                  <label
+                    key={reason}
+                    className={`flex items-start space-x-3 p-3 rounded-xl border text-xs font-medium cursor-pointer transition ${
+                      selectedRejectReason === reason
+                        ? 'bg-rose-50/80 border-rose-300 text-rose-950 font-bold ring-1 ring-rose-300'
+                        : 'bg-white border-stone-200 text-stone-700 hover:bg-stone-50'
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      name="rejectReason"
+                      value={reason}
+                      checked={selectedRejectReason === reason}
+                      onChange={() => setSelectedRejectReason(reason)}
+                      className="mt-0.5 text-rose-600 focus:ring-rose-500 cursor-pointer"
+                    />
+                    <span>{reason}</span>
+                  </label>
+                ))}
+              </div>
+
+              {selectedRejectReason === 'Other (specify custom reason below)' && (
+                <div className="pt-2">
+                  <textarea
+                    rows={3}
+                    placeholder="Type the specific reason why this order cannot be fulfilled..."
+                    value={customRejectReason}
+                    onChange={(e) => setCustomRejectReason(e.target.value)}
+                    className="w-full p-3 text-xs border border-stone-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-rose-500"
+                  />
+                </div>
+              )}
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex items-center justify-end space-x-2 pt-3 border-t border-stone-200">
+              <button
+                type="button"
+                onClick={() => setRejectingOrder(null)}
+                className="px-4 py-2 text-xs font-bold text-stone-600 hover:text-stone-900 bg-stone-100 hover:bg-stone-200 rounded-xl transition"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  const effectiveReason =
+                    selectedRejectReason === 'Other (specify custom reason below)'
+                      ? customRejectReason.trim() || 'Order could not be approved by farm management.'
+                      : selectedRejectReason;
+                  rejectOrder(rejectingOrder.id, effectiveReason);
+                  setRejectingOrder(null);
+                }}
+                className="px-5 py-2.5 text-xs font-black text-white bg-rose-600 hover:bg-rose-500 rounded-xl transition active:scale-95 shadow-md shadow-rose-600/20"
+              >
+                Confirm Rejection & Notify Buyer
+              </button>
+            </div>
           </div>
         </div>
       )}

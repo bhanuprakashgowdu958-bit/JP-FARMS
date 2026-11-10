@@ -69,7 +69,10 @@ export interface RoosterOrder {
   paymentMethod: 'cod' | 'upi' | 'advance_token';
   notes?: string;
   orderDate: string;
-  status: 'confirmed' | 'dispatched' | 'delivered';
+  status: 'pending_approval' | 'confirmed' | 'dispatched' | 'delivered' | 'rejected';
+  rejectionReason?: string;
+  rejectedAt?: string;
+  acceptedAt?: string;
 }
 
 export interface CustomerInquiry {

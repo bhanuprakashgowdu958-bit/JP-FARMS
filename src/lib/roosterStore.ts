@@ -353,7 +353,7 @@ export function useOrders() {
     const newOrder: RoosterOrder = {
       id: orderData.id || `JP-ORD-${Math.floor(10000 + Math.random() * 90000)}`,
       orderDate: new Date().toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' }),
-      status: orderData.status || 'confirmed',
+      status: orderData.status || 'pending_approval',
       ...orderData,
     };
     const current = getStoredOrders();
@@ -363,15 +363,27 @@ export function useOrders() {
 
     // Push notification and play chime
     try {
-      pushNotification({
-        orderId: newOrder.id,
-        type: newOrder.status === 'dispatched' ? 'dispatched' : newOrder.status === 'delivered' ? 'delivered' : 'confirmed',
-        title: `Order Confirmed: #${newOrder.id}`,
-        message: `Your order for ${newOrder.roosterName || 'Heritage Rooster'} is confirmed. Health certification & crate prep in progress.`,
-        roosterName: newOrder.roosterName,
-        roosterTag: newOrder.roosterTag,
-        deliveryType: newOrder.deliveryType,
-      });
+      if (newOrder.status === 'pending_approval') {
+        pushNotification({
+          orderId: newOrder.id,
+          type: 'pending_approval',
+          title: `Order Received: #${newOrder.id}`,
+          message: `Your order for ${newOrder.roosterName || 'Heritage Rooster'} is placed! Awaiting admin health exam & crate slot approval.`,
+          roosterName: newOrder.roosterName,
+          roosterTag: newOrder.roosterTag,
+          deliveryType: newOrder.deliveryType,
+        });
+      } else {
+        pushNotification({
+          orderId: newOrder.id,
+          type: newOrder.status === 'dispatched' ? 'dispatched' : newOrder.status === 'delivered' ? 'delivered' : 'confirmed',
+          title: `Order Confirmed: #${newOrder.id}`,
+          message: `Your order for ${newOrder.roosterName || 'Heritage Rooster'} is confirmed. Health certification & crate prep in progress.`,
+          roosterName: newOrder.roosterName,
+          roosterTag: newOrder.roosterTag,
+          deliveryType: newOrder.deliveryType,
+        });
+      }
     } catch (e) {
       console.warn('Could not push order notification', e);
     }
@@ -379,9 +391,77 @@ export function useOrders() {
     return newOrder;
   };
 
+  const acceptOrder = (id: string) => {
+    const current = getStoredOrders();
+    const targetOrder = current.find((o) => o.id === id);
+    if (!targetOrder || targetOrder.status === 'delivered') return;
+
+    const acceptedAt = new Date().toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' });
+    const updated = current.map((o) =>
+      o.id === id ? { ...o, status: 'confirmed' as const, acceptedAt } : o
+    );
+    saveStoredOrders(updated);
+    setOrders(updated);
+
+    try {
+      pushNotification({
+        orderId: targetOrder.id,
+        type: 'confirmed',
+        title: `Order Confirmed: #${targetOrder.id}`,
+        message: `Your order for ${targetOrder.roosterName || 'Heritage Rooster'} has been approved & confirmed by JP Farms! Health certificate & crate pass issued.`,
+        roosterName: targetOrder.roosterName,
+        roosterTag: targetOrder.roosterTag,
+        deliveryType: targetOrder.deliveryType,
+      });
+    } catch (e) {
+      console.warn('Could not push accept notification', e);
+    }
+  };
+
+  const rejectOrder = (id: string, reason: string) => {
+    const current = getStoredOrders();
+    const targetOrder = current.find((o) => o.id === id);
+    if (!targetOrder || targetOrder.status === 'delivered') return;
+
+    const rejectedAt = new Date().toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' });
+    const updated = current.map((o) =>
+      o.id === id
+        ? {
+            ...o,
+            status: 'rejected' as const,
+            rejectionReason: reason,
+            rejectedAt,
+          }
+        : o
+    );
+    saveStoredOrders(updated);
+    setOrders(updated);
+
+    try {
+      pushNotification({
+        orderId: targetOrder.id,
+        type: 'rejected',
+        title: `Order Not Approved: #${targetOrder.id}`,
+        message: `Order for ${targetOrder.roosterName || 'Rooster'} was rejected. Reason: ${reason}`,
+        roosterName: targetOrder.roosterName,
+        roosterTag: targetOrder.roosterTag,
+        deliveryType: targetOrder.deliveryType,
+        rejectionReason: reason,
+      });
+    } catch (e) {
+      console.warn('Could not push rejection notification', e);
+    }
+  };
+
   const updateOrderStatus = (id: string, status: RoosterOrder['status']) => {
     const current = getStoredOrders();
     const targetOrder = current.find((o) => o.id === id);
+    
+    // Once an order is delivered, lock it from any further modifications!
+    if (!targetOrder || targetOrder.status === 'delivered') {
+      return;
+    }
+
     const updated = current.map((o) => (o.id === id ? { ...o, status } : o));
     saveStoredOrders(updated);
     setOrders(updated);
@@ -436,6 +516,8 @@ export function useOrders() {
     orders,
     isLoaded,
     addOrder,
+    acceptOrder,
+    rejectOrder,
     updateOrderStatus,
     deleteOrder,
   };

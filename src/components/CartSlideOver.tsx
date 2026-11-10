@@ -311,7 +311,7 @@ export const CartSlideOver: React.FC = () => {
         deliveryType,
         paymentMethod,
         notes: formData.notes.trim(),
-        status: 'confirmed',
+        status: 'pending_approval',
       });
 
       // Auto-save phone to profile & hardware storage for future 1-click orders

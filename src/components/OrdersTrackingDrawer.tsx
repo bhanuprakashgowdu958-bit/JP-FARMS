@@ -45,7 +45,7 @@ export const OrdersTrackingDrawer: React.FC<OrdersTrackingDrawerProps> = ({
   const { user } = useAuth();
 
   const [searchQuery, setSearchQuery] = useState('');
-  const [filterStatus, setFilterStatus] = useState<'all' | 'confirmed' | 'dispatched' | 'delivered'>('all');
+  const [filterStatus, setFilterStatus] = useState<'all' | 'pending_approval' | 'confirmed' | 'dispatched' | 'delivered' | 'rejected'>('all');
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [selectedHealthPassOrder, setSelectedHealthPassOrder] = useState<RoosterOrder | null>(null);
 
@@ -212,9 +212,11 @@ Please share the live AC vehicle GPS transit location and a quick video update o
               {(
                 [
                   { id: 'all', label: `All Orders (${orders.length})` },
-                  { id: 'confirmed', label: 'Preparing Crate' },
+                  { id: 'pending_approval', label: '⏳ Under Review' },
+                  { id: 'confirmed', label: 'Confirmed' },
                   { id: 'dispatched', label: '🚚 In Transit' },
                   { id: 'delivered', label: 'Delivered' },
+                  { id: 'rejected', label: '✕ Not Approved' },
                 ] as const
               ).map((chip) => (
                 <button
@@ -325,13 +327,21 @@ Please share the live AC vehicle GPS transit location and a quick video update o
                               ? 'bg-emerald-100 text-emerald-900 border border-emerald-300'
                               : order.status === 'dispatched'
                               ? 'bg-sky-100 text-sky-900 border border-sky-300 animate-pulse'
-                              : 'bg-amber-100 text-amber-900 border border-amber-300'
+                              : order.status === 'pending_approval'
+                              ? 'bg-amber-100 text-amber-950 border border-amber-300 animate-pulse'
+                              : order.status === 'rejected'
+                              ? 'bg-rose-100 text-rose-900 border border-rose-300'
+                              : 'bg-emerald-50 text-emerald-800 border border-emerald-200'
                           }`}
                         >
                           {order.status === 'delivered'
-                            ? '✓ Delivered'
+                            ? '✓ Delivered (Closed)'
                             : order.status === 'dispatched'
                             ? '🚚 In Transit'
+                            : order.status === 'pending_approval'
+                            ? '⏳ Awaiting Review'
+                            : order.status === 'rejected'
+                            ? '✕ Not Approved'
                             : '🟡 Preparing Crate'}
                         </span>
                       </div>
@@ -370,126 +380,152 @@ Please share the live AC vehicle GPS transit location and a quick video update o
                         </div>
                       </div>
 
-                      {/* Amazon/Flipkart-Style 4-Step Live Tracking Stepper */}
-                      <div className="bg-slate-50 rounded-xl p-3 sm:p-4 border border-slate-200/80">
-                        <div className="flex items-center justify-between mb-3 text-xs">
-                          <span className="font-bold text-slate-800 flex items-center space-x-1.5">
-                            <Truck className="w-3.5 h-3.5 text-amber-600" />
-                            <span>Live Crate Dispatch Progress</span>
-                          </span>
-                          <span className="text-[10px] text-slate-500 font-mono">
-                            {order.status === 'delivered' ? 'Completed' : 'Active Transit'}
-                          </span>
+                      {/* Conditional Status Section: Rejected Notice vs Pending Notice vs Live Stepper */}
+                      {order.status === 'rejected' ? (
+                        <div className="bg-rose-50 border border-rose-200 rounded-xl p-4 space-y-1.5 text-xs">
+                          <div className="flex items-center space-x-2 text-rose-900 font-extrabold">
+                            <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
+                            <span>Order Not Approved by JP Farms Management</span>
+                          </div>
+                          <p className="text-rose-800 leading-relaxed text-[11px]">
+                            <strong>Reason:</strong> {order.rejectionReason || 'Destination outside delivery zone or bird under veterinary quarantine.'}
+                          </p>
+                          <p className="text-stone-500 text-[10px] pt-1 border-t border-rose-200/60">
+                            If you would like to arrange farm self-pickup or discuss alternative breeds, please contact our helpline desk.
+                          </p>
                         </div>
+                      ) : order.status === 'pending_approval' ? (
+                        <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 space-y-1.5 text-xs">
+                          <div className="flex items-center space-x-2 text-amber-950 font-extrabold">
+                            <Clock className="w-4 h-4 text-amber-600 animate-spin shrink-0" />
+                            <span>Awaiting Farm Estate Verification</span>
+                          </div>
+                          <p className="text-amber-900 leading-relaxed text-[11px]">
+                            Your order has been received! Our farm director is reviewing the avian health warranty exam and scheduling climate crate transport. You will receive an immediate chime notification upon approval.
+                          </p>
+                        </div>
+                      ) : (
+                        /* Amazon/Flipkart-Style 4-Step Live Tracking Stepper */
+                        <div className="bg-slate-50 rounded-xl p-3 sm:p-4 border border-slate-200/80">
+                          <div className="flex items-center justify-between mb-3 text-xs">
+                            <span className="font-bold text-slate-800 flex items-center space-x-1.5">
+                              <Truck className="w-3.5 h-3.5 text-amber-600" />
+                              <span>Live Crate Dispatch Progress</span>
+                            </span>
+                            <span className="text-[10px] text-slate-500 font-mono">
+                              {order.status === 'delivered' ? 'Completed' : 'Active Transit'}
+                            </span>
+                          </div>
 
-                        {/* Stepper Progress Bar */}
-                        <div className="relative">
-                          {/* Background Connecting Line */}
-                          <div className="absolute top-3.5 left-4 right-4 h-0.5 bg-slate-200 -z-0" />
-                          
-                          {/* Active Filled Line */}
-                          <div 
-                            className="absolute top-3.5 left-4 h-0.5 bg-emerald-500 transition-all duration-500 -z-0"
-                            style={{
-                              width: order.status === 'delivered' ? '100%' : order.status === 'dispatched' ? '66%' : '33%'
-                            }}
-                          />
+                          {/* Stepper Progress Bar */}
+                          <div className="relative">
+                            {/* Background Connecting Line */}
+                            <div className="absolute top-3.5 left-4 right-4 h-0.5 bg-slate-200 -z-0" />
+                            
+                            {/* Active Filled Line */}
+                            <div 
+                              className="absolute top-3.5 left-4 h-0.5 bg-emerald-500 transition-all duration-500 -z-0"
+                              style={{
+                                width: order.status === 'delivered' ? '100%' : order.status === 'dispatched' ? '66%' : '33%'
+                              }}
+                            />
 
-                          {/* 4 Nodes */}
-                          <div className="relative z-10 grid grid-cols-4 gap-1 text-center">
-                            {/* Step 1: Confirmed */}
-                            <div className="flex flex-col items-center">
-                              <div className="w-7 h-7 rounded-full bg-emerald-600 text-white flex items-center justify-center text-xs font-black shadow-xs">
-                                <CheckCircle2 className="w-4 h-4" />
+                            {/* 4 Nodes */}
+                            <div className="relative z-10 grid grid-cols-4 gap-1 text-center">
+                              {/* Step 1: Confirmed */}
+                              <div className="flex flex-col items-center">
+                                <div className="w-7 h-7 rounded-full bg-emerald-600 text-white flex items-center justify-center text-xs font-black shadow-xs">
+                                  <CheckCircle2 className="w-4 h-4" />
+                                </div>
+                                <span className="text-[10px] font-bold text-slate-900 mt-1 leading-tight">
+                                  Order Booked
+                                </span>
+                                <span className="text-[9px] text-slate-400">Estate Confirmed</span>
                               </div>
-                              <span className="text-[10px] font-bold text-slate-900 mt-1 leading-tight">
-                                Order Booked
-                              </span>
-                              <span className="text-[9px] text-slate-400">Estate Confirmed</span>
-                            </div>
 
-                            {/* Step 2: Vet & Crate Sanitized */}
-                            <div className="flex flex-col items-center">
-                              <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-black shadow-xs ${
-                                isConfirmed
-                                  ? 'bg-emerald-600 text-white'
-                                  : 'bg-slate-200 text-slate-500'
-                              }`}>
-                                <ShieldCheck className="w-4 h-4" />
+                              {/* Step 2: Vet & Crate Sanitized */}
+                              <div className="flex flex-col items-center">
+                                <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-black shadow-xs ${
+                                  isConfirmed
+                                    ? 'bg-emerald-600 text-white'
+                                    : 'bg-slate-200 text-slate-500'
+                                }`}>
+                                  <ShieldCheck className="w-4 h-4" />
+                                </div>
+                                <span className="text-[10px] font-bold text-slate-900 mt-1 leading-tight">
+                                  Vet Pass
+                                </span>
+                                <span className="text-[9px] text-slate-400">Sanitized</span>
                               </div>
-                              <span className="text-[10px] font-bold text-slate-900 mt-1 leading-tight">
-                                Vet Pass
-                              </span>
-                              <span className="text-[9px] text-slate-400">Sanitized</span>
-                            </div>
 
-                            {/* Step 3: AC Crate Transit */}
-                            <div className="flex flex-col items-center">
-                              <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-black shadow-xs ${
-                                isDispatched
-                                  ? 'bg-sky-600 text-white ring-4 ring-sky-100 animate-pulse'
-                                  : 'bg-slate-200 text-slate-400'
-                              }`}>
-                                <Truck className="w-3.5 h-3.5" />
+                              {/* Step 3: AC Crate Transit */}
+                              <div className="flex flex-col items-center">
+                                <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-black shadow-xs ${
+                                  isDispatched
+                                    ? 'bg-sky-600 text-white ring-4 ring-sky-100 animate-pulse'
+                                    : 'bg-slate-200 text-slate-400'
+                                }`}>
+                                  <Truck className="w-3.5 h-3.5" />
+                                </div>
+                                <span className="text-[10px] font-bold text-slate-900 mt-1 leading-tight">
+                                  In AC Transit
+                                </span>
+                                <span className="text-[9px] text-slate-400">Live GPS</span>
                               </div>
-                              <span className="text-[10px] font-bold text-slate-900 mt-1 leading-tight">
-                                In AC Transit
-                              </span>
-                              <span className="text-[9px] text-slate-400">Live GPS</span>
-                            </div>
 
-                            {/* Step 4: Doorstep Delivery */}
-                            <div className="flex flex-col items-center">
-                              <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-black shadow-xs ${
-                                isDelivered
-                                  ? 'bg-emerald-600 text-white'
-                                  : 'bg-slate-200 text-slate-400'
-                              }`}>
-                                <CheckCircle2 className="w-4 h-4" />
+                              {/* Step 4: Doorstep Delivery */}
+                              <div className="flex flex-col items-center">
+                                <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-black shadow-xs ${
+                                  isDelivered
+                                    ? 'bg-emerald-600 text-white'
+                                    : 'bg-slate-200 text-slate-400'
+                                }`}>
+                                  <CheckCircle2 className="w-4 h-4" />
+                                </div>
+                                <span className="text-[10px] font-bold text-slate-900 mt-1 leading-tight">
+                                  Handed Off
+                                </span>
+                                <span className="text-[9px] text-slate-400">Delivered</span>
                               </div>
-                              <span className="text-[10px] font-bold text-slate-900 mt-1 leading-tight">
-                                Handed Off
-                              </span>
-                              <span className="text-[9px] text-slate-400">Delivered</span>
                             </div>
                           </div>
-                        </div>
 
-                        {/* Status Description Callout */}
-                        <div className="mt-4 p-2.5 rounded-lg bg-white border border-slate-200/80 flex items-start space-x-2 text-xs">
-                          {order.status === 'delivered' ? (
-                            <>
-                              <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
-                              <div>
-                                <p className="font-bold text-slate-900">Delivered to Doorstep</p>
-                                <p className="text-[11px] text-slate-600">
-                                  Your rooster was delivered safely in bio-secure climate crate. 7-day health guarantee is active.
-                                </p>
-                              </div>
-                            </>
-                          ) : order.status === 'dispatched' ? (
-                            <>
-                              <Truck className="w-4 h-4 text-sky-600 shrink-0 mt-0.5 animate-bounce" />
-                              <div>
-                                <p className="font-bold text-sky-950">In AC Climate Crate Transit</p>
-                                <p className="text-[11px] text-slate-600">
-                                  The vehicle is en route to {order.city}. Click the button below to connect with the driver on WhatsApp for live GPS.
-                                </p>
-                              </div>
-                            </>
-                          ) : (
-                            <>
-                              <Clock className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
-                              <div>
-                                <p className="font-bold text-amber-950">Preparing Sanitized Crate & Avian Vet Check</p>
-                                <p className="text-[11px] text-slate-600">
-                                  Rooster tag {order.roosterTag} is undergoing pre-dispatch health check and crate sanitization at JP Farms estate.
-                                </p>
-                              </div>
-                            </>
-                          )}
+                          {/* Status Description Callout */}
+                          <div className="mt-4 p-2.5 rounded-lg bg-white border border-slate-200/80 flex items-start space-x-2 text-xs">
+                            {order.status === 'delivered' ? (
+                              <>
+                                <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+                                <div>
+                                  <p className="font-bold text-slate-900">Delivered to Doorstep</p>
+                                  <p className="text-[11px] text-slate-600">
+                                    Your rooster was delivered safely in bio-secure climate crate. 7-day health guarantee is active.
+                                  </p>
+                                </div>
+                              </>
+                            ) : order.status === 'dispatched' ? (
+                              <>
+                                <Truck className="w-4 h-4 text-sky-600 shrink-0 mt-0.5 animate-bounce" />
+                                <div>
+                                  <p className="font-bold text-sky-950">In AC Climate Crate Transit</p>
+                                  <p className="text-[11px] text-slate-600">
+                                    The vehicle is en route to {order.city}. Live GPS tracking is monitored.
+                                  </p>
+                                </div>
+                              </>
+                            ) : (
+                              <>
+                                <Clock className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+                                <div>
+                                  <p className="font-bold text-amber-950">Preparing Sanitized Crate & Avian Vet Check</p>
+                                  <p className="text-[11px] text-slate-600">
+                                    Rooster tag {order.roosterTag} is undergoing pre-dispatch health check and crate sanitization at JP Farms estate.
+                                  </p>
+                                </div>
+                              </>
+                            )}
+                          </div>
                         </div>
-                      </div>
+                      )}
 
                       {/* Delivery Address & Contact Row */}
                       <div className="text-xs text-slate-600 bg-slate-50/60 p-3 rounded-xl border border-slate-200/60 space-y-1">

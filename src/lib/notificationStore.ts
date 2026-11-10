@@ -7,7 +7,7 @@ const NOTIFICATIONS_STORAGE_KEY = 'jp_farms_notifications_v1';
 const SOUND_STORAGE_KEY = 'jp_farms_sound_enabled_v1';
 const NOTIFIED_STATUS_KEY = 'jp_farms_notified_statuses_v1';
 
-export type NotificationType = 'confirmed' | 'dispatched' | 'delivered' | 'info';
+export type NotificationType = 'pending_approval' | 'confirmed' | 'dispatched' | 'delivered' | 'rejected' | 'info';
 
 export interface AppNotification {
   id: string;
@@ -20,6 +20,7 @@ export interface AppNotification {
   roosterName?: string;
   roosterTag?: string;
   deliveryType?: 'doorstep_live_crate' | 'farm_pickup';
+  rejectionReason?: string;
 }
 
 const DEFAULT_NOTIFICATIONS: AppNotification[] = [
@@ -199,10 +200,20 @@ export function checkAndNotifyOrders(orders: RoosterOrder[]): void {
       let message = '';
       let type: NotificationType = 'confirmed';
 
-      if (order.status === 'confirmed') {
+      if (order.status === 'pending_approval') {
+        type = 'pending_approval';
+        title = `Order Received: #${order.id}`;
+        message = `Your order for ${order.roosterName || 'Rooster'} is under admin verification. Health pass & crate scheduling in progress.`;
+      } else if (order.status === 'confirmed') {
         type = 'confirmed';
         title = `Order Confirmed: #${order.id}`;
-        message = `Your order for ${order.roosterName || 'Rooster'} is confirmed! Heritage health pass and bio-secure prep in progress.`;
+        message = `Your order for ${order.roosterName || 'Rooster'} has been accepted & approved by JP Farms! Health pass generated.`;
+      } else if (order.status === 'rejected') {
+        type = 'rejected';
+        title = `Order Not Approved: #${order.id}`;
+        message = order.rejectionReason 
+          ? `Reason: ${order.rejectionReason}`
+          : `Your order could not be processed at this time. Please contact JP Farms desk.`;
       } else if (order.status === 'dispatched') {
         type = 'dispatched';
         title = `Order Dispatched: #${order.id}`;
@@ -222,6 +233,7 @@ export function checkAndNotifyOrders(orders: RoosterOrder[]): void {
           roosterName: order.roosterName,
           roosterTag: order.roosterTag,
           deliveryType: order.deliveryType,
+          rejectionReason: order.rejectionReason,
         });
       }
     });
