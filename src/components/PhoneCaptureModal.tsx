@@ -22,6 +22,8 @@ interface PhoneCaptureModalProps {
 export const PhoneCaptureModal: React.FC<PhoneCaptureModalProps> = ({
   isOpen,
   onClose,
+  title = 'Add Mobile Number',
+  subtitle = 'Required for live climate crate delivery tracking & order dispatch updates.',
 }) => {
   const { user, updatePhone } = useAuth();
   const [phoneNumber, setPhoneNumber] = useState(user?.phoneNumber ? user.phoneNumber.replace(/^\+91\s*/, '') : '');
@@ -108,10 +110,10 @@ export const PhoneCaptureModal: React.FC<PhoneCaptureModalProps> = ({
           <div>
             <h3 className="text-lg font-black text-stone-950 tracking-tight flex items-center space-x-2">
               <Phone className="w-5 h-5 text-amber-600" />
-              <span>Add Mobile Number</span>
+              <span>{title}</span>
             </h3>
             <p className="text-xs text-stone-500 mt-1">
-              Required for live climate crate delivery tracking & order dispatch updates.
+              {subtitle}
             </p>
           </div>
 

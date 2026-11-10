@@ -18,6 +18,7 @@ import { CheckoutModal } from '@/components/CheckoutModal';
 import { CartSlideOver } from '@/components/CartSlideOver';
 import { OrdersTrackingDrawer } from '@/components/OrdersTrackingDrawer';
 import { CartToast } from '@/components/CartToast';
+import { PhoneCaptureModal } from '@/components/PhoneCaptureModal';
 import { useRoosters } from '@/lib/roosterStore';
 import { useCart } from '@/lib/cartStore';
 import { Rooster } from '@/types/rooster';
@@ -26,7 +27,7 @@ import { FARM_INFO } from '@/lib/data';
 import { generateWhatsAppLink } from '@/lib/utils';
 
 export default function HomePage() {
-  const { isAuthenticated, isLoading } = useAuth();
+  const { user, isAuthenticated, isLoading } = useAuth();
   const router = useRouter();
 
   // If user is not signed up / signed in, take them to the signup page
@@ -45,6 +46,23 @@ export default function HomePage() {
   const [isReelsOpen, setIsReelsOpen] = useState(false);
   const [reelsInitialId, setReelsInitialId] = useState<string | undefined>(undefined);
   const [isOrdersOpen, setIsOrdersOpen] = useState(false);
+  const [isPhoneModalOpen, setIsPhoneModalOpen] = useState(false);
+
+  // As soon as users login, check if phone number is blank and notify them to add it
+  useEffect(() => {
+    if (!isLoading && isAuthenticated && user) {
+      const cleanDigits = (user.phoneNumber || '').replace(/\D/g, '');
+      const isMissingPhone = cleanDigits.length < 10;
+      const dismissed = typeof window !== 'undefined' ? sessionStorage.getItem('dismissed_phone_prompt') : null;
+
+      if (isMissingPhone && !dismissed) {
+        const timer = setTimeout(() => {
+          setIsPhoneModalOpen(true);
+        }, 900);
+        return () => clearTimeout(timer);
+      }
+    }
+  }, [isLoading, isAuthenticated, user]);
 
   useEffect(() => {
     const handleOpenOrders = () => setIsOrdersOpen(true);
@@ -95,6 +113,24 @@ export default function HomePage() {
         onOpenOrders={() => setIsOrdersOpen(true)}
         birdsCount={birdsCount} 
       />
+
+      {/* Action Notification Banner: Prompt user to update phone number if blank */}
+      {isAuthenticated && user && (!user.phoneNumber || user.phoneNumber.replace(/\D/g, '').length < 10) && (
+        <div className="bg-gradient-to-r from-amber-500 via-amber-400 to-orange-500 text-stone-950 px-4 py-2.5 text-xs font-bold flex items-center justify-between border-b border-amber-600/20 shadow-xs">
+          <div className="flex items-center space-x-2 truncate">
+            <span className="w-2.5 h-2.5 rounded-full bg-stone-950 animate-ping shrink-0" />
+            <span className="truncate">
+              ⚡ Action Required: Please update your mobile number to enable live transit tracking & order updates.
+            </span>
+          </div>
+          <button
+            onClick={() => setIsPhoneModalOpen(true)}
+            className="ml-3 shrink-0 bg-stone-950 hover:bg-stone-850 text-amber-300 font-extrabold px-3 py-1 rounded-lg text-[11px] shadow-sm active:scale-95 transition cursor-pointer"
+          >
+            + Update Mobile
+          </button>
+        </div>
+      )}
 
       {/* Main Content Area */}
       <main className="flex-1">
@@ -209,6 +245,17 @@ export default function HomePage() {
           </button>
         </div>
       )}
+
+      {/* 8. Phone Number Capture & Update Modal */}
+      <PhoneCaptureModal
+        isOpen={isPhoneModalOpen}
+        onClose={() => {
+          setIsPhoneModalOpen(false);
+          sessionStorage.setItem('dismissed_phone_prompt', 'true');
+        }}
+        title="Update Your Mobile Number"
+        subtitle="Please provide your 10-digit mobile number for live animal transit tracking & order dispatch updates."
+      />
 
     </div>
   );

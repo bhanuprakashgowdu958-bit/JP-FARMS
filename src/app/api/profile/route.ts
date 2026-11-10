@@ -20,7 +20,7 @@ const BHANU_ACCOUNTS = ['bhanuprakashgowdu958@gmail.com', 'bhanuprakashgowdu87@g
 
 const DEFAULT_BHANU_PROFILE: ProfileData = {
   name: 'Bhanu Prakash',
-  phoneNumber: '+91 97012 34567',
+  phoneNumber: '',
   updatedAt: new Date().toISOString(),
 };
 

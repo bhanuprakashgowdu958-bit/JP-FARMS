@@ -264,7 +264,16 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                       {formatDisplayPhone(user.phoneNumber)}
                     </span>
                   ) : (
-                    <span className="text-slate-400 italic">No phone number added yet</span>
+                    <div className="flex items-center justify-between bg-amber-50/70 border border-amber-200 rounded-xl p-2.5">
+                      <span className="text-amber-900 text-xs font-semibold">No phone number added yet</span>
+                      <button
+                        type="button"
+                        onClick={() => setIsEditingPhone(true)}
+                        className="bg-amber-500 hover:bg-amber-400 text-stone-950 text-[11px] font-black px-2.5 py-1 rounded-lg shadow-xs transition active:scale-95 cursor-pointer"
+                      >
+                        + Add Phone
+                      </button>
+                    </div>
                   )}
                 </div>
               )}

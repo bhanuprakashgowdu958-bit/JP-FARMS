@@ -61,7 +61,7 @@ const INITIAL_REGISTERED_USERS: RegisteredCustomer[] = [
     uid: 'bhanu-owner-958',
     name: 'Bhanu Prakash',
     email: 'bhanuprakashgowdu958@gmail.com',
-    phone: '+91 97012 34567',
+    phone: '',
     photoURL: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=120&q=80',
     joinedAt: '2026-11-08 10:00 AM',
     lastLoginAt: '2026-11-09 12:00 AM',
@@ -70,7 +70,7 @@ const INITIAL_REGISTERED_USERS: RegisteredCustomer[] = [
     uid: 'bhanu-owner-87',
     name: 'Bhanu prakash Gowdu',
     email: 'bhanuprakashgowdu87@gmail.com',
-    phone: '+91 97012 34567',
+    phone: '',
     photoURL: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=120&q=80',
     joinedAt: '2026-11-08 10:00 AM',
     lastLoginAt: '2026-11-09 12:00 AM',
@@ -97,8 +97,15 @@ const INITIAL_REGISTERED_USERS: RegisteredCustomer[] = [
 
 function isDummyValue(str?: string | null): boolean {
   if (!str) return false;
-  const s = str.toLowerCase().trim();
-  return s === 'bhdhjjdh' || s === 'bhdhhd' || s === '1478963258';
+  const s = str.toLowerCase().trim().replace(/[\s\-\+]/g, '');
+  return (
+    s === 'bhdhjjdh' ||
+    s === 'bhdhhd' ||
+    s === '1478963258' ||
+    s === '9701234567' ||
+    s === '919701234567' ||
+    s.includes('97012')
+  );
 }
 
 /**
@@ -133,7 +140,9 @@ export function getSavedProfile(identifier?: { email?: string | null; uid?: stri
 
     // 2. Hardware device storage fallback for phone (guaranteed local retention)
     const devicePhone = localStorage.getItem(DEVICE_PHONE_KEY);
-    if (!profile?.phoneNumber && devicePhone && !isDummyValue(devicePhone)) {
+    if (devicePhone && isDummyValue(devicePhone)) {
+      localStorage.removeItem(DEVICE_PHONE_KEY);
+    } else if (!profile?.phoneNumber && devicePhone) {
       profile = {
         ...(profile || {}),
         phoneNumber: devicePhone,
@@ -198,20 +207,14 @@ export function getSavedProfile(identifier?: { email?: string | null; uid?: stri
       }
     }
 
-    // 6. Default for owner/breeder Bhanu Prakash (sync real phone number)
-    if (isBhanuEmail(identifier?.email)) {
-      if (!profile?.phoneNumber || isDummyValue(profile.phoneNumber)) {
-        profile = {
-          ...(profile || {}),
-          phoneNumber: '+91 97012 34567',
-        };
-      }
-      // Purge any legacy hardcoded dummy Vijayawada address
-      if (profile?.deliveryAddress && (profile.deliveryAddress.includes('Benz Circle') || profile.city === 'Vijayawada')) {
-        delete profile.deliveryAddress;
-        delete profile.city;
-        delete profile.pincode;
-      }
+    // 6. Purge any dummy demo phone number or dummy address
+    if (profile?.phoneNumber && isDummyValue(profile.phoneNumber)) {
+      delete profile.phoneNumber;
+    }
+    if (profile?.deliveryAddress && (profile.deliveryAddress.includes('Benz Circle') || profile.city === 'Vijayawada' || isDummyValue(profile.deliveryAddress))) {
+      delete profile.deliveryAddress;
+      delete profile.city;
+      delete profile.pincode;
     }
 
     return profile;
@@ -301,20 +304,20 @@ export function getStoredUser(): AppUser | null {
       return null;
     }
 
-    // Auto-purge dummy test data and set verified phone for Bhanu accounts
-    if (parsed.phoneNumber === '1478963258' || isBhanuEmail(parsed.email)) {
-      if (parsed.phoneNumber === '1478963258' || !parsed.phoneNumber) {
-        parsed.phoneNumber = '+91 97012 34567';
-      }
-      // Purge legacy hardcoded dummy Vijayawada test addresses so GPS auto-detects true location
-      if (parsed.deliveryAddress && (parsed.deliveryAddress.includes('Benz Circle') || parsed.deliveryAddress === 'bhdhjjdh' || parsed.city === 'Vijayawada')) {
-        delete parsed.deliveryAddress;
-        delete parsed.city;
-        delete parsed.pincode;
-        localStorage.removeItem(DEVICE_ADDRESS_KEY);
-      }
+    // Auto-purge any demo phone number so it remains blank until user enters their real number
+    if (parsed.phoneNumber && isDummyValue(parsed.phoneNumber)) {
+      delete parsed.phoneNumber;
+      localStorage.removeItem(DEVICE_PHONE_KEY);
       localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(parsed));
-      localStorage.setItem(DEVICE_PHONE_KEY, parsed.phoneNumber);
+    }
+
+    // Purge legacy hardcoded dummy Vijayawada test addresses so GPS auto-detects true location
+    if (parsed.deliveryAddress && (parsed.deliveryAddress.includes('Benz Circle') || parsed.deliveryAddress === 'bhdhjjdh' || parsed.city === 'Vijayawada' || isDummyValue(parsed.deliveryAddress))) {
+      delete parsed.deliveryAddress;
+      delete parsed.city;
+      delete parsed.pincode;
+      localStorage.removeItem(DEVICE_ADDRESS_KEY);
+      localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(parsed));
     }
 
     return parsed;
