@@ -80,7 +80,7 @@ export default function SignUpPage() {
             className="inline-flex items-center space-x-1.5 text-xs font-bold text-emerald-400 hover:text-emerald-300 bg-stone-950/60 hover:bg-stone-950/80 backdrop-blur-md px-3.5 py-2 rounded-xl border border-stone-700/50 transition shadow-sm"
           >
             <MessageCircle className="w-3.5 h-3.5" />
-            <span>Farm Helpline: +91 98765 43210</span>
+            <span>Farm Helpline: +91 1234567890</span>
           </a>
         </div>
       </header>

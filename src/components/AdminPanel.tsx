@@ -1905,7 +1905,7 @@ Our live transport driver will call you 2 hours prior to arrival. Thank you for 
                     </span>
                   </div>
                   <p className="text-xs font-semibold text-stone-600">Heritage Desi Rooster Conservation & Championship Breeding Estate</p>
-                  <p className="text-[11px] text-stone-500">Helpline: +91 98765 43210 • info@jpfarmsofficial.com • Andhra Pradesh, India</p>
+                  <p className="text-[11px] text-stone-500">Helpline: +91 1234567890 • info@jpfarmsofficial.com • Andhra Pradesh, India</p>
                 </div>
 
                 <div className="text-right">

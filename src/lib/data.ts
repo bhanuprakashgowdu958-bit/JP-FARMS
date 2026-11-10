@@ -6,16 +6,21 @@ export const FARM_LOCATION = {
   lng: 78.905406,
   maxDeliveryRadiusKm: 20, // 20 km maximum live animal delivery radius
   mapsUrl: 'https://maps.app.goo.gl/iKmrcYhgf2V9yrTm6',
+  village: 'Kurapalli, Vutuvanka',
+  mandal: 'Bangarupalem Mandal',
+  district: 'Chittoor District',
+  state: 'Andhra Pradesh',
+  pincode: '517416',
 };
 
 export const FARM_INFO = {
   name: 'JP Farms',
   tagline: 'India\'s Premier Heritage & Pure Desi Rooster Showcase Estate',
-  phone: '+91 98765 43210',
-  whatsapp: '+91 98765 43210',
+  phone: '+91 1234567890',
+  whatsapp: '+91 1234567890',
   email: 'contact@jpfarms.in',
-  address: 'JP Farms Estate, Green Valley Road, National Highway 65, Andhra Pradesh / Telangana Border',
-  hours: 'Open for Visitors: 7:00 AM - 7:00 PM (Daily)',
+  address: 'Kurapalli, Vutuvanka, Bangarupalem Mandal, Chittoor District, Andhra Pradesh - 517416',
+  hours: 'Open All Day (Daily)',
   establishedYear: 2016,
   experienceYears: 9,
   totalBirdsDocumented: 350,

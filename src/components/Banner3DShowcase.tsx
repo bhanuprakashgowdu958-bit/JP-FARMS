@@ -171,11 +171,11 @@ const BANNERS_3D: BannerSlide[] = [
   {
     id: 5,
     tagline: 'PREMIER CONSERVATION ESTATE • OPEN 7 DAYS A WEEK',
-    badge: '📍 Highway 65 Living Estate',
+    badge: '📍 Chittoor Living Heritage Estate',
     badgeGradient: 'from-cyan-400 via-blue-500 to-purple-600',
     titlePrefix: 'Experience Heritage in Person:',
     titleHighlight: 'Visitors Welcome Daily',
-    description: 'Visit our open-air breeding paddocks daily from 7:00 AM to 7:00 PM. Observe majestic champion studs up close, discuss bloodline genetics with our master breeder, and enjoy scenic rural hospitality.',
+    description: 'Visit our open-air breeding paddocks daily (all day). Observe majestic champion studs up close, discuss bloodline genetics with our master breeder, and enjoy scenic rural hospitality.',
     heroImage: 'https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?auto=format&fit=crop&w=1200&q=85',
     videoUrl: 'https://assets.mixkit.co/videos/preview/mixkit-rooster-crowing-in-the-morning-42544-large.mp4',
     bgGradient: 'from-blue-950/80 via-stone-950 to-stone-950',
