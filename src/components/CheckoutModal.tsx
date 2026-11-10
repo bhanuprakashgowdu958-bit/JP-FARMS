@@ -88,6 +88,29 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [placedOrder, setPlacedOrder] = useState<RoosterOrder | null>(null);
+  const [autoCloseSeconds, setAutoCloseSeconds] = useState(3);
+
+  // Auto-dismiss confirmed screen after 3 seconds
+  useEffect(() => {
+    if (!placedOrder) {
+      setAutoCloseSeconds(3);
+      return;
+    }
+
+    setAutoCloseSeconds(3);
+    const interval = setInterval(() => {
+      setAutoCloseSeconds((prev) => {
+        if (prev <= 1) {
+          clearInterval(interval);
+          onClose();
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [placedOrder, onClose]);
 
   if (!isOpen || !rooster) return null;
 
@@ -329,13 +352,24 @@ Please confirm bird availability and dispatch schedule. Thank you!`;
                   <ExternalLink className="w-4 h-4 ml-1" />
                 </a>
 
-                <button
-                  type="button"
-                  onClick={onClose}
-                  className="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-3 px-6 rounded-2xl text-xs transition"
-                >
-                  Continue Browsing JP Farms
-                </button>
+                <div className="space-y-2">
+                  <div className="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
+                    <div 
+                      className="bg-emerald-500 h-full transition-all duration-1000 ease-linear rounded-full"
+                      style={{ width: `${(autoCloseSeconds / 3) * 100}%` }}
+                    />
+                  </div>
+                  <button
+                    type="button"
+                    onClick={onClose}
+                    className="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-3.5 px-6 rounded-2xl text-xs transition active:scale-95 cursor-pointer flex items-center justify-center space-x-1.5"
+                  >
+                    <span>Continue Browsing JP Farms ({autoCloseSeconds}s)</span>
+                  </button>
+                  <p className="text-[10px] text-slate-400 text-center">
+                    Returning to store automatically in {autoCloseSeconds}s...
+                  </p>
+                </div>
               </div>
 
             </div>

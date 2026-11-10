@@ -245,6 +245,29 @@ export const CartSlideOver: React.FC = () => {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [orderCompleted, setOrderCompleted] = useState<RoosterOrder | null>(null);
+  const [autoCloseSeconds, setAutoCloseSeconds] = useState(3);
+
+  // Auto-dismiss confirmed screen after 3 seconds so screen does not stay stuck
+  useEffect(() => {
+    if (!orderCompleted) {
+      setAutoCloseSeconds(3);
+      return;
+    }
+
+    setAutoCloseSeconds(3);
+    const interval = setInterval(() => {
+      setAutoCloseSeconds((prev) => {
+        if (prev <= 1) {
+          clearInterval(interval);
+          handleFinish();
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [orderCompleted]);
 
   // Prevent background page from scrolling when shopping cart is open
   useEffect(() => {
@@ -481,13 +504,25 @@ export const CartSlideOver: React.FC = () => {
                   </div>
                 </div>
 
-                <button
-                  type="button"
-                  onClick={handleFinish}
-                  className="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-3 rounded-xl text-xs transition active:scale-95 cursor-pointer shadow-md"
-                >
-                  Continue Browsing Farm
-                </button>
+                <div className="space-y-2 pt-1">
+                  <div className="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
+                    <div 
+                      className="bg-emerald-500 h-full transition-all duration-1000 ease-linear rounded-full"
+                      style={{ width: `${(autoCloseSeconds / 3) * 100}%` }}
+                    />
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleFinish}
+                    className="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-3.5 rounded-xl text-xs transition active:scale-95 cursor-pointer shadow-md flex items-center justify-center space-x-2"
+                  >
+                    <span>Continue Browsing Farm ({autoCloseSeconds}s)</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </button>
+                  <p className="text-[10px] text-slate-400 text-center">
+                    Returning to store automatically in {autoCloseSeconds}s...
+                  </p>
+                </div>
               </div>
             ) : items.length === 0 ? (
               /* EMPTY CART STATE */
