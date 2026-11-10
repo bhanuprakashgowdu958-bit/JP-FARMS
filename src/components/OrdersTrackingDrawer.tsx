@@ -127,8 +127,8 @@ export const OrdersTrackingDrawer: React.FC<OrdersTrackingDrawerProps> = ({
         onClick={onClose}
       />
 
-      {/* Slide-Over Drawer Container */}
-      <div className="fixed inset-y-0 right-0 max-w-full flex pl-6 sm:pl-10">
+      {/* Slide-Over Drawer Container (Full screen on mobile, max-w-xl on desktop) */}
+      <div className="fixed inset-y-0 right-0 max-w-full flex pl-0 sm:pl-10">
         <div className="w-screen max-w-xl bg-white shadow-2xl flex flex-col animate-in slide-in-from-right duration-300">
           
           {/* Drawer Top Header (Amazon/Flipkart Style) */}

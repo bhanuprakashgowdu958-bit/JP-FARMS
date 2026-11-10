@@ -81,7 +81,7 @@ export const PhoneCaptureModal: React.FC<PhoneCaptureModalProps> = ({
 
   const modalContent = (
     <div 
-      className="fixed inset-0 z-[99999] bg-stone-950/80 backdrop-blur-md overflow-y-auto flex items-center justify-center p-4 sm:p-6 animate-in fade-in duration-200"
+      className="fixed inset-0 z-[99999] bg-stone-950/80 backdrop-blur-md overflow-y-auto flex items-center justify-center p-3 sm:p-6 animate-in fade-in duration-200"
       onClick={onClose}
       style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0 }}
     >

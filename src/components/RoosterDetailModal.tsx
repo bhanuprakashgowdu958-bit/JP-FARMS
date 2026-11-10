@@ -449,7 +449,7 @@ export const RoosterDetailModal: React.FC<RoosterDetailModalProps> = ({
         </div>
 
         {/* Sticky Action Footer */}
-        <div className="sticky bottom-0 z-20 bg-stone-950 text-white p-4 sm:p-5 border-t border-stone-800 flex flex-col sm:flex-row items-center justify-between gap-3">
+        <div className="sticky bottom-0 z-20 bg-stone-950 text-white p-3.5 sm:p-5 pb-safe border-t border-stone-800 flex flex-col sm:flex-row items-center justify-between gap-3">
           
           <div className="flex items-center space-x-3 w-full sm:w-auto">
             <div>

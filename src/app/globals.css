@@ -42,6 +42,40 @@ body {
   background: #0284c7;
 }
 
+/* Mobile-First Optimizations & iOS Safari Polish */
+@media screen and (max-width: 768px) {
+  /* Prevent iOS Safari from zooming in on text inputs */
+  input[type="text"],
+  input[type="tel"],
+  input[type="email"],
+  input[type="password"],
+  input[type="number"],
+  input[type="search"],
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+
+  /* Eliminate 300ms tap delay on mobile buttons */
+  button, a, input, select, textarea {
+    touch-action: manipulation;
+  }
+}
+
+/* Safe Area Insets for Modern Smartphones (iPhone Dynamic Island / Home Indicator) */
+.pb-safe {
+  padding-bottom: max(1rem, env(safe-area-inset-bottom, 16px));
+}
+.pt-safe {
+  padding-top: max(0.5rem, env(safe-area-inset-top, 8px));
+}
+
+/* Smooth Momentum Scrolling */
+.touch-scroll {
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+}
+
 /* Light Sky Blue Atmospheric Gradients */
 .sky-gradient-subtle {
   background: linear-gradient(180deg, #f0f9ff 0%, #ffffff 100%);

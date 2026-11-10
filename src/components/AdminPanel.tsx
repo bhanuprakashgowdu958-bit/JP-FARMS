@@ -2025,41 +2025,43 @@ Our live transport driver will call you 2 hours prior to arrival. Thank you for 
                 <span className="block text-[10px] font-extrabold uppercase tracking-wider text-stone-500">
                   CONSIGNED BIRDS INVENTORY
                 </span>
-                <table className="w-full text-xs text-left border border-stone-200 rounded-xl overflow-hidden">
-                  <thead className="bg-stone-100 text-stone-700 uppercase font-bold text-[10px]">
-                    <tr>
-                      <th className="py-2 px-3">Tag ID</th>
-                      <th className="py-2 px-3">Rooster Name</th>
-                      <th className="py-2 px-3">Heritage Breed</th>
-                      <th className="py-2 px-3 text-center">Qty</th>
-                      <th className="py-2 px-3 text-right">Price</th>
-                      <th className="py-2 px-3 text-right">Avian Health Exam</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-stone-200">
-                    {printingOrder.items && printingOrder.items.length > 0 ? (
-                      printingOrder.items.map((item, idx) => (
-                        <tr key={idx} className="bg-white">
-                          <td className="py-2 px-3 font-mono font-bold text-amber-800">#{item.roosterTag}</td>
-                          <td className="py-2 px-3 font-bold text-stone-900">{item.roosterName}</td>
-                          <td className="py-2 px-3 text-stone-600">{item.roosterBreed}</td>
-                          <td className="py-2 px-3 text-center font-bold">{item.quantity}</td>
-                          <td className="py-2 px-3 text-right font-bold text-stone-900">₹{(item.price * item.quantity).toLocaleString('en-IN')}</td>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-xs text-left border border-stone-200 rounded-xl overflow-hidden min-w-[500px]">
+                    <thead className="bg-stone-100 text-stone-700 uppercase font-bold text-[10px]">
+                      <tr>
+                        <th className="py-2 px-3">Tag ID</th>
+                        <th className="py-2 px-3">Rooster Name</th>
+                        <th className="py-2 px-3">Heritage Breed</th>
+                        <th className="py-2 px-3 text-center">Qty</th>
+                        <th className="py-2 px-3 text-right">Price</th>
+                        <th className="py-2 px-3 text-right">Avian Health Exam</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-stone-200">
+                      {printingOrder.items && printingOrder.items.length > 0 ? (
+                        printingOrder.items.map((item, idx) => (
+                          <tr key={idx} className="bg-white">
+                            <td className="py-2 px-3 font-mono font-bold text-amber-800">#{item.roosterTag}</td>
+                            <td className="py-2 px-3 font-bold text-stone-900">{item.roosterName}</td>
+                            <td className="py-2 px-3 text-stone-600">{item.roosterBreed}</td>
+                            <td className="py-2 px-3 text-center font-bold">{item.quantity}</td>
+                            <td className="py-2 px-3 text-right font-bold text-stone-900">₹{(item.price * item.quantity).toLocaleString('en-IN')}</td>
+                            <td className="py-2 px-3 text-right text-emerald-700 font-extrabold text-[11px]">✓ PASSED (Active)</td>
+                          </tr>
+                        ))
+                      ) : (
+                        <tr className="bg-white">
+                          <td className="py-2 px-3 font-mono font-bold text-amber-800">#{printingOrder.roosterTag}</td>
+                          <td className="py-2 px-3 font-bold text-stone-900">{printingOrder.roosterName}</td>
+                          <td className="py-2 px-3 text-stone-600">{printingOrder.roosterBreed}</td>
+                          <td className="py-2 px-3 text-center font-bold">1</td>
+                          <td className="py-2 px-3 text-right font-bold text-stone-900">₹{printingOrder.price.toLocaleString('en-IN')}</td>
                           <td className="py-2 px-3 text-right text-emerald-700 font-extrabold text-[11px]">✓ PASSED (Active)</td>
                         </tr>
-                      ))
-                    ) : (
-                      <tr className="bg-white">
-                        <td className="py-2 px-3 font-mono font-bold text-amber-800">#{printingOrder.roosterTag}</td>
-                        <td className="py-2 px-3 font-bold text-stone-900">{printingOrder.roosterName}</td>
-                        <td className="py-2 px-3 text-stone-600">{printingOrder.roosterBreed}</td>
-                        <td className="py-2 px-3 text-center font-bold">1</td>
-                        <td className="py-2 px-3 text-right font-bold text-stone-900">₹{printingOrder.price.toLocaleString('en-IN')}</td>
-                        <td className="py-2 px-3 text-right text-emerald-700 font-extrabold text-[11px]">✓ PASSED (Active)</td>
-                      </tr>
-                    )}
-                  </tbody>
-                </table>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
               </div>
 
               {/* Veterinary Clearance Box */}

@@ -405,7 +405,7 @@ export const CartSlideOver: React.FC = () => {
         onClick={closeCart}
       />
 
-      <div className="fixed inset-y-0 right-0 max-w-full flex pl-3 sm:pl-10">
+      <div className="fixed inset-y-0 right-0 max-w-full flex pl-0 sm:pl-10">
         <div className="w-screen max-w-md bg-white shadow-2xl flex flex-col overscroll-contain">
           
           {/* Drawer Header */}
@@ -1138,7 +1138,7 @@ export const CartSlideOver: React.FC = () => {
 
           {/* Drawer Footer (Sticky Actions when in Cart View) */}
           {!orderCompleted && items.length > 0 && step === 'cart' && (
-            <div className="p-4 bg-white border-t border-slate-200 space-y-3 shadow-lg">
+            <div className="p-4 pb-safe bg-white border-t border-slate-200 space-y-3 shadow-lg">
               <div className="flex items-baseline justify-between text-xs">
                 <span className="text-slate-500 font-medium">Subtotal ({cartCount} birds):</span>
                 <span className="text-xl font-black text-slate-900">

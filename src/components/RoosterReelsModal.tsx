@@ -43,6 +43,8 @@ export const RoosterReelsModal: React.FC<RoosterReelsModalProps> = ({
   const [isPlaying, setIsPlaying] = useState(true);
   const [isMuted, setIsMuted] = useState(false);
   const videoRef = useRef<HTMLVideoElement | null>(null);
+  const touchStartY = useRef<number | null>(null);
+  const touchEndY = useRef<number | null>(null);
 
   useEffect(() => {
     if (initialRoosterId && videoRoosters.length > 0) {
@@ -76,6 +78,28 @@ export const RoosterReelsModal: React.FC<RoosterReelsModalProps> = ({
     } else {
       setCurrentIndex(videoRoosters.length - 1);
     }
+  };
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartY.current = e.touches[0].clientY;
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    touchEndY.current = e.touches[0].clientY;
+  };
+
+  const handleTouchEnd = () => {
+    if (touchStartY.current === null || touchEndY.current === null) return;
+    const diffY = touchStartY.current - touchEndY.current;
+    if (diffY > 50) {
+      // Swiped UP -> Next video (TikTok / Instagram Reels style)
+      handleNext();
+    } else if (diffY < -50) {
+      // Swiped DOWN -> Previous video
+      handlePrev();
+    }
+    touchStartY.current = null;
+    touchEndY.current = null;
   };
 
   const togglePlay = () => {
@@ -113,7 +137,12 @@ export const RoosterReelsModal: React.FC<RoosterReelsModalProps> = ({
       </button>
 
       {/* Reel Center Container */}
-      <div className="relative w-full max-w-sm sm:max-w-md h-full sm:h-[88vh] sm:rounded-3xl overflow-hidden bg-black shadow-2xl flex flex-col justify-between border border-stone-800">
+      <div 
+        className="relative w-full max-w-sm sm:max-w-md h-full sm:h-[88vh] sm:rounded-3xl overflow-hidden bg-black shadow-2xl flex flex-col justify-between border border-stone-800 touch-pan-y"
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+      >
         
         {/* Top Floating Header */}
         <div className="absolute top-4 left-4 right-16 z-30 flex items-center justify-between text-white pointer-events-none">
@@ -208,7 +237,7 @@ export const RoosterReelsModal: React.FC<RoosterReelsModalProps> = ({
         </div>
 
         {/* Bottom Information Card Overlay */}
-        <div className="absolute bottom-0 left-0 right-0 z-30 p-5 space-y-3 pointer-events-auto">
+        <div className="absolute bottom-0 left-0 right-0 z-30 p-4 sm:p-5 pb-safe space-y-3 pointer-events-auto">
           
           {/* Bird Tags & Badge */}
           <div>

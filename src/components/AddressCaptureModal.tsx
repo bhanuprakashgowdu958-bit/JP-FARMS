@@ -136,7 +136,7 @@ export const AddressCaptureModal: React.FC<AddressCaptureModalProps> = ({
   };
 
   return createPortal(
-    <div className="fixed inset-0 z-[100000] flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-[100000] flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
       {/* Backdrop */}
       <div 
         className="fixed inset-0 bg-slate-950/80 backdrop-blur-xs transition-opacity duration-200"
@@ -144,7 +144,7 @@ export const AddressCaptureModal: React.FC<AddressCaptureModalProps> = ({
       />
 
       {/* Modal Dialog */}
-      <div className="relative w-full max-w-md bg-white rounded-3xl shadow-2xl border border-slate-200 p-6 sm:p-7 overflow-hidden z-10 animate-in zoom-in-95 duration-200">
+      <div className="relative w-full max-w-md bg-white rounded-3xl shadow-2xl border border-slate-200 p-5 sm:p-7 overflow-hidden z-10 animate-in zoom-in-95 duration-200 my-auto max-h-[96vh]">
         
         {/* Top Close Button */}
         <button

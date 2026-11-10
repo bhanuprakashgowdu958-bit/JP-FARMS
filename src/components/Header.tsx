@@ -375,8 +375,8 @@ export const Header: React.FC<HeaderProps> = ({
             aria-hidden="true"
           />
 
-          {/* Drawer Box sliding in from the right */}
-          <div className="fixed inset-y-0 right-0 max-w-full flex pl-8 sm:pl-16">
+          {/* Drawer Box sliding in from the right (Full width on mobile, max-w-md on desktop) */}
+          <div className="fixed inset-y-0 right-0 max-w-full flex pl-0 sm:pl-16">
             <div className="w-screen max-w-md bg-white shadow-2xl flex flex-col h-full overflow-hidden animate-in slide-in-from-right duration-300">
               
               {/* Drawer Top Header (Amazon Hello User Style) - Clickable for My Profile */}

@@ -225,7 +225,7 @@ export default function HomePage() {
 
       {/* Mobile Sticky Bottom Cart Banner */}
       {cartCount > 0 && (
-        <div className="fixed bottom-0 inset-x-0 z-40 bg-white/95 backdrop-blur-md border-t border-amber-200 px-4 py-2.5 shadow-2xl flex items-center justify-between sm:hidden">
+        <div className="fixed bottom-0 inset-x-0 z-40 bg-white/95 backdrop-blur-md border-t border-amber-200 px-4 py-2.5 pb-safe shadow-2xl flex items-center justify-between sm:hidden">
           <div>
             <span className="text-[11px] text-slate-500 font-bold block">
               {cartCount} {cartCount === 1 ? 'Rooster' : 'Roosters'} in Cart

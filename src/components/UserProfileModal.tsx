@@ -94,7 +94,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
   };
 
   return createPortal(
-    <div className="fixed inset-0 z-[999999] overflow-y-auto bg-slate-950/75 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-[999999] overflow-y-auto bg-slate-950/75 backdrop-blur-xs flex items-center justify-center p-2 sm:p-4 animate-in fade-in duration-200">
       
       {/* Backdrop click to close */}
       <div 
@@ -105,7 +105,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
 
       {/* Modal Dialog Card */}
       <div 
-        className="relative bg-white w-full max-w-lg rounded-3xl shadow-2xl overflow-hidden border border-slate-200 flex flex-col my-auto z-10 animate-in zoom-in-95 duration-200 max-h-[92vh]"
+        className="relative bg-white w-full max-w-lg rounded-3xl shadow-2xl overflow-hidden border border-slate-200 flex flex-col my-auto z-10 animate-in zoom-in-95 duration-200 max-h-[96vh]"
         role="dialog"
         aria-modal="true"
         aria-label="My Profile"
