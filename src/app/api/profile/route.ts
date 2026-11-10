@@ -20,10 +20,6 @@ const BHANU_ACCOUNTS = ['bhanuprakashgowdu958@gmail.com', 'bhanuprakashgowdu87@g
 const DEFAULT_BHANU_PROFILE: ProfileData = {
   name: 'Bhanu Prakash',
   phoneNumber: '+91 97012 34567',
-  deliveryAddress: 'Plot 18, Sri Rama Colony, Benz Circle',
-  city: 'Vijayawada',
-  state: 'Andhra Pradesh',
-  pincode: '520010',
   updatedAt: new Date().toISOString(),
 };
 

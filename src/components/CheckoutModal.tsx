@@ -51,22 +51,34 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
   const [deliveryType, setDeliveryType] = useState<'doorstep_live_crate' | 'farm_pickup'>('doorstep_live_crate');
   const [paymentMethod, setPaymentMethod] = useState<'cod' | 'upi' | 'advance_token'>('cod');
   
+  const isStaleDummyAddress = (addr?: string, c?: string) => {
+    const text = `${addr || ''} ${c || ''}`.toLowerCase();
+    return text.includes('benz circle') || text.includes('vijayawada') || text.includes('sri rama colony') || text.includes('bhdhjjdh');
+  };
+
+  const initialAddr = isStaleDummyAddress(user?.deliveryAddress, user?.city) ? '' : (user?.deliveryAddress || '');
+  const initialCity = user?.city === 'Vijayawada' ? '' : (user?.city || '');
+
   const [customerName, setCustomerName] = useState(user?.displayName || '');
   const [phoneNumber, setPhoneNumber] = useState(user?.phoneNumber || '');
-  const [deliveryAddress, setDeliveryAddress] = useState(user?.deliveryAddress || '');
-  const [city, setCity] = useState(user?.city || '');
+  const [deliveryAddress, setDeliveryAddress] = useState(initialAddr);
+  const [city, setCity] = useState(initialCity);
   const [state, setState] = useState(user?.state || 'Andhra Pradesh');
-  const [pincode, setPincode] = useState(user?.pincode || '');
+  const [pincode, setPincode] = useState((user?.pincode === '520010' && isStaleDummyAddress(user?.deliveryAddress, user?.city)) ? '' : (user?.pincode || ''));
   const [notes, setNotes] = useState('');
 
   // Sync profile details when user signs in or updates phone
   useEffect(() => {
     if (user) {
+      const cleanAddr = isStaleDummyAddress(user.deliveryAddress, user.city) ? '' : (user.deliveryAddress || '');
+      const cleanCity = user.city === 'Vijayawada' ? '' : (user.city || '');
+      const cleanPincode = (user.pincode === '520010' && isStaleDummyAddress(user.deliveryAddress, user.city)) ? '' : (user.pincode || '');
+
       if (user.displayName && !customerName) setCustomerName(user.displayName);
       if (user.phoneNumber) setPhoneNumber(user.phoneNumber);
-      if (user.deliveryAddress && !deliveryAddress) setDeliveryAddress(user.deliveryAddress);
-      if (user.city && !city) setCity(user.city);
-      if (user.pincode && !pincode) setPincode(user.pincode);
+      if (cleanAddr && !deliveryAddress) setDeliveryAddress(cleanAddr);
+      if (cleanCity && !city) setCity(cleanCity);
+      if (cleanPincode && !pincode) setPincode(cleanPincode);
       if (user.state && !state) setState(user.state);
     }
   }, [user]);
@@ -133,7 +145,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
         deliveryAddress: deliveryAddress.trim() || 'JP Farms Estate Gate Pickup',
         city: city.trim() || 'Farm Gate',
         state: state.trim() || 'Andhra Pradesh',
-        pincode: pincode.trim() || '500001',
+        pincode: pincode.trim() || '517408',
         deliveryType,
         paymentMethod,
         notes: notes.trim(),
@@ -566,7 +578,7 @@ Please confirm bird availability and dispatch schedule. Thank you!`;
                             required
                             value={city}
                             onChange={(e) => setCity(e.target.value)}
-                            placeholder="e.g. Vijayawada"
+                            placeholder="e.g. Palamaner / Chittoor"
                             className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500"
                           />
                         </div>

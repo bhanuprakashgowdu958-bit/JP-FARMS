@@ -86,17 +86,26 @@ export const CartSlideOver: React.FC = () => {
     notes: '',
   });
 
+  const isStaleDummyAddress = (addr?: string, city?: string) => {
+    const text = `${addr || ''} ${city || ''}`.toLowerCase();
+    return text.includes('benz circle') || text.includes('vijayawada') || text.includes('sri rama colony') || text.includes('bhdhjjdh');
+  };
+
   // Auto-fill customer details from profile & saved address
   useEffect(() => {
     if (user) {
+      const cleanAddr = isStaleDummyAddress(user.deliveryAddress, user.city) ? '' : (user.deliveryAddress || '');
+      const cleanCity = user.city === 'Vijayawada' ? '' : (user.city || '');
+      const cleanPincode = (user.pincode === '520010' && isStaleDummyAddress(user.deliveryAddress, user.city)) ? '' : (user.pincode || '');
+
       setFormData((prev) => ({
         ...prev,
         name: user.displayName || prev.name,
         phone: user.phoneNumber || prev.phone,
-        address: prev.address || user.deliveryAddress || '',
-        city: prev.city || user.city || '',
+        address: prev.address || cleanAddr,
+        city: prev.city || cleanCity,
         state: prev.state || user.state || '',
-        pincode: prev.pincode || user.pincode || '',
+        pincode: prev.pincode || cleanPincode,
       }));
     }
   }, [user]);
@@ -104,14 +113,20 @@ export const CartSlideOver: React.FC = () => {
   const effectivePhone = user?.phoneNumber || formData.phone;
   const hasPhone = Boolean(effectivePhone && effectivePhone.trim().replace(/\D/g, '').length >= 10);
 
-  const effectiveAddress = formData.address || user?.deliveryAddress || '';
-  const effectiveCity = formData.city || user?.city || '';
-  const effectivePincode = formData.pincode || user?.pincode || '';
+  const rawAddr = formData.address || user?.deliveryAddress || '';
+  const rawCity = formData.city || user?.city || '';
+  const rawPincode = formData.pincode || user?.pincode || '';
+
+  const effectiveAddress = isStaleDummyAddress(rawAddr, rawCity) ? '' : rawAddr;
+  const effectiveCity = rawCity === 'Vijayawada' ? '' : rawCity;
+  const effectivePincode = (rawPincode === '520010' && isStaleDummyAddress(rawAddr, rawCity)) ? '' : rawPincode;
   const hasAddress = Boolean(effectiveAddress && effectiveAddress.trim().length >= 3);
 
-  const handleDetectGpsAddress = () => {
+  const handleDetectGpsAddress = (silent = false) => {
     if (typeof window === 'undefined' || !navigator.geolocation) {
-      alert('Geolocation is not supported by your browser. Please enter address manually.');
+      if (!silent) {
+        alert('Geolocation is not supported by your browser. Please enter address manually.');
+      }
       return;
     }
 
@@ -156,18 +171,22 @@ export const CartSlideOver: React.FC = () => {
               pincode: newPincode,
             });
 
-            confetti({
-              particleCount: 60,
-              spread: 60,
-              origin: { y: 0.7 },
-              colors: ['#f59e0b', '#10b981', '#0ea5e9'],
-            });
-          } else {
+            if (!silent) {
+              confetti({
+                particleCount: 60,
+                spread: 60,
+                origin: { y: 0.7 },
+                colors: ['#f59e0b', '#10b981', '#0ea5e9'],
+              });
+            }
+          } else if (!silent) {
             alert('Could not determine address from GPS coordinates. Please update address manually.');
           }
         } catch (err) {
           console.error('GPS reverse geocode error:', err);
-          alert('GPS detected your coordinates, but address lookup failed. Please enter your address manually.');
+          if (!silent) {
+            alert('GPS detected your coordinates, but address lookup failed. Please enter your address manually.');
+          }
         } finally {
           setIsLocating(false);
         }
@@ -175,23 +194,32 @@ export const CartSlideOver: React.FC = () => {
       (error) => {
         setIsLocating(false);
         console.warn('Geolocation error:', error);
-        if (error.code === error.PERMISSION_DENIED) {
-          alert('Location permission was denied. Please allow location access in your browser settings or enter your address manually.');
-        } else if (error.code === error.POSITION_UNAVAILABLE) {
-          alert('Location position unavailable. Please check your device GPS / network and try again.');
-        } else if (error.code === error.TIMEOUT) {
-          alert('Location request timed out. Please try again.');
-        } else {
-          alert('Failed to detect GPS location. Please enter your address manually.');
+        if (!silent) {
+          if (error.code === error.PERMISSION_DENIED) {
+            alert('Location permission was denied. Please allow location access in your browser settings or enter your address manually.');
+          } else if (error.code === error.POSITION_UNAVAILABLE) {
+            alert('Location position unavailable. Please check your device GPS / network and try again.');
+          } else if (error.code === error.TIMEOUT) {
+            alert('Location request timed out. Please try again.');
+          } else {
+            alert('Failed to detect GPS location. Please enter your address manually.');
+          }
         }
       },
       {
         enableHighAccuracy: true,
-        timeout: 12000,
-        maximumAge: 0,
+        timeout: 10000,
+        maximumAge: 30000,
       }
     );
   };
+
+  // Auto-detect GPS delivery location as soon as the user lands on the checkout screen!
+  useEffect(() => {
+    if (isOpen && step === 'checkout') {
+      handleDetectGpsAddress(true);
+    }
+  }, [isOpen, step]);
 
   const handleMapLocationSelect = (result: LocationSelectResult) => {
     setDeliveryDistanceKm(result.distanceKm);
@@ -305,9 +333,9 @@ export const CartSlideOver: React.FC = () => {
         customerName: formData.name.trim(),
         phoneNumber: effectivePhone.trim(),
         deliveryAddress: deliveryType === 'doorstep_live_crate' ? fullAddress : 'Farm Pickup - JP Farms Breeder Estate',
-        city: (effectiveCity || 'Vijayawada').trim(),
+        city: (effectiveCity || 'Palamaner').trim(),
         state: (user?.state || formData.state || 'Andhra Pradesh').trim(),
-        pincode: (effectivePincode || '520010').trim(),
+        pincode: (effectivePincode || '517408').trim(),
         deliveryType,
         paymentMethod,
         notes: formData.notes.trim(),
@@ -340,7 +368,7 @@ export const CartSlideOver: React.FC = () => {
 *Customer Name:* ${formData.name}
 *Phone:* ${effectivePhone}
 *Delivery Type:* ${deliveryType === 'doorstep_live_crate' ? '🚚 Climate-Controlled Live Animal Crate Dispatch' : '🏡 Self Farm Pickup'}
-${deliveryType === 'doorstep_live_crate' ? `*Delivery Address:* ${effectiveAddress}${formData.addressLine2?.trim() ? `\n*Landmark / Unit:* ${formData.addressLine2.trim()}` : ''}\n*City & PIN:* ${effectiveCity || 'Vijayawada'}${effectivePincode ? ` - ${effectivePincode}` : ''}` : ''}
+${deliveryType === 'doorstep_live_crate' ? `*Delivery Address:* ${effectiveAddress}${formData.addressLine2?.trim() ? `\n*Landmark / Unit:* ${formData.addressLine2.trim()}` : ''}\n*City & PIN:* ${effectiveCity || 'Palamaner'}${effectivePincode ? ` - ${effectivePincode}` : ''}` : ''}
 *Payment Method:* ${paymentMethod === 'cod' ? 'Cash on Delivery (COD)' : 'Google Pay / PhonePe UPI'}
 
 📦 *ORDERED BIRDS (${cartCount} items):*
@@ -774,7 +802,7 @@ Please confirm availability and dispatch schedule. Thank you!`;
                               </label>
                               <button
                                 type="button"
-                                onClick={handleDetectGpsAddress}
+                                onClick={() => handleDetectGpsAddress(false)}
                                 disabled={isLocating}
                                 className="text-[11px] text-amber-800 hover:text-amber-950 font-bold flex items-center space-x-1 bg-amber-100/90 hover:bg-amber-200/90 px-2.5 py-0.5 rounded-lg border border-amber-300 transition active:scale-95 cursor-pointer disabled:opacity-50 shadow-2xs"
                                 title="Auto-detect current delivery address via device GPS"
@@ -797,10 +825,23 @@ Please confirm availability and dispatch schedule. Thank you!`;
                                 type="text"
                                 name="address"
                                 readOnly
-                                value={effectiveAddress}
-                                className="w-full px-3 py-2 pl-8 pr-3 rounded-xl border border-slate-300 bg-slate-100/90 text-slate-900 text-xs font-semibold select-none cursor-not-allowed shadow-inner"
+                                value={
+                                  isLocating && !effectiveAddress
+                                    ? '📡 Auto-detecting your delivery location via GPS...'
+                                    : effectiveAddress
+                                }
+                                placeholder="Auto-detecting your delivery location via GPS..."
+                                className={`w-full px-3 py-2 pl-8 pr-3 rounded-xl border text-xs font-semibold select-none cursor-not-allowed shadow-inner ${
+                                  isLocating && !effectiveAddress
+                                    ? 'border-amber-400 bg-amber-50 text-amber-900 animate-pulse'
+                                    : 'border-slate-300 bg-slate-100/90 text-slate-900'
+                                }`}
                               />
-                              <Lock className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-1/2 -translate-y-1/2" />
+                              {isLocating && !effectiveAddress ? (
+                                <Loader2 className="w-3.5 h-3.5 text-amber-600 animate-spin absolute left-2.5 top-1/2 -translate-y-1/2" />
+                              ) : (
+                                <Lock className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-1/2 -translate-y-1/2" />
+                              )}
                             </div>
                             <p className="text-[10px] text-slate-400 mt-1 flex items-center space-x-1">
                               <span>🔒 Auto-detected via GPS & profile (cannot be edited directly)</span>
@@ -900,6 +941,23 @@ Please confirm availability and dispatch schedule. Thank you!`;
                             </div>
                           </div>
                         </>
+                      ) : isLocating ? (
+                        <div>
+                          <label className="block text-slate-700 font-semibold mb-1 flex items-center space-x-1">
+                            <MapPin className="w-3 h-3 text-amber-600" />
+                            <span>Delivery Address</span>
+                            <span className="text-rose-500">*</span>
+                          </label>
+                          <div className="bg-gradient-to-r from-amber-50 to-orange-50 border-2 border-amber-300 rounded-xl p-3.5 flex items-center space-x-3 text-xs text-amber-950 animate-pulse shadow-xs">
+                            <Loader2 className="w-5 h-5 text-amber-600 animate-spin shrink-0" />
+                            <div>
+                              <p className="font-extrabold text-amber-950">Auto-Detecting Your Delivery Location via GPS...</p>
+                              <p className="text-[11px] text-amber-800 mt-0.5">
+                                Please allow location access if prompted. Pinning your exact delivery coordinates and calculating 20 km live transit radius.
+                              </p>
+                            </div>
+                          </div>
+                        </div>
                       ) : (
                         <div>
                           <label className="block text-slate-700 font-semibold mb-1 flex items-center space-x-1">
@@ -920,7 +978,7 @@ Please confirm availability and dispatch schedule. Thank you!`;
                                 <div className="mt-2.5 flex items-center space-x-2">
                                   <button
                                     type="button"
-                                    onClick={handleDetectGpsAddress}
+                                    onClick={() => handleDetectGpsAddress(false)}
                                     disabled={isLocating}
                                     className="inline-flex items-center space-x-1.5 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-extrabold px-3 py-1.5 rounded-lg text-xs shadow-xs active:scale-95 transition cursor-pointer disabled:opacity-50"
                                   >

@@ -198,7 +198,7 @@ export function getSavedProfile(identifier?: { email?: string | null; uid?: stri
       }
     }
 
-    // 6. Default for owner/breeder Bhanu Prakash (sync real phone & address everywhere across all accounts)
+    // 6. Default for owner/breeder Bhanu Prakash (sync real phone number)
     if (isBhanuEmail(identifier?.email)) {
       if (!profile?.phoneNumber || isDummyValue(profile.phoneNumber)) {
         profile = {
@@ -206,14 +206,11 @@ export function getSavedProfile(identifier?: { email?: string | null; uid?: stri
           phoneNumber: '+91 97012 34567',
         };
       }
-      if (!profile?.deliveryAddress || isDummyValue(profile.deliveryAddress)) {
-        profile = {
-          ...(profile || {}),
-          deliveryAddress: 'Plot 18, Sri Rama Colony, Benz Circle',
-          city: 'Vijayawada',
-          state: 'Andhra Pradesh',
-          pincode: '520010',
-        };
+      // Purge any legacy hardcoded dummy Vijayawada address
+      if (profile?.deliveryAddress && (profile.deliveryAddress.includes('Benz Circle') || profile.city === 'Vijayawada')) {
+        delete profile.deliveryAddress;
+        delete profile.city;
+        delete profile.pincode;
       }
     }
 
@@ -304,25 +301,20 @@ export function getStoredUser(): AppUser | null {
       return null;
     }
 
-    // Auto-purge dummy test data and set verified profile details for all Bhanu accounts
-    if (parsed.phoneNumber === '1478963258' || parsed.deliveryAddress === 'bhdhjjdh' || isBhanuEmail(parsed.email)) {
+    // Auto-purge dummy test data and set verified phone for Bhanu accounts
+    if (parsed.phoneNumber === '1478963258' || isBhanuEmail(parsed.email)) {
       if (parsed.phoneNumber === '1478963258' || !parsed.phoneNumber) {
         parsed.phoneNumber = '+91 97012 34567';
       }
-      if (parsed.deliveryAddress === 'bhdhjjdh' || !parsed.deliveryAddress) {
-        parsed.deliveryAddress = 'Plot 18, Sri Rama Colony, Benz Circle';
-        parsed.city = 'Vijayawada';
-        parsed.state = 'Andhra Pradesh';
-        parsed.pincode = '520010';
+      // Purge legacy hardcoded dummy Vijayawada test addresses so GPS auto-detects true location
+      if (parsed.deliveryAddress && (parsed.deliveryAddress.includes('Benz Circle') || parsed.deliveryAddress === 'bhdhjjdh' || parsed.city === 'Vijayawada')) {
+        delete parsed.deliveryAddress;
+        delete parsed.city;
+        delete parsed.pincode;
+        localStorage.removeItem(DEVICE_ADDRESS_KEY);
       }
       localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(parsed));
       localStorage.setItem(DEVICE_PHONE_KEY, parsed.phoneNumber);
-      localStorage.setItem(DEVICE_ADDRESS_KEY, JSON.stringify({
-        deliveryAddress: parsed.deliveryAddress,
-        city: parsed.city,
-        state: parsed.state,
-        pincode: parsed.pincode,
-      }));
     }
 
     return parsed;
