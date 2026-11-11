@@ -19,6 +19,7 @@ import { CartSlideOver } from '@/components/CartSlideOver';
 import { OrdersTrackingDrawer } from '@/components/OrdersTrackingDrawer';
 import { CartToast } from '@/components/CartToast';
 import { PhoneCaptureModal } from '@/components/PhoneCaptureModal';
+import { MobileBottomNav } from '@/components/MobileBottomNav';
 import { useRoosters } from '@/lib/roosterStore';
 import { useCart } from '@/lib/cartStore';
 import { Rooster } from '@/types/rooster';
@@ -105,7 +106,7 @@ export default function HomePage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#f4f9fd]">
+    <div className="min-h-screen flex flex-col bg-[#f4f9fd] pb-24 sm:pb-0">
       
       {/* Main Header */}
       <Header 
@@ -225,26 +226,11 @@ export default function HomePage() {
       {/* 7. Non-Intrusive Cart Floating Toast Notification */}
       <CartToast />
 
-      {/* Mobile Sticky Bottom Cart Banner */}
-      {cartCount > 0 && (
-        <div className="fixed bottom-0 inset-x-0 z-40 bg-white/95 backdrop-blur-md border-t border-amber-200 px-4 py-2.5 pb-safe shadow-2xl flex items-center justify-between sm:hidden">
-          <div>
-            <span className="text-[11px] text-slate-500 font-bold block">
-              {cartCount} {cartCount === 1 ? 'Rooster' : 'Roosters'} in Cart
-            </span>
-            <span className="text-base font-black text-slate-900">
-              ₹{cartTotal.toLocaleString('en-IN')}
-            </span>
-          </div>
-          <button
-            onClick={openCart}
-            className="flex items-center space-x-1.5 bg-gradient-to-r from-amber-500 to-amber-600 text-stone-950 font-black px-4 py-2 rounded-xl text-xs shadow-md active:scale-95"
-          >
-            <span>View Cart & Buy</span>
-            <ArrowRight className="w-4 h-4" />
-          </button>
-        </div>
-      )}
+      {/* Mobile App Navigation Dock (Picture 2 E-Commerce Style) */}
+      <MobileBottomNav
+        onOpenReels={() => setIsReelsOpen(true)}
+        onOpenOrders={() => setIsOrdersOpen(true)}
+      />
 
       {/* 8. Phone Number Capture & Update Modal */}
       <PhoneCaptureModal

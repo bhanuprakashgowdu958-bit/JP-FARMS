@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
-import { Search, Filter, SlidersHorizontal, Sparkles, Feather, RotateCcw, Award } from 'lucide-react';
+import { Search, Filter, SlidersHorizontal, Sparkles, Feather, RotateCcw, Award, LayoutGrid, List } from 'lucide-react';
 import { Rooster, RoosterCategory, RoosterBadge } from '@/types/rooster';
 import { RoosterCard } from './RoosterCard';
 
@@ -43,6 +43,7 @@ export const RoosterCatalog: React.FC<RoosterCatalogProps> = ({
   const [selectedBadge, setSelectedBadge] = useState<'all' | RoosterBadge>('all');
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [sortBy, setSortBy] = useState<'featured' | 'price-low' | 'price-high' | 'weight' | 'height' | 'newest'>('featured');
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
 
   const filteredRoosters = useMemo(() => {
     return roosters
@@ -172,21 +173,52 @@ export const RoosterCatalog: React.FC<RoosterCatalogProps> = ({
               ))}
             </div>
 
-            {/* Sort Dropdown */}
+            {/* Sort & View Mode Switcher */}
             <div className="flex items-center space-x-2 w-full lg:w-auto justify-end">
-              <SlidersHorizontal className="w-4 h-4 text-slate-400" />
-              <select
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value as any)}
-                className="bg-sky-50 border-none rounded-xl text-xs font-semibold px-3 py-2 text-slate-800 focus:ring-2 focus:ring-sky-500"
-              >
-                <option value="featured">Featured First</option>
-                <option value="price-low">Price: Low to High</option>
-                <option value="price-high">Price: High to Low</option>
-                <option value="weight">Heaviest Weight First</option>
-                <option value="height">Tallest Height First</option>
-                <option value="newest">Newly Documented</option>
-              </select>
+              <div className="flex items-center space-x-1.5 bg-sky-50/70 p-1 rounded-xl border border-sky-100">
+                <button
+                  type="button"
+                  onClick={() => setViewMode('grid')}
+                  className={`p-1.5 rounded-lg text-xs font-bold transition flex items-center space-x-1 ${
+                    viewMode === 'grid'
+                      ? 'bg-sky-700 text-white shadow-xs'
+                      : 'text-slate-500 hover:text-slate-800'
+                  }`}
+                  title="Grid View (Picture 2 style)"
+                >
+                  <LayoutGrid className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">Grid</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setViewMode('list')}
+                  className={`p-1.5 rounded-lg text-xs font-bold transition flex items-center space-x-1 ${
+                    viewMode === 'list'
+                      ? 'bg-sky-700 text-white shadow-xs'
+                      : 'text-slate-500 hover:text-slate-800'
+                  }`}
+                  title="Detailed List View"
+                >
+                  <List className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">Details</span>
+                </button>
+              </div>
+
+              <div className="flex items-center space-x-1">
+                <SlidersHorizontal className="w-4 h-4 text-slate-400" />
+                <select
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value as any)}
+                  className="bg-sky-50 border-none rounded-xl text-xs font-semibold px-3 py-2 text-slate-800 focus:ring-2 focus:ring-sky-500"
+                >
+                  <option value="featured">Featured First</option>
+                  <option value="price-low">Price: Low to High</option>
+                  <option value="price-high">Price: High to Low</option>
+                  <option value="weight">Heaviest Weight First</option>
+                  <option value="height">Tallest Height First</option>
+                  <option value="newest">Newly Documented</option>
+                </select>
+              </div>
             </div>
 
           </div>
@@ -234,7 +266,13 @@ export const RoosterCatalog: React.FC<RoosterCatalogProps> = ({
 
         {/* Rooster Grid */}
         {filteredRoosters.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
+          <div 
+            className={
+              viewMode === 'grid'
+                ? "grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-5"
+                : "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8"
+            }
+          >
             {filteredRoosters.map((rooster) => (
               <RoosterCard
                 key={rooster.id}
@@ -243,6 +281,7 @@ export const RoosterCatalog: React.FC<RoosterCatalogProps> = ({
                 onOpenVideo={onOpenVideo}
                 onInquire={onInquire}
                 onBuyNow={onBuyNow}
+                viewMode={viewMode}
               />
             ))}
           </div>

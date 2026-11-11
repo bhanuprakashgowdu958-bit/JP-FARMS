@@ -1,7 +1,17 @@
 'use client';
 
 import React from 'react';
-import { PlayCircle, MessageCircle, Eye, CheckCircle2, Award, Sparkles, ShoppingCart, Check } from 'lucide-react';
+import { 
+  PlayCircle, 
+  MessageCircle, 
+  Eye, 
+  CheckCircle2, 
+  Award, 
+  ShoppingCart, 
+  Check, 
+  Star,
+  Plus
+} from 'lucide-react';
 import { Rooster } from '@/types/rooster';
 import { FARM_INFO } from '@/lib/data';
 import { generateWhatsAppLink } from '@/lib/utils';
@@ -13,6 +23,7 @@ interface RoosterCardProps {
   onOpenVideo?: (rooster: Rooster) => void;
   onInquire?: (rooster: Rooster) => void;
   onBuyNow?: (rooster: Rooster) => void;
+  viewMode?: 'grid' | 'list';
 }
 
 export const RoosterCard: React.FC<RoosterCardProps> = ({
@@ -21,6 +32,7 @@ export const RoosterCard: React.FC<RoosterCardProps> = ({
   onOpenVideo,
   onInquire,
   onBuyNow,
+  viewMode = 'grid',
 }) => {
   const whatsAppUrl = generateWhatsAppLink({
     phone: FARM_INFO.whatsapp,
@@ -47,20 +59,155 @@ export const RoosterCard: React.FC<RoosterCardProps> = ({
   const getBadgeStyle = (badge: Rooster['badge']) => {
     switch (badge) {
       case 'Champion Line':
-        return 'bg-gradient-to-r from-amber-500 to-amber-600 text-stone-950 font-black shadow-md border border-amber-300';
+        return 'bg-gradient-to-r from-amber-500 to-amber-600 text-stone-950 font-black shadow-xs border border-amber-300';
       case 'Farm Stud':
-        return 'bg-stone-900 text-amber-400 font-bold border border-amber-500/40 shadow-sm';
+        return 'bg-stone-900 text-amber-400 font-bold border border-amber-500/40 shadow-xs';
       case 'Heritage Pure':
-        return 'bg-emerald-600 text-white font-bold shadow-sm';
+        return 'bg-emerald-600 text-white font-bold shadow-xs';
       case 'Breeding Flock':
-        return 'bg-blue-600 text-white font-bold shadow-sm';
+        return 'bg-blue-600 text-white font-bold shadow-xs';
       case 'Young Star':
-        return 'bg-purple-600 text-white font-bold shadow-sm';
+        return 'bg-purple-600 text-white font-bold shadow-xs';
       default:
         return 'bg-stone-800 text-stone-200';
     }
   };
 
+  /* =======================================================================
+     1. PICTURE 2 STYLE: E-COMMERCE GRID VIEW (DEFAULT)
+     Clean, compact card with high density, photo rating pill, price & offer
+     ======================================================================= */
+  if (viewMode === 'grid') {
+    return (
+      <div 
+        onClick={() => onSelect(rooster)}
+        className="group relative bg-white rounded-2xl border border-slate-200 hover:border-amber-500/80 hover:shadow-lg transition-all duration-300 overflow-hidden flex flex-col justify-between cursor-pointer select-none"
+      >
+        {/* Top Product Image Container */}
+        <div>
+          <div className="relative aspect-square sm:aspect-[4/5] w-full overflow-hidden bg-stone-100">
+            <img
+              src={rooster.images[0] || 'https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?auto=format&fit=crop&w=800&q=80'}
+              alt={rooster.name}
+              className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500"
+              loading="lazy"
+            />
+
+            {/* Subtle Gradient for contrast */}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-black/20 pointer-events-none" />
+
+            {/* Top Badges: Tag ID & Champion Badge */}
+            <div className="absolute top-2 left-2 right-2 flex items-center justify-between pointer-events-none">
+              <span className="font-mono text-[9px] sm:text-[10px] font-bold px-1.5 py-0.5 rounded bg-stone-950/85 backdrop-blur-md text-amber-400 border border-amber-500/20 shadow-xs">
+                {rooster.tagId}
+              </span>
+              {rooster.badge && (
+                <span className={`text-[9px] sm:text-[10px] font-bold px-1.5 py-0.5 rounded shadow-xs ${getBadgeStyle(rooster.badge)}`}>
+                  {rooster.badge}
+                </span>
+              )}
+            </div>
+
+            {/* Picture 2 Signature: Rating Badge Pill in Bottom-Left */}
+            <div className="absolute bottom-2 left-2 flex items-center space-x-1 bg-white/95 backdrop-blur-md px-1.5 py-0.5 rounded-md border border-slate-200 shadow-sm">
+              <span className="text-[11px] font-bold text-slate-900">{rating}</span>
+              <Star className="w-2.5 h-2.5 text-emerald-600 fill-emerald-600" />
+            </div>
+
+            {/* Video Play Button Pill (if video available) */}
+            {rooster.videoUrl && (
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onOpenVideo ? onOpenVideo(rooster) : onSelect(rooster);
+                }}
+                className="absolute bottom-2 right-2 bg-stone-950/80 hover:bg-amber-600 text-white p-1 rounded-full backdrop-blur-md transition cursor-pointer"
+                title="Watch Video"
+              >
+                <PlayCircle className="w-4 h-4 text-amber-400" />
+              </button>
+            )}
+          </div>
+
+          {/* Card Body Information */}
+          <div className="p-2.5 sm:p-3">
+            {/* Title (Truncated to 1-2 lines with ellipsis) */}
+            <h3 
+              className="text-xs sm:text-sm font-bold text-slate-900 group-hover:text-amber-700 transition leading-snug line-clamp-1"
+              title={rooster.name}
+            >
+              {rooster.name}
+            </h3>
+
+            {/* Spec snippet: Breed & Weight & Height */}
+            <p className="text-[10px] sm:text-[11px] text-slate-500 font-medium truncate mt-0.5">
+              {rooster.breed.split('(')[0].trim()} • {rooster.weight} • {rooster.height}
+            </p>
+
+            {/* Price Line (Picture 2 style: MRP strikethrough, discounted price, and % off) */}
+            <div className="mt-1.5 flex items-baseline flex-wrap gap-x-1.5 gap-y-0.5">
+              <span className="text-[11px] text-slate-400 line-through">
+                ₹{originalPrice.toLocaleString('en-IN')}
+              </span>
+              <span className="text-sm sm:text-base font-extrabold text-slate-950">
+                ₹{price.toLocaleString('en-IN')}
+              </span>
+              <span className="text-[9px] sm:text-[10px] font-bold text-emerald-700 bg-emerald-50 px-1 py-0.5 rounded">
+                {discountPercent}% off
+              </span>
+            </div>
+
+            {/* Offer / Highlight Line (like Picture 2's "with Bank offer") */}
+            <p className="text-[10px] font-semibold text-blue-700 truncate mt-1 flex items-center space-x-1">
+              <span>⚡</span>
+              <span>Free Crate Transit • Certified</span>
+            </p>
+          </div>
+        </div>
+
+        {/* Action Button: Compact Add to Cart Button */}
+        <div className="p-2.5 sm:p-3 pt-0">
+          {justAdded ? (
+            <button
+              type="button"
+              onClick={(e) => e.stopPropagation()}
+              className="w-full flex items-center justify-center space-x-1 bg-emerald-500 text-white font-bold py-1.5 rounded-xl text-xs shadow-xs"
+            >
+              <Check className="w-3.5 h-3.5 animate-bounce" />
+              <span>Added!</span>
+            </button>
+          ) : inCart ? (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                openCart();
+              }}
+              className="w-full flex items-center justify-center space-x-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-1.5 rounded-xl text-xs shadow-xs active:scale-95 transition"
+            >
+              <Check className="w-3.5 h-3.5" />
+              <span>In Cart →</span>
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={handleAddToCart}
+              className="w-full flex items-center justify-center space-x-1 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-stone-950 font-bold py-1.5 rounded-xl text-xs shadow-xs active:scale-95 transition"
+            >
+              <Plus className="w-3.5 h-3.5 text-stone-950 stroke-[3]" />
+              <span>Add to Cart</span>
+            </button>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  /* =======================================================================
+     2. PICTURE 1 STYLE: DETAILED EXPANDED LIST VIEW
+     Full biological specs grid, detailed description & multi-button bar
+     ======================================================================= */
   return (
     <div className="group relative bg-white rounded-2xl border border-stone-200 hover:border-amber-500/60 hover:shadow-xl transition-all duration-300 overflow-hidden flex flex-col">
       
@@ -76,7 +223,7 @@ export const RoosterCard: React.FC<RoosterCardProps> = ({
           loading="lazy"
         />
 
-        <div className="absolute inset-0 bg-gradient-to-t from-stone-950/80 via-transparent to-black/30 pointer-events-none"></div>
+        <div className="absolute inset-0 bg-gradient-to-t from-stone-950/80 via-transparent to-black/30 pointer-events-none" />
 
         {/* Top Floating Badges */}
         <div className="absolute top-3 left-3 right-3 flex items-center justify-between">
@@ -119,18 +266,16 @@ export const RoosterCard: React.FC<RoosterCardProps> = ({
         <div>
           {/* Title & Breed */}
           <div>
-            <div className="flex items-center justify-between">
-              <h3 
-                onClick={() => onSelect(rooster)}
-                className="text-lg font-bold text-stone-900 group-hover:text-amber-700 transition cursor-pointer leading-snug line-clamp-1"
-                title={rooster.name}
-              >
-                {rooster.name}
-              </h3>
-            </div>
+            <h3 
+              onClick={() => onSelect(rooster)}
+              className="text-lg font-bold text-stone-900 group-hover:text-amber-700 transition cursor-pointer leading-snug line-clamp-1"
+              title={rooster.name}
+            >
+              {rooster.name}
+            </h3>
             <p className="text-xs text-stone-500 font-medium mt-0.5">{rooster.breed}</p>
 
-            {/* E-Commerce Price & Deal Display (Amazon/Flipkart Style) */}
+            {/* Price & Deal Display */}
             <div className="mt-2.5 flex items-baseline justify-between">
               <div className="flex items-baseline space-x-2">
                 <span className="text-xl font-black text-stone-950">
@@ -187,8 +332,6 @@ export const RoosterCard: React.FC<RoosterCardProps> = ({
 
         {/* Action Area */}
         <div className="pt-3 border-t border-stone-100 space-y-2">
-          
-          {/* PRIMARY E-COMMERCE ACTION: ADD TO CART (Amazon/Flipkart Style - Stays on page without popup) */}
           {justAdded ? (
             <button
               type="button"
@@ -239,7 +382,6 @@ export const RoosterCard: React.FC<RoosterCardProps> = ({
               <span>WhatsApp</span>
             </a>
           </div>
-
         </div>
 
       </div>
