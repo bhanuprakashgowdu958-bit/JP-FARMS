@@ -97,12 +97,12 @@ export const RoosterCard: React.FC<RoosterCardProps> = ({
             type="button"
             onClick={(e) => {
               e.stopPropagation();
-              onOpenVideo ? onOpenVideo(rooster) : onSelect(rooster);
+              onSelect(rooster);
             }}
-            className="absolute bottom-3 left-3 flex items-center space-x-1.5 bg-black/75 hover:bg-amber-600 backdrop-blur-md text-white px-2.5 py-1 rounded-full text-xs font-medium border border-white/20 transition group/video"
+            className="absolute bottom-3 left-3 flex items-center space-x-1.5 bg-black/75 hover:bg-amber-600 backdrop-blur-md text-white px-2.5 py-1 rounded-full text-xs font-medium border border-white/20 transition group/video cursor-pointer"
           >
             <PlayCircle className="w-4 h-4 text-amber-400 group-hover/video:text-white" />
-            <span>HD Stance Video</span>
+            <span>Watch Video</span>
           </button>
         )}
 
@@ -222,10 +222,11 @@ export const RoosterCard: React.FC<RoosterCardProps> = ({
             <button
               type="button"
               onClick={() => onSelect(rooster)}
-              className="w-full flex items-center justify-center space-x-1.5 bg-stone-100 hover:bg-stone-200 text-stone-800 font-bold py-2 px-3 rounded-xl text-xs transition"
+              className="w-full flex items-center justify-center space-x-1.5 bg-stone-100 hover:bg-amber-100 hover:text-amber-950 text-stone-800 font-bold py-2 px-3 rounded-xl text-xs transition cursor-pointer border border-stone-200"
+              title="Open full bird photos, video & pedigree"
             >
-              <Eye className="w-3.5 h-3.5 text-stone-600" />
-              <span>Pedigree</span>
+              <Eye className="w-3.5 h-3.5 text-amber-600" />
+              <span>Photos & Video</span>
             </button>
 
             <a
