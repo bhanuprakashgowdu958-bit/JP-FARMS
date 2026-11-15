@@ -121,16 +121,24 @@ export async function addInquiryToFirestore(inquiryData: Omit<CustomerInquiry, '
 }
 
 // Subscribe to real-time changes in roosters
-export function subscribeToRoostersRealtime(onData: (roosters: Rooster[]) => void) {
+export function subscribeToRoostersRealtime(
+  onData: (roosters: Rooster[]) => void,
+  onError?: (err: any) => void
+) {
   if (!isFirebaseConfigured || !db) return () => {};
 
   const roostersCol = collection(db, 'roosters');
   const q = query(roostersCol, orderBy('createdAt', 'desc'));
 
-  return onSnapshot(q, (snapshot: any) => {
-    if (!snapshot.empty) {
+  return (onSnapshot as any)(
+    q,
+    (snapshot: any) => {
       const items = snapshot.docs.map((d: any) => ({ id: d.id, ...d.data() })) as Rooster[];
       onData(items);
+    },
+    (err: any) => {
+      console.warn('Firestore real-time subscription error:', err?.message || err);
+      if (onError) onError(err);
     }
-  });
+  );
 }

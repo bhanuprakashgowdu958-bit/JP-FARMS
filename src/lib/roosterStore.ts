@@ -16,30 +16,53 @@ import { pushNotification } from './notificationStore';
 import { getStoredUser } from './authStore';
 
 const ROOSTERS_STORAGE_KEY = 'jp_farms_roosters_v1';
+const DELETED_ROOSTERS_STORAGE_KEY = 'jp_farms_deleted_rooster_ids_v1';
 const INQUIRIES_STORAGE_KEY = 'jp_farms_inquiries_v1';
 const ORDERS_STORAGE_KEY = 'jp_farms_orders_v1';
+
+export function getDeletedRoosterIds(): string[] {
+  if (typeof window === 'undefined') return [];
+  try {
+    const saved = localStorage.getItem(DELETED_ROOSTERS_STORAGE_KEY);
+    return saved ? JSON.parse(saved) : [];
+  } catch {
+    return [];
+  }
+}
+
+export function saveDeletedRoosterIds(ids: string[]): void {
+  if (typeof window === 'undefined') return;
+  try {
+    localStorage.setItem(DELETED_ROOSTERS_STORAGE_KEY, JSON.stringify(ids));
+  } catch {}
+}
 
 export function getStoredRoosters(): Rooster[] {
   if (typeof window === 'undefined') return INITIAL_ROOSTERS;
   try {
+    const deleted = new Set(getDeletedRoosterIds());
     const saved = localStorage.getItem(ROOSTERS_STORAGE_KEY);
+    let parsed: Rooster[];
     if (!saved) {
       localStorage.setItem(ROOSTERS_STORAGE_KEY, JSON.stringify(INITIAL_ROOSTERS));
-      return INITIAL_ROOSTERS;
+      parsed = INITIAL_ROOSTERS;
+    } else {
+      parsed = JSON.parse(saved);
     }
-    const parsed: Rooster[] = JSON.parse(saved);
-    // Ensure all stored roosters have price and stock status populated from initial defaults if missing
-    return parsed.map((r) => {
-      const match = INITIAL_ROOSTERS.find((init) => init.id === r.id);
-      return {
-        ...r,
-        price: r.price || match?.price || 9500,
-        originalPrice: r.originalPrice || match?.originalPrice || (r.price ? Math.round(r.price * 1.25) : 12000),
-        inStock: r.inStock !== undefined ? r.inStock : (match?.inStock ?? true),
-        rating: r.rating || match?.rating || 4.9,
-        reviewsCount: r.reviewsCount || match?.reviewsCount || 35,
-      };
-    });
+    // Filter out any roosters marked as deleted
+    return parsed
+      .filter((r) => !deleted.has(r.id) && !deleted.has(r.tagId))
+      .map((r) => {
+        const match = INITIAL_ROOSTERS.find((init) => init.id === r.id);
+        return {
+          ...r,
+          price: r.price || match?.price || 9500,
+          originalPrice: r.originalPrice || match?.originalPrice || (r.price ? Math.round(r.price * 1.25) : 12000),
+          inStock: r.inStock !== undefined ? r.inStock : (match?.inStock ?? true),
+          rating: r.rating || match?.rating || 4.9,
+          reviewsCount: r.reviewsCount || match?.reviewsCount || 35,
+        };
+      });
   } catch (e) {
     return INITIAL_ROOSTERS;
   }
@@ -48,7 +71,9 @@ export function getStoredRoosters(): Rooster[] {
 export function saveStoredRoosters(roosters: Rooster[]): void {
   if (typeof window === 'undefined') return;
   try {
-    localStorage.setItem(ROOSTERS_STORAGE_KEY, JSON.stringify(roosters));
+    const deleted = new Set(getDeletedRoosterIds());
+    const filtered = roosters.filter(r => !deleted.has(r.id) && !deleted.has(r.tagId));
+    localStorage.setItem(ROOSTERS_STORAGE_KEY, JSON.stringify(filtered));
     window.dispatchEvent(new Event('roosters-updated'));
   } catch (e) {
     console.error('Failed to save roosters', e);
@@ -102,30 +127,39 @@ export function useRoosters() {
   const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
-    // 1. Initial fast local load
+    // 1. Initial fast local load filtered by deleted IDs
     setRoosters(getStoredRoosters());
     setIsLoaded(true);
 
-    // 2. If Firebase is configured, subscribe to live Firestore updates
-    if (isFirebaseConfigured) {
-      const unsubscribe = subscribeToRoostersRealtime((liveRoosters) => {
-        if (liveRoosters && liveRoosters.length > 0) {
-          setRoosters(liveRoosters);
-          saveStoredRoosters(liveRoosters);
+    // 2. Fetch from backend API unconditionally
+    fetch('/api/roosters')
+      .then(res => res.json())
+      .then(result => {
+        if (result.success && Array.isArray(result.data)) {
+          const deleted = new Set(getDeletedRoosterIds());
+          const cleaned = result.data.filter((r: Rooster) => !deleted.has(r.id) && !deleted.has(r.tagId));
+          setRoosters(cleaned);
+          saveStoredRoosters(cleaned);
         }
-      });
-      return () => unsubscribe();
-    } else {
-      // Fetch from internal backend API
-      fetch('/api/roosters')
-        .then(res => res.json())
-        .then(result => {
-          if (result.success && Array.isArray(result.data) && result.data.length > 0) {
-            setRoosters(result.data);
-            saveStoredRoosters(result.data);
+      })
+      .catch(() => {});
+
+    // 3. If Firebase is configured, subscribe to live Firestore updates
+    if (isFirebaseConfigured) {
+      const unsubscribe = subscribeToRoostersRealtime(
+        (liveRoosters) => {
+          if (liveRoosters && liveRoosters.length > 0) {
+            const deleted = new Set(getDeletedRoosterIds());
+            const cleaned = liveRoosters.filter((r: Rooster) => !deleted.has(r.id) && !deleted.has(r.tagId));
+            setRoosters(cleaned);
+            saveStoredRoosters(cleaned);
           }
-        })
-        .catch(() => {});
+        },
+        (err) => {
+          console.warn('Firestore real-time subscription error:', err?.message || err);
+        }
+      );
+      return () => unsubscribe();
     }
 
     const handleUpdate = () => {
@@ -159,16 +193,14 @@ export function useRoosters() {
     saveStoredRoosters(updated);
     setRoosters(updated);
 
-    if (!isFirebaseConfigured) {
-      try {
-        await fetch('/api/roosters', {
-          method: 'POST',
-          headers: getAdminAuthHeaders(),
-          body: JSON.stringify(created),
-        });
-      } catch (e) {
-        console.error('Failed to sync rooster to server', e);
-      }
+    try {
+      await fetch('/api/roosters', {
+        method: 'POST',
+        headers: getAdminAuthHeaders(),
+        body: JSON.stringify(created),
+      });
+    } catch (e) {
+      console.error('Failed to sync rooster to server', e);
     }
 
     return created;
@@ -186,40 +218,48 @@ export function useRoosters() {
       } catch (e) {
         console.error('Error updating in Firestore:', e);
       }
-    } else {
-      try {
-        await fetch('/api/roosters', {
-          method: 'PUT',
-          headers: getAdminAuthHeaders(),
-          body: JSON.stringify({ id, ...updates }),
-        });
-      } catch (e) {
-        console.error('Failed to sync rooster update to server', e);
-      }
+    }
+
+    try {
+      await fetch('/api/roosters', {
+        method: 'PUT',
+        headers: getAdminAuthHeaders(),
+        body: JSON.stringify({ id, ...updates }),
+      });
+    } catch (e) {
+      console.error('Failed to sync rooster update to server', e);
     }
   };
 
   const deleteRooster = async (id: string) => {
+    // 1. Add to permanent deleted list so no client loads it
+    const deletedList = getDeletedRoosterIds();
+    if (!deletedList.includes(id)) {
+      saveDeletedRoosterIds([...deletedList, id]);
+    }
+
     const current = getStoredRoosters();
-    const updated = current.filter((r) => r.id !== id);
+    const updated = current.filter((r) => r.id !== id && r.tagId !== id);
     saveStoredRoosters(updated);
     setRoosters(updated);
 
+    // 2. Delete from Firestore if configured
     if (isFirebaseConfigured) {
       try {
         await deleteRoosterFromFirestore(id);
       } catch (e) {
         console.error('Error deleting from Firestore:', e);
       }
-    } else {
-      try {
-        await fetch(`/api/roosters?id=${encodeURIComponent(id)}`, {
-          method: 'DELETE',
-          headers: getAdminAuthHeaders(),
-        });
-      } catch (e) {
-        console.error('Failed to sync rooster deletion to server', e);
-      }
+    }
+
+    // 3. Delete from backend server API
+    try {
+      await fetch(`/api/roosters?id=${encodeURIComponent(id)}`, {
+        method: 'DELETE',
+        headers: getAdminAuthHeaders(),
+      });
+    } catch (e) {
+      console.error('Failed to sync rooster deletion to server', e);
     }
   };
 
@@ -228,6 +268,7 @@ export function useRoosters() {
   };
 
   const resetToDefault = () => {
+    saveDeletedRoosterIds([]);
     saveStoredRoosters(INITIAL_ROOSTERS);
     setRoosters(INITIAL_ROOSTERS);
   };

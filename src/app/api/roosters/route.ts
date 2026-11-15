@@ -6,23 +6,51 @@ import { INITIAL_ROOSTERS } from '@/lib/data';
 import { verifyAdminToken } from '@/lib/serverSecurity';
 
 const DATA_FILE = path.join(process.cwd(), 'data', 'roosters.json');
+const TMP_FILE = path.join('/tmp', 'roosters.json');
+
+// In-memory cache for serverless lifecycle
+let memoryRoostersCache: Rooster[] | null = null;
+const memoryDeletedIds: Set<string> = new Set();
 
 function isAuthorizedAdmin(req: NextRequest): boolean {
   return verifyAdminToken(req);
 }
 
 async function getRoostersFromFile(): Promise<Rooster[]> {
+  if (memoryRoostersCache && Array.isArray(memoryRoostersCache)) {
+    return memoryRoostersCache.filter((r: Rooster) => !memoryDeletedIds.has(r.id) && !memoryDeletedIds.has(r.tagId));
+  }
+
+  // 1. Try reading from /tmp (writable in serverless)
+  try {
+    const tmpData = await readFile(TMP_FILE, 'utf-8');
+    const parsed = JSON.parse(tmpData);
+    if (Array.isArray(parsed)) {
+      memoryRoostersCache = parsed;
+      return parsed.filter((r: Rooster) => !memoryDeletedIds.has(r.id) && !memoryDeletedIds.has(r.tagId));
+    }
+  } catch {}
+
+  // 2. Read bundled data file
   try {
     const data = await readFile(DATA_FILE, 'utf-8');
-    return JSON.parse(data);
+    const parsed = JSON.parse(data);
+    memoryRoostersCache = parsed;
+    return parsed.filter((r: Rooster) => !memoryDeletedIds.has(r.id) && !memoryDeletedIds.has(r.tagId));
   } catch (e) {
-    await writeFile(DATA_FILE, JSON.stringify(INITIAL_ROOSTERS, null, 2));
-    return INITIAL_ROOSTERS;
+    memoryRoostersCache = INITIAL_ROOSTERS;
+    return INITIAL_ROOSTERS.filter((r: Rooster) => !memoryDeletedIds.has(r.id) && !memoryDeletedIds.has(r.tagId));
   }
 }
 
 async function saveRoostersToFile(roosters: Rooster[]): Promise<void> {
-  await writeFile(DATA_FILE, JSON.stringify(roosters, null, 2));
+  memoryRoostersCache = roosters;
+  try {
+    await writeFile(TMP_FILE, JSON.stringify(roosters, null, 2));
+  } catch {}
+  try {
+    await writeFile(DATA_FILE, JSON.stringify(roosters, null, 2));
+  } catch {}
 }
 
 // GET all roosters (Public read)
@@ -127,8 +155,9 @@ export async function DELETE(req: NextRequest) {
       return NextResponse.json({ error: 'Missing rooster id' }, { status: 400 });
     }
 
+    memoryDeletedIds.add(id);
     const roosters = await getRoostersFromFile();
-    const updated = roosters.filter(r => r.id !== id);
+    const updated = roosters.filter(r => r.id !== id && r.tagId !== id);
     await saveRoostersToFile(updated);
 
     return NextResponse.json({ success: true, message: 'Rooster deleted' });
