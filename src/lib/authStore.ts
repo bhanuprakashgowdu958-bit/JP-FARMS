@@ -55,14 +55,14 @@ export function isBhanuEmail(email?: string | null): boolean {
   );
 }
 
-// Initial registered users list for admin directory demo
+// Initial registered users list for owner accounts
 const INITIAL_REGISTERED_USERS: RegisteredCustomer[] = [
   {
     uid: 'bhanu-owner-958',
     name: 'Bhanu Prakash',
     email: 'bhanuprakashgowdu958@gmail.com',
     phone: '',
-    photoURL: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=120&q=80',
+    photoURL: '',
     joinedAt: '2026-11-08 10:00 AM',
     lastLoginAt: '2026-11-09 12:00 AM',
   },
@@ -71,27 +71,9 @@ const INITIAL_REGISTERED_USERS: RegisteredCustomer[] = [
     name: 'Bhanu prakash Gowdu',
     email: 'bhanuprakashgowdu87@gmail.com',
     phone: '',
-    photoURL: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=120&q=80',
+    photoURL: '',
     joinedAt: '2026-11-08 10:00 AM',
     lastLoginAt: '2026-11-09 12:00 AM',
-  },
-  {
-    uid: 'google-usr-01',
-    name: 'Kishore Varma',
-    email: 'kishore.varma.agri@gmail.com',
-    phone: '+91 98450 12345',
-    photoURL: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=120&q=80',
-    joinedAt: '2026-11-05 10:15 AM',
-    lastLoginAt: '2026-11-08 11:20 AM',
-  },
-  {
-    uid: 'google-usr-02',
-    name: 'Anil Kumar Reddy',
-    email: 'anilkumar.breeder@gmail.com',
-    phone: '+91 97312 88990',
-    photoURL: 'https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?auto=format&fit=crop&w=120&q=80',
-    joinedAt: '2026-11-06 02:40 PM',
-    lastLoginAt: '2026-11-08 04:45 PM',
   },
 ];
 
@@ -349,7 +331,30 @@ export function getRegisteredCustomers(): RegisteredCustomer[] {
       localStorage.setItem(REGISTERED_USERS_KEY, JSON.stringify(INITIAL_REGISTERED_USERS));
       return INITIAL_REGISTERED_USERS;
     }
-    return JSON.parse(data);
+    const parsed: RegisteredCustomer[] = JSON.parse(data);
+    // Purge dummy demo users (Kishore Varma, Anil Kumar Reddy, etc.)
+    const cleaned = parsed
+      .filter(
+        (c) =>
+          c.uid !== 'google-usr-01' &&
+          c.uid !== 'google-usr-02' &&
+          c.email !== 'kishore.varma.agri@gmail.com' &&
+          c.email !== 'anilkumar.breeder@gmail.com' &&
+          c.name !== 'Kishore Varma' &&
+          c.name !== 'Anil Kumar Reddy'
+      )
+      .map((c) => {
+        // Strip out any placeholder unsplash images so real Google profile pictures always take priority
+        if (c.photoURL && c.photoURL.includes('images.unsplash.com')) {
+          return { ...c, photoURL: '' };
+        }
+        return c;
+      });
+
+    if (cleaned.length !== parsed.length || JSON.stringify(cleaned) !== data) {
+      localStorage.setItem(REGISTERED_USERS_KEY, JSON.stringify(cleaned));
+    }
+    return cleaned;
   } catch (e) {
     return INITIAL_REGISTERED_USERS;
   }
