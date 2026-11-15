@@ -176,129 +176,112 @@ export const RoosterCatalog: React.FC<RoosterCatalogProps> = ({
           </div>
         </div>
 
-        {/* Filter Controls Bar */}
-        <div className="bg-white p-4 sm:p-5 rounded-2xl border border-sky-100 shadow-xs space-y-4 mb-8">
-          
-          {/* Top Row: Search & Badges Filters */}
-          <div className="flex flex-col lg:flex-row gap-4 justify-between items-center">
-            
-            {/* Search Input */}
-            <div className="relative w-full lg:w-96">
-              <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search Tag (e.g. JP-AS-101), Breed, or Lineage..."
-                className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-sky-100 text-sm focus:outline-hidden focus:ring-2 focus:ring-sky-500 bg-sky-50/40"
-              />
-              {searchQuery && (
-                <button
-                  onClick={() => setSearchQuery('')}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400 hover:text-slate-600 cursor-pointer"
-                >
-                  Clear
-                </button>
-              )}
-            </div>
-
-            {/* Badge Filter Pills */}
-            <div className="flex items-center space-x-1.5 w-full lg:w-auto overflow-x-auto pb-1 lg:pb-0 scrollbar-none">
-              <span className="text-xs font-bold text-slate-400 uppercase tracking-wider mr-1 hidden sm:inline">
-                Status:
+        {/* ===============================================================
+            FLIPKART-STYLE VISUAL CATEGORIES RAIL
+            =============================================================== */}
+        <div className="mb-5">
+          <div className="bg-white rounded-2xl sm:rounded-3xl p-3 sm:p-4 border border-slate-200/80 shadow-xs">
+            <div className="flex items-center justify-between pb-2 mb-2 border-b border-slate-100">
+              <span className="text-xs font-black text-slate-800 uppercase tracking-wider flex items-center space-x-1.5">
+                <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+                <span>Explore Breed Showrooms</span>
               </span>
-              {BADGES.map((badgeItem) => (
-                <button
-                  key={badgeItem.value}
-                  onClick={() => setSelectedBadge(badgeItem.value)}
-                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition whitespace-nowrap cursor-pointer ${
-                    selectedBadge === badgeItem.value
-                      ? 'bg-sky-700 text-white shadow-xs'
-                      : 'bg-sky-50/60 text-slate-600 hover:bg-sky-100'
-                  }`}
-                >
-                  {badgeItem.label}
-                </button>
-              ))}
+              <span className="text-[11px] font-bold text-slate-400">
+                {roosters.length} Registered Birds
+              </span>
             </div>
 
-            {/* Sort & View Mode Switcher */}
-            <div className="flex items-center space-x-2 w-full lg:w-auto justify-end">
-              <div className="flex items-center space-x-1.5 bg-sky-50/70 p-1 rounded-xl border border-sky-100">
-                <button
-                  type="button"
-                  onClick={() => setViewMode('grid')}
-                  className={`p-1.5 rounded-lg text-xs font-bold transition flex items-center space-x-1 cursor-pointer ${
-                    viewMode === 'grid'
-                      ? 'bg-sky-700 text-white shadow-xs'
-                      : 'text-slate-500 hover:text-slate-800'
-                  }`}
-                  title="Grid View (Picture 2 style)"
-                >
-                  <LayoutGrid className="w-3.5 h-3.5" />
-                  <span className="hidden sm:inline">Grid</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setViewMode('list')}
-                  className={`p-1.5 rounded-lg text-xs font-bold transition flex items-center space-x-1 cursor-pointer ${
-                    viewMode === 'list'
-                      ? 'bg-sky-700 text-white shadow-xs'
-                      : 'text-slate-500 hover:text-slate-800'
-                  }`}
-                  title="Detailed List View"
-                >
-                  <List className="w-3.5 h-3.5" />
-                  <span className="hidden sm:inline">Details</span>
-                </button>
-              </div>
+            {/* Horizontal Story Avatar Row (Flipkart Category Rail) */}
+            <div className="flex items-center space-x-3 sm:space-x-5 overflow-x-auto pb-2 pt-1 scrollbar-none scroll-smooth">
+              {CATEGORY_ITEMS.map((cat) => {
+                const count = categoryCounts[cat.value] || 0;
+                const isSelected = selectedCategory === cat.value;
+                const meta = cat.value !== 'all' ? ROOSTER_CATEGORIES_META[cat.value as Exclude<RoosterCategory, 'all'>] : null;
 
-              <div className="flex items-center space-x-1">
-                <SlidersHorizontal className="w-4 h-4 text-slate-400" />
-                <select
-                  value={sortBy}
-                  onChange={(e) => setSortBy(e.target.value as any)}
-                  className="bg-sky-50 border-none rounded-xl text-xs font-semibold px-3 py-2 text-slate-800 focus:ring-2 focus:ring-sky-500"
-                >
-                  <option value="featured">Featured First</option>
-                  <option value="price-low">Price: Low to High</option>
-                  <option value="price-high">Price: High to Low</option>
-                  <option value="weight">Heaviest Weight First</option>
-                  <option value="height">Tallest Height First</option>
-                  <option value="newest">Newly Documented</option>
-                </select>
-              </div>
+                return (
+                  <button
+                    key={cat.value}
+                    type="button"
+                    onClick={() => setSelectedCategory(cat.value)}
+                    className="flex flex-col items-center group shrink-0 focus:outline-hidden cursor-pointer"
+                  >
+                    {/* Circle Avatar */}
+                    <div className={`relative w-14 h-14 sm:w-16 sm:h-16 rounded-full flex items-center justify-center transition-all duration-200 ${
+                      isSelected
+                        ? 'ring-3 ring-amber-500 ring-offset-2 bg-gradient-to-br from-amber-500 to-amber-600 shadow-md scale-105'
+                        : 'bg-slate-100 group-hover:bg-slate-200/80 border border-slate-200 group-hover:scale-105'
+                    }`}>
+                      <span className={`text-2xl sm:text-3xl transition ${isSelected ? 'scale-110' : ''}`}>
+                        {cat.icon}
+                      </span>
+
+                      {/* Live Count Pill */}
+                      <span className={`absolute -top-1 -right-1 text-[10px] font-mono font-bold px-1.5 py-0.2 rounded-full border ${
+                        isSelected
+                          ? 'bg-stone-950 text-amber-300 border-amber-400'
+                          : 'bg-white text-slate-700 border-slate-200 shadow-2xs'
+                      }`}>
+                        {count}
+                      </span>
+                    </div>
+
+                    {/* Category Label */}
+                    <span className={`text-[11px] sm:text-xs font-bold mt-2 text-center max-w-[76px] sm:max-w-[88px] leading-tight line-clamp-2 transition ${
+                      isSelected ? 'text-amber-600 font-black' : 'text-slate-600 group-hover:text-slate-900'
+                    }`}>
+                      {meta?.shortName || cat.label}
+                    </span>
+                  </button>
+                );
+              })}
             </div>
+          </div>
+        </div>
 
+        {/* ===============================================================
+            CLEAN FLIPKART-STYLE SEARCH & SORT BAR
+            =============================================================== */}
+        <div className="bg-white p-2.5 sm:p-3 rounded-2xl border border-slate-200/80 shadow-xs mb-6 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+          {/* Search Box */}
+          <div className="relative flex-1">
+            <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search by Tag ID (e.g. JP-AS-101), breed name, comb type..."
+              className="w-full pl-10 pr-10 py-2 rounded-xl border border-slate-200 bg-slate-50/70 text-xs sm:text-sm text-slate-900 focus:outline-hidden focus:bg-white focus:border-amber-500 transition"
+            />
+            {searchQuery && (
+              <button
+                type="button"
+                onClick={() => setSearchQuery('')}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400 hover:text-slate-600 p-1 cursor-pointer"
+              >
+                ✕
+              </button>
+            )}
           </div>
 
-          {/* Bottom Row: Category Tabs with Live Specimen Counts */}
-          <div className="pt-3 border-t border-sky-50 flex items-center space-x-2 overflow-x-auto pb-1 scrollbar-none">
-            {CATEGORY_ITEMS.map((cat) => {
-              const count = categoryCounts[cat.value] || 0;
-              const isSelected = selectedCategory === cat.value;
-              return (
-                <button
-                  key={cat.value}
-                  onClick={() => setSelectedCategory(cat.value)}
-                  className={`px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition flex items-center space-x-1.5 cursor-pointer ${
-                    isSelected
-                      ? 'bg-gradient-to-r from-sky-600 to-sky-700 text-white shadow-xs'
-                      : 'bg-sky-50/70 text-slate-700 hover:bg-sky-100/80'
-                  }`}
-                >
-                  <span>{cat.icon}</span>
-                  <span>{cat.label}</span>
-                  <span className={`text-[10px] px-1.5 py-0.2 rounded-md font-mono ${
-                    isSelected ? 'bg-sky-900/60 text-sky-100' : 'bg-white/80 text-slate-600 border border-slate-200'
-                  }`}>
-                    {count}
-                  </span>
-                </button>
-              );
-            })}
+          {/* Sort Selector */}
+          <div className="flex items-center space-x-2 shrink-0 self-end sm:self-auto">
+            <span className="text-xs font-bold text-slate-400 hidden sm:inline">Sort:</span>
+            <div className="relative flex items-center">
+              <SlidersHorizontal className="w-3.5 h-3.5 text-slate-400 absolute left-3 pointer-events-none" />
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value as any)}
+                className="pl-8 pr-4 py-2 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-xl text-xs font-bold text-slate-800 focus:outline-hidden focus:border-amber-500 cursor-pointer transition"
+              >
+                <option value="featured">Featured First</option>
+                <option value="price-low">Price: Low to High</option>
+                <option value="price-high">Price: High to Low</option>
+                <option value="weight">Heaviest Weight</option>
+                <option value="height">Tallest Height</option>
+                <option value="newest">Newly Added</option>
+              </select>
+            </div>
           </div>
-
         </div>
 
         {/* Selected Breed Showroom Banner (when viewing a specific breed) */}
@@ -358,15 +341,14 @@ export const RoosterCatalog: React.FC<RoosterCatalogProps> = ({
         {/* Results Counter & Active Filters Reset */}
         <div className="flex items-center justify-between mb-6 text-xs text-stone-500">
           <p>
-            Showing <strong className="text-stone-900">{filteredRoosters.length}</strong> birds
+            Showing <strong className="text-stone-900">{filteredRoosters.length}</strong> {filteredRoosters.length === 1 ? 'bird' : 'birds'}
             {selectedCategory !== 'all' && ` in ${activeCategoryMeta?.name || selectedCategory}`}
-            {selectedBadge !== 'all' && ` • ${selectedBadge}`}
+            {searchQuery && ` matching "${searchQuery}"`}
           </p>
-          {(selectedCategory !== 'all' || selectedBadge !== 'all' || searchQuery) && (
+          {(selectedCategory !== 'all' || searchQuery) && (
             <button
               onClick={() => {
                 setSelectedCategory('all');
-                setSelectedBadge('all');
                 setSearchQuery('');
               }}
               className="flex items-center space-x-1 text-amber-700 hover:text-amber-900 font-semibold cursor-pointer"
