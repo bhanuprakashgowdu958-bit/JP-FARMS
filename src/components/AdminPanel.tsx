@@ -202,11 +202,6 @@ export const AdminPanel: React.FC = () => {
         setActiveTab(tabParam as any);
       }
 
-      // Default to grid on small screens for ideal mobile UX
-      if (window.innerWidth < 768) {
-        setRoosterViewMode('grid');
-      }
-
       return () => {
         window.removeEventListener('customers-updated', updateAndSyncCustomers);
       };
@@ -1641,46 +1636,12 @@ export const AdminPanel: React.FC = () => {
                 {/* View Switcher & Search Bar */}
                 <div className="bg-white p-3 sm:p-4 rounded-2xl border border-slate-200 shadow-xs flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
                   
-                  {/* View Mode Switcher Pills */}
-                  <div className="flex items-center space-x-1 bg-slate-100 p-1 rounded-xl overflow-x-auto scrollbar-none">
-                    <button
-                      type="button"
-                      onClick={() => setRoosterViewMode('categories')}
-                      className={`px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center space-x-1.5 whitespace-nowrap cursor-pointer ${
-                        roosterViewMode === 'categories'
-                          ? 'bg-amber-500 text-stone-950 shadow-xs font-black'
-                          : 'text-slate-600 hover:text-slate-900'
-                      }`}
-                    >
+                  {/* Breed Showrooms Directory Header */}
+                  <div className="flex items-center space-x-2">
+                    <div className="px-3.5 py-1.5 rounded-xl text-xs font-black bg-amber-500 text-stone-950 shadow-xs flex items-center space-x-1.5">
                       <FolderOpen className="w-3.5 h-3.5" />
                       <span>📁 Breed Showrooms ({Object.keys(ROOSTER_CATEGORIES_META).length})</span>
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={() => setRoosterViewMode('table')}
-                      className={`px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center space-x-1.5 whitespace-nowrap cursor-pointer ${
-                        roosterViewMode === 'table'
-                          ? 'bg-white text-slate-900 shadow-xs font-black'
-                          : 'text-slate-600 hover:text-slate-900'
-                      }`}
-                    >
-                      <List className="w-3.5 h-3.5" />
-                      <span>📋 All Birds Table ({roosters.length})</span>
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={() => setRoosterViewMode('grid')}
-                      className={`px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center space-x-1.5 whitespace-nowrap cursor-pointer ${
-                        roosterViewMode === 'grid'
-                          ? 'bg-white text-slate-900 shadow-xs font-black'
-                          : 'text-slate-600 hover:text-slate-900'
-                      }`}
-                    >
-                      <LayoutGrid className="w-3.5 h-3.5" />
-                      <span>🖼️ All Birds Grid ({roosters.length})</span>
-                    </button>
+                    </div>
                   </div>
 
                   {/* Search and Category Filter for table/grid */}
