@@ -129,7 +129,7 @@ export const ZomatoBannerCarousel: React.FC<ZomatoBannerCarouselProps> = ({
       
       {/* 100% Full-Screen Edge-to-Edge Banner (Matching agri-nutro.vercel.app sizing: clamp(260px, 60vw, 400px) on mobile, clamp(340px, 48vw, 620px) on desktop) */}
       <div 
-        className="agri-style-banner-stage group relative w-full overflow-hidden bg-slate-950 transition-all duration-300 cursor-pointer shadow-md"
+        className="agri-style-banner-stage group relative w-full overflow-hidden bg-transparent transition-all duration-300 cursor-pointer shadow-md"
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
@@ -151,10 +151,10 @@ export const ZomatoBannerCarousel: React.FC<ZomatoBannerCarouselProps> = ({
                 alt={banner.imageAlt}
                 loading={index === 0 ? "eager" : "lazy"}
                 decoding="async"
-                className="w-full h-full object-cover object-[center_35%] filter brightness-[1.02] contrast-[1.03] pointer-events-none select-none"
+                className="w-full h-full object-cover object-[center_35%] filter brightness-[1.08] contrast-[1.05] saturate-[1.1] pointer-events-none select-none"
               />
-              {/* Subtle Atmospheric Blend Gradient matching agri-nutro */}
-              <div className="absolute inset-0 pointer-events-none bg-gradient-to-t from-slate-950/60 via-transparent to-black/15" />
+              {/* Minimal bottom vignette - just enough to show dots, no brightness loss */}
+              <div className="absolute inset-0 pointer-events-none bg-gradient-to-t from-black/20 via-transparent to-transparent" />
             </div>
           ))}
         </div>
