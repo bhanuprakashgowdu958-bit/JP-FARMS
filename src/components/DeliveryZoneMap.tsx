@@ -569,19 +569,6 @@ export const DeliveryZoneMap: React.FC<DeliveryZoneMapProps> = ({
             <span>{isLocating ? 'Locating...' : 'My Device'}</span>
           </button>
         </div>
-
-        {/* Clear Color Zone Legend Overlay at Bottom Left */}
-        <div className="absolute bottom-2 left-2 z-[1000] bg-stone-950/90 backdrop-blur-md text-white px-2.5 py-1.5 rounded-xl text-[10px] pointer-events-none shadow-lg border border-white/10 flex items-center space-x-3">
-          <div className="flex items-center space-x-1.5">
-            <span className="w-3 h-3 rounded-full bg-emerald-500 border border-white inline-block shadow-xs"></span>
-            <span className="font-bold text-emerald-300">20 km Green Zone (Deliverable)</span>
-          </div>
-          <span className="text-white/30">|</span>
-          <div className="flex items-center space-x-1.5">
-            <span className="w-3 h-3 rounded-full bg-rose-500/80 border border-rose-300 inline-block shadow-xs"></span>
-            <span className="font-bold text-rose-300">Light Red Area (Undeliverable)</span>
-          </div>
-        </div>
       </div>
 
       {/* Subtext info bar with clear next steps */}

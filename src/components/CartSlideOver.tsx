@@ -968,39 +968,17 @@ export const CartSlideOver: React.FC = () => {
                                   </span>
                                 </div>
                               ) : (
-                                <div className="mt-2 bg-gradient-to-br from-rose-50 via-amber-50 to-orange-50 border-2 border-rose-300 rounded-xl p-3.5 shadow-sm space-y-2.5">
+                                <div className="mt-2 bg-gradient-to-br from-rose-50 via-amber-50 to-orange-50 border-2 border-rose-300 rounded-xl p-3 shadow-xs">
                                   <div className="flex items-start space-x-2">
                                     <AlertTriangle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
                                     <div className="flex-1 min-w-0">
                                       <p className="text-xs font-black text-rose-950">
-                                        Doorstep Delivery Exceeds Safe 20 km Transit Radius (~{deliveryDistanceKm} km)
+                                        Doorstep Delivery Unavailable at this Location
                                       </p>
                                       <p className="text-[11px] text-rose-800 leading-snug mt-0.5">
-                                        For live animal welfare, direct 2-wheeler courier is strictly capped at 20 km. <strong>You can still get your rooster with the options below:</strong>
+                                        Your address is <strong>~{deliveryDistanceKm} km</strong> from JP Farms Estate (exceeds our <strong>20 km</strong> safe live animal transit radius).
                                       </p>
                                     </div>
-                                  </div>
-
-                                  {/* Actionable buttons so customer never leaves the site */}
-                                  <div className="pt-2 border-t border-rose-200/80 grid grid-cols-1 sm:grid-cols-2 gap-2">
-                                    <button
-                                      type="button"
-                                      onClick={() => setDeliveryType('farm_pickup')}
-                                      className="flex items-center justify-center space-x-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold py-2 px-3 rounded-xl text-xs shadow-sm active:scale-95 transition cursor-pointer"
-                                    >
-                                      <CheckCircle2 className="w-3.5 h-3.5" />
-                                      <span>Switch to Farm Pickup (Free)</span>
-                                    </button>
-
-                                    <a
-                                      href={whatsAppTransitUrl}
-                                      target="_blank"
-                                      rel="noopener noreferrer"
-                                      className="flex items-center justify-center space-x-1.5 bg-stone-900 hover:bg-stone-850 text-amber-300 font-extrabold py-2 px-3 rounded-xl text-xs shadow-sm active:scale-95 transition"
-                                    >
-                                      <MessageCircle className="w-3.5 h-3.5 text-amber-400" />
-                                      <span>WhatsApp for Cargo Transit</span>
-                                    </a>
                                   </div>
                                 </div>
                               )
