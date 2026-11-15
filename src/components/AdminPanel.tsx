@@ -606,7 +606,7 @@ export const AdminPanel: React.FC = () => {
       {/* =======================================================================
          1. DESKTOP PERMANENT DARK LUXURY SIDEBAR (Stripe / Shopify Polaris Style)
          ======================================================================= */}
-      <aside className="hidden lg:flex w-64 bg-[#0d1117] text-slate-200 border-r border-slate-800/80 flex-col justify-between shrink-0 h-screen sticky top-0 z-40 select-none">
+      <aside className="hidden lg:flex w-64 bg-[#0d1117] text-slate-200 border-r border-slate-800/80 flex-col justify-between shrink-0 h-screen fixed top-0 bottom-0 left-0 z-40 overflow-y-auto select-none">
         
         {/* Brand & Estate Status Header */}
         <div>
@@ -948,7 +948,7 @@ export const AdminPanel: React.FC = () => {
       {/* =======================================================================
          3. MAIN CONTENT CANVAS
          ======================================================================= */}
-      <main className="flex-1 min-w-0 p-3 sm:p-6 lg:p-8 space-y-6">
+      <main className="flex-1 min-w-0 lg:ml-64 p-3 sm:p-6 lg:p-8 space-y-6">
         
         {/* Desktop Header Top-Bar */}
         <div className="hidden lg:flex items-center justify-between pb-4 border-b border-slate-200">
