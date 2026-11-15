@@ -10,7 +10,6 @@ import {
   ShieldCheck, 
   Menu, 
   X, 
-  Settings, 
   Sparkles, 
   MapPin, 
   ShoppingCart, 
@@ -626,18 +625,6 @@ export const Header: React.FC<HeaderProps> = ({
                       </span>
                       <ChevronRight className="w-4 h-4 text-slate-400" />
                     </a>
-
-                    <Link
-                      href="/admin"
-                      onClick={() => setSideMenuOpen(false)}
-                      className="flex items-center justify-between p-2.5 rounded-xl hover:bg-slate-100 font-bold text-slate-800 transition"
-                    >
-                      <span className="flex items-center space-x-2">
-                        <Settings className="w-4 h-4 text-slate-500" />
-                        <span>Farm Admin Panel</span>
-                      </span>
-                      <ChevronRight className="w-4 h-4 text-slate-400" />
-                    </Link>
                   </div>
                 </div>
 
