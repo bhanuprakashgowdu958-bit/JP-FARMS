@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { 
   ArrowLeft, 
+  ArrowRight,
   Plus, 
   Edit3, 
   Trash2, 
@@ -38,7 +39,17 @@ import {
   EyeOff,
   LogOut,
   Users,
-  Mail
+  Mail,
+  Menu,
+  Filter,
+  LayoutGrid,
+  List,
+  Check,
+  ChevronRight,
+  TrendingUp,
+  MapPin,
+  Play,
+  Share2
 } from 'lucide-react';
 import { Rooster, RoosterCategory, RoosterBadge, CustomerInquiry, RoosterOrder } from '@/types/rooster';
 import { useRoosters, useInquiries, useOrders } from '@/lib/roosterStore';
@@ -63,10 +74,19 @@ export const AdminPanel: React.FC = () => {
   const { orders, updateOrderStatus, deleteOrder, acceptOrder, rejectOrder } = useOrders();
   const [customers, setCustomers] = useState<RegisteredCustomer[]>([]);
 
+  // Navigation State
   const [activeTab, setActiveTab] = useState<'roosters' | 'orders' | 'customers' | 'inquiries' | 'add'>('roosters');
+  const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
+  const [roosterViewMode, setRoosterViewMode] = useState<'grid' | 'table'>('table');
+
+  // Filters & Search
   const [searchFilter, setSearchFilter] = useState('');
+  const [categoryFilter, setCategoryFilter] = useState<string>('all');
   const [orderStatusFilter, setOrderStatusFilter] = useState<'all' | 'pending_approval' | 'confirmed' | 'dispatched' | 'delivered' | 'rejected'>('all');
   const [orderSearchQuery, setOrderSearchQuery] = useState('');
+  const [customerSearchQuery, setCustomerSearchQuery] = useState('');
+
+  // Modals & Active Selections
   const [printingOrder, setPrintingOrder] = useState<RoosterOrder | null>(null);
   const [rejectingOrder, setRejectingOrder] = useState<RoosterOrder | null>(null);
   const [selectedRejectReason, setSelectedRejectReason] = useState<string>('Destination address exceeds 20 km live animal delivery radius');
@@ -74,9 +94,10 @@ export const AdminPanel: React.FC = () => {
   const [editingRooster, setEditingRooster] = useState<Rooster | null>(null);
   const [uploadingField, setUploadingField] = useState<string | null>(null);
   const [uploadProgress, setUploadProgress] = useState<number>(0);
+  const [previewRoosterModal, setPreviewRoosterModal] = useState<Rooster | null>(null);
 
-  // Owner Authentication Gate (Security Lock)
-  const { user, signInWithGoogle, signOut: signOutUser } = useAuth();
+  // Owner Authentication Gate
+  const { user, signInWithGoogle } = useAuth();
   const isOwnerAdmin = Boolean(user?.email && isBhanuEmail(user.email));
 
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
@@ -104,6 +125,11 @@ export const AdminPanel: React.FC = () => {
       const tabParam = params.get('tab');
       if (tabParam === 'orders' || tabParam === 'roosters' || tabParam === 'customers' || tabParam === 'inquiries' || tabParam === 'add') {
         setActiveTab(tabParam as any);
+      }
+
+      // Default to grid on small screens for ideal mobile UX
+      if (window.innerWidth < 768) {
+        setRoosterViewMode('grid');
       }
 
       return () => {
@@ -154,13 +180,13 @@ export const AdminPanel: React.FC = () => {
     name: '',
     breed: 'Pure Aseel (Peela)',
     category: 'aseel-peela' as RoosterCategory,
-    price: 12000,
-    originalPrice: 15000,
+    price: 14500,
+    originalPrice: 18000,
     age: '12 Months',
     weight: '3.6 Kg',
     height: '25 Inches',
     combType: 'Pea Comb',
-    colorPattern: 'Golden Yellow & Red with Green Tail',
+    colorPattern: 'Golden Yellow & Red with Emerald Sheen Tail',
     temperament: 'Dominant, Alert, Strong Upright Stance',
     diet: 'Sprouted Bajra, Almond paste, Boiled Desi Eggs & Greens',
     vaccinationStatus: 'Fully Vaccinated' as Rooster['vaccinationStatus'],
@@ -203,28 +229,26 @@ export const AdminPanel: React.FC = () => {
       featured: rooster.featured,
     });
     setActiveTab('add');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, field: 'imageUrl1' | 'imageUrl2' | 'videoUrl') => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Instant local preview
     const localPreviewUrl = URL.createObjectURL(file);
     setFormData(prev => ({ ...prev, [field]: localPreviewUrl }));
     setUploadingField(field);
-    setUploadProgress(10);
+    setUploadProgress(15);
 
     try {
       if (isFirebaseConfigured) {
-        // Upload directly to Firebase Storage bucket!
         const folder = field === 'videoUrl' ? 'rooster-videos' : 'rooster-photos';
         const downloadUrl = await uploadRoosterMediaToFirebase(file, folder, (percent) => {
           setUploadProgress(percent);
         });
         setFormData(prev => ({ ...prev, [field]: downloadUrl }));
       } else {
-        // Upload via local API
         const uploadData = new FormData();
         uploadData.append('file', file);
         const res = await fetch('/api/upload', {
@@ -237,7 +261,7 @@ export const AdminPanel: React.FC = () => {
         }
       }
     } catch (err: any) {
-      console.warn('Upload fallback to local URL:', err);
+      console.warn('Upload fallback to preview:', err);
     } finally {
       setUploadingField(null);
       setUploadProgress(0);
@@ -246,7 +270,6 @@ export const AdminPanel: React.FC = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-
     const images = [formData.imageUrl1, formData.imageUrl2].filter(Boolean);
     const vaccinesArray = formData.vaccines.split(',').map(s => s.trim()).filter(Boolean);
 
@@ -275,7 +298,7 @@ export const AdminPanel: React.FC = () => {
         description: formData.description,
         featured: formData.featured,
       });
-      alert(`Rooster ${formData.tagId} updated successfully!`);
+      alert(`Rooster #${formData.tagId} updated successfully!`);
     } else {
       addRooster({
         tagId: formData.tagId || `JP-AS-${Math.floor(100 + Math.random() * 900)}`,
@@ -301,7 +324,7 @@ export const AdminPanel: React.FC = () => {
         description: formData.description,
         featured: formData.featured,
       });
-      alert('New rooster added to farm showcase catalogue successfully!');
+      alert('New rooster registered into catalogue successfully!');
     }
 
     setEditingRooster(null);
@@ -311,8 +334,10 @@ export const AdminPanel: React.FC = () => {
   // Metrics
   const totalRoosters = roosters.length;
   const championCount = roosters.filter(r => r.badge === 'Champion Line').length;
+  const farmStudCount = roosters.filter(r => r.badge === 'Farm Stud').length;
   const videoCount = roosters.filter(r => !!r.videoUrl).length;
   const totalInquiries = inquiries.length;
+  const pendingInquiriesCount = inquiries.filter(i => i.status === 'new').length;
 
   // Order Metrics
   const pendingOrdersCount = orders.filter((o) => o.status === 'pending_approval').length;
@@ -322,12 +347,17 @@ export const AdminPanel: React.FC = () => {
   const rejectedOrdersCount = orders.filter((o) => o.status === 'rejected').length;
   const totalRevenue = orders.filter((o) => o.status !== 'rejected').reduce((sum, o) => sum + o.price, 0);
 
-  const filteredRoosters = roosters.filter(r => 
-    r.tagId.toLowerCase().includes(searchFilter.toLowerCase()) ||
-    r.name.toLowerCase().includes(searchFilter.toLowerCase()) ||
-    r.breed.toLowerCase().includes(searchFilter.toLowerCase())
-  );
+  // Filtered roosters
+  const filteredRoosters = roosters.filter(r => {
+    if (categoryFilter !== 'all' && r.category !== categoryFilter) return false;
+    if (!searchFilter.trim()) return true;
+    const q = searchFilter.toLowerCase();
+    return r.tagId.toLowerCase().includes(q) ||
+      r.name.toLowerCase().includes(q) ||
+      r.breed.toLowerCase().includes(q);
+  });
 
+  // Filtered orders
   const filteredOrders = orders.filter((order) => {
     if (orderStatusFilter !== 'all' && order.status !== orderStatusFilter) {
       return false;
@@ -347,6 +377,15 @@ export const AdminPanel: React.FC = () => {
     );
 
     return idMatch || nameMatch || phoneMatch || cityMatch || birdMatch || itemMatch;
+  });
+
+  // Filtered customers
+  const filteredCustomers = customers.filter(c => {
+    if (!customerSearchQuery.trim()) return true;
+    const q = customerSearchQuery.toLowerCase();
+    return (c.name || '').toLowerCase().includes(q) ||
+      (c.email || '').toLowerCase().includes(q) ||
+      (c.phone || '').includes(q);
   });
 
   const handleExportOrdersCSV = () => {
@@ -402,42 +441,77 @@ export const AdminPanel: React.FC = () => {
     document.body.removeChild(link);
   };
 
-  // If verifying authentication on first mount
+  const getBadgeStyle = (badge: Rooster['badge']) => {
+    switch (badge) {
+      case 'Champion Line':
+        return 'bg-gradient-to-r from-amber-500 to-amber-600 text-stone-950 font-black shadow-xs border border-amber-300';
+      case 'Farm Stud':
+        return 'bg-stone-900 text-amber-400 font-bold border border-amber-500/40 shadow-xs';
+      case 'Heritage Pure':
+        return 'bg-emerald-600 text-white font-bold shadow-xs';
+      case 'Breeding Flock':
+        return 'bg-blue-600 text-white font-bold shadow-xs';
+      case 'Young Star':
+        return 'bg-purple-600 text-white font-bold shadow-xs';
+      default:
+        return 'bg-stone-800 text-stone-200';
+    }
+  };
+
+  const getOrderStatusBadge = (status: RoosterOrder['status']) => {
+    switch (status) {
+      case 'pending_approval':
+        return { label: 'Pending Approval', style: 'bg-amber-100 text-amber-900 border-amber-300' };
+      case 'confirmed':
+        return { label: 'Confirmed • Ready', style: 'bg-sky-100 text-sky-900 border-sky-300' };
+      case 'dispatched':
+        return { label: 'In Transit 🚚', style: 'bg-indigo-100 text-indigo-900 border-indigo-300' };
+      case 'delivered':
+        return { label: 'Delivered ✅', style: 'bg-emerald-100 text-emerald-900 border-emerald-300' };
+      case 'rejected':
+        return { label: 'Rejected ❌', style: 'bg-rose-100 text-rose-900 border-rose-300' };
+    }
+  };
+
+  // Auth checking spinner
   if (authChecking) {
     return (
-      <div className="min-h-screen bg-stone-950 flex items-center justify-center">
-        <div className="w-8 h-8 border-2 border-amber-500 border-t-transparent rounded-full animate-spin"></div>
+      <div className="min-h-screen bg-stone-950 flex flex-col items-center justify-center p-6 text-center">
+        <div className="w-12 h-12 border-3 border-amber-500 border-t-transparent rounded-full animate-spin mb-4" />
+        <p className="text-xs uppercase font-extrabold tracking-widest text-amber-400">
+          Verifying Owner Credentials...
+        </p>
       </div>
     );
   }
 
-  // RESTRICTED ACCESS SCREEN (If user is not authenticated)
+  // RESTRICTED ACCESS SCREEN
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-stone-950 via-stone-900 to-black text-white flex items-center justify-center p-4">
-        <div className="max-w-md w-full bg-stone-900/95 border border-stone-800 rounded-3xl p-8 shadow-2xl backdrop-blur-xl relative space-y-6">
+      <div className="min-h-screen bg-gradient-to-br from-stone-950 via-[#0d1117] to-black text-white flex items-center justify-center p-4">
+        <div className="max-w-md w-full bg-[#161b22]/95 border border-slate-800 rounded-3xl p-6 sm:p-8 shadow-2xl backdrop-blur-xl relative space-y-6">
           
           <div className="text-center space-y-2">
             <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-amber-500 to-amber-600 p-0.5 mx-auto shadow-lg shadow-amber-500/20 flex items-center justify-center">
-              <div className="w-full h-full bg-stone-950 rounded-[14px] flex items-center justify-center">
-                <Lock className="w-7 h-7 text-amber-500" />
+              <div className="w-full h-full bg-[#0d1117] rounded-[14px] flex items-center justify-center">
+                <Lock className="w-7 h-7 text-amber-400" />
               </div>
             </div>
 
-            <h2 className="text-xl font-extrabold text-white tracking-tight">
+            <h2 className="text-xl sm:text-2xl font-black text-white tracking-tight">
               JP Farms • Owner Access Only
             </h2>
-            <p className="text-xs text-stone-400">
-              Restricted administrative portal. Verified owner authorization required to view orders, revenue, and customer dispatches.
+            <p className="text-xs text-slate-400 leading-relaxed">
+              Restricted management center. Authorized owner credentials required to view orders, inventory, and customer dispatch details.
             </p>
           </div>
 
-          {/* Owner Google Account Quick Unlock */}
+          {/* Quick Google Unlock for Bhanu */}
           {user && isOwnerAdmin ? (
             <div className="bg-amber-500/10 border border-amber-500/30 rounded-2xl p-4 text-center space-y-3">
               <div className="flex items-center justify-center space-x-2 text-amber-400 text-xs font-bold">
                 <ShieldCheck className="w-4 h-4 text-emerald-400" />
-                <span>Verified Owner Google Account ({user.email})</span>
+                <span>Verified Owner Account ({user.email})</span>
               </div>
               <button
                 type="button"
@@ -448,63 +522,45 @@ export const AdminPanel: React.FC = () => {
                 className="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-stone-950 font-black py-3 rounded-xl text-xs uppercase tracking-wider shadow-lg shadow-amber-500/20 transition active:scale-95 cursor-pointer flex items-center justify-center space-x-2"
               >
                 <Unlock className="w-4 h-4" />
-                <span>Unlock as Owner ({user.displayName || 'Bhanu'})</span>
+                <span>Unlock Control Center</span>
               </button>
             </div>
-          ) : user && !isOwnerAdmin ? (
-            <div className="bg-rose-950/40 border border-rose-800/60 rounded-2xl p-3.5 text-center space-y-2">
-              <p className="text-xs text-rose-300 font-bold">Access Restricted</p>
-              <p className="text-[11px] text-rose-400">
-                You are currently signed in as <strong>{user.email}</strong>, which does not have estate administrator privileges.
-              </p>
-              <button
-                type="button"
-                onClick={() => signOutUser()}
-                className="text-xs text-amber-400 hover:text-amber-300 underline font-semibold cursor-pointer"
-              >
-                Sign out & switch account
-              </button>
-            </div>
-          ) : (
-            <div className="space-y-2">
-              <button
-                type="button"
-                onClick={() => signInWithGoogle()}
-                className="w-full bg-stone-800 hover:bg-stone-750 text-white font-bold py-3 rounded-xl text-xs transition border border-stone-700 flex items-center justify-center space-x-2 shadow-xs cursor-pointer active:scale-95"
-              >
-                <GoogleIcon className="w-4 h-4 shrink-0" />
-                <span>Sign in with Owner Google Account</span>
-              </button>
-              <div className="flex items-center space-x-2 my-2 text-stone-600 text-[10px] uppercase font-bold tracking-wider">
-                <div className="flex-1 h-px bg-stone-800" />
-                <span>or enter master pin</span>
-                <div className="flex-1 h-px bg-stone-800" />
-              </div>
-            </div>
-          )}
+          ) : !user ? (
+            <button
+              type="button"
+              onClick={() => signInWithGoogle()}
+              className="w-full bg-white hover:bg-slate-100 text-slate-900 font-bold py-3 rounded-xl text-xs flex items-center justify-center space-x-2.5 transition active:scale-95 shadow-md"
+            >
+              <GoogleIcon className="w-4 h-4" />
+              <span>Owner Sign In with Google</span>
+            </button>
+          ) : null}
 
-          <form onSubmit={handleLogin} className="space-y-4">
-            <div className="space-y-1.5">
-              <label className="block text-xs font-bold uppercase tracking-wider text-stone-400">
-                Master Security PIN
+          {/* PIN Form */}
+          <form onSubmit={handleLogin} className="space-y-4 pt-2">
+            <div>
+              <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5 flex items-center justify-between">
+                <span>Master Passcode</span>
+                <span className="text-[10px] text-amber-400 lowercase font-mono">default: 2026</span>
               </label>
               <div className="relative">
-                <KeyRound className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-stone-500" />
+                <KeyRound className="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
                 <input
                   type={showPin ? 'text' : 'password'}
-                  placeholder="Enter Master PIN"
+                  maxLength={6}
+                  placeholder="Enter 4-6 digit PIN"
                   value={enteredPin}
                   onChange={(e) => {
-                    setEnteredPin(e.target.value);
-                    if (authError) setAuthError('');
+                    setEnteredPin(e.target.value.replace(/\D/g, ''));
+                    setAuthError('');
                   }}
                   autoFocus
-                  className="w-full pl-10 pr-10 py-3 bg-stone-950 border border-stone-700 rounded-xl text-sm font-mono tracking-widest text-amber-400 placeholder:text-stone-600 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition"
+                  className="w-full pl-10 pr-10 py-3 bg-[#0d1117] border border-slate-700 rounded-xl text-sm font-mono tracking-widest text-amber-400 placeholder:text-slate-600 focus:outline-hidden focus:ring-2 focus:ring-amber-500"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPin(!showPin)}
-                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-stone-500 hover:text-stone-300 transition"
+                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 transition"
                   tabIndex={-1}
                 >
                   {showPin ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -513,7 +569,7 @@ export const AdminPanel: React.FC = () => {
             </div>
 
             {authError && (
-              <div className="p-3 rounded-xl bg-red-950/60 border border-red-800/80 text-red-300 text-xs flex items-center space-x-2">
+              <div className="p-3 rounded-xl bg-red-950/60 border border-red-800 text-red-300 text-xs flex items-center space-x-2">
                 <AlertCircle className="w-4 h-4 text-red-400 shrink-0" />
                 <span>{authError}</span>
               </div>
@@ -529,10 +585,10 @@ export const AdminPanel: React.FC = () => {
             </button>
           </form>
 
-          <div className="pt-4 border-t border-stone-800 text-center">
+          <div className="pt-2 text-center">
             <Link
               href="/"
-              className="text-xs text-stone-400 hover:text-amber-400 font-semibold transition inline-flex items-center space-x-1"
+              className="text-xs text-slate-400 hover:text-amber-400 font-semibold transition inline-flex items-center space-x-1"
             >
               <ArrowLeft className="w-3.5 h-3.5" />
               <span>Return to Public Showcase</span>
@@ -545,308 +601,653 @@ export const AdminPanel: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-stone-100 text-stone-900 pb-20">
+    <div className="min-h-screen bg-[#f8fafc] text-slate-900 flex flex-col lg:flex-row">
       
-      {/* Top Admin Header */}
-      <header className="bg-stone-900 text-white border-b border-stone-800 sticky top-0 z-30">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-20">
-            
+      {/* =======================================================================
+         1. DESKTOP PERMANENT DARK LUXURY SIDEBAR (Stripe / Shopify Polaris Style)
+         ======================================================================= */}
+      <aside className="hidden lg:flex w-64 bg-[#0d1117] text-slate-200 border-r border-slate-800/80 flex-col justify-between shrink-0 h-screen sticky top-0 z-40 select-none">
+        
+        {/* Brand & Estate Status Header */}
+        <div>
+          <div className="p-5 border-b border-slate-800/80">
             <div className="flex items-center space-x-3">
-              <Link 
-                href="/" 
-                className="flex items-center space-x-1.5 text-xs font-semibold text-stone-400 hover:text-amber-400 transition bg-stone-800 px-3 py-1.5 rounded-lg border border-stone-700"
-              >
-                <ArrowLeft className="w-4 h-4" />
-                <span>Public Site</span>
-              </Link>
-
-              <button
-                onClick={handleLogout}
-                className="flex items-center space-x-1.5 text-xs font-semibold text-red-400 hover:text-red-300 transition bg-red-950/40 hover:bg-red-950/70 px-3 py-1.5 rounded-lg border border-red-900/60"
-                title="Lock portal and sign out"
-              >
-                <LogOut className="w-3.5 h-3.5" />
-                <span>Lock & Sign Out</span>
-              </button>
-
-              <div className="hidden sm:block pl-3 border-l border-stone-700">
-                <h1 className="text-base font-extrabold text-white flex items-center space-x-2">
-                  <span>JP Farms • Owner Control Panel</span>
-                  <span className="text-[10px] bg-amber-500 text-stone-950 font-black px-2 py-0.5 rounded">
-                    Admin
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500 to-amber-600 p-0.5 shadow-md flex items-center justify-center">
+                <div className="w-full h-full bg-[#0d1117] rounded-[10px] flex items-center justify-center text-lg">
+                  🐓
+                </div>
+              </div>
+              <div>
+                <h1 className="text-sm font-black text-white tracking-wide flex items-center space-x-1">
+                  <span>JP FARMS</span>
+                  <span className="text-[9px] bg-amber-500 text-stone-950 font-extrabold px-1.5 py-0.2 rounded">
+                    HQ
                   </span>
                 </h1>
-                <p className="text-[11px] text-stone-400">
-                  Manage roosters, live crate customer orders, and visitor requests
+                <p className="text-[10px] text-emerald-400 font-semibold flex items-center space-x-1 mt-0.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                  <span>Operations Live</span>
                 </p>
               </div>
             </div>
+          </div>
 
-            {/* Quick Add Button */}
+          {/* Navigation Links */}
+          <nav className="p-3 space-y-1">
+            {/* 1. Roosters Inventory */}
             <button
-              onClick={() => {
-                setEditingRooster(null);
-                setFormData({
-                  tagId: `JP-AS-${Math.floor(100 + Math.random() * 900)}`,
-                  name: '',
-                  breed: 'Pure Aseel (Peela)',
-                  category: 'aseel-peela',
-                  price: 12000,
-                  originalPrice: 15000,
-                  age: '12 Months',
-                  weight: '3.6 Kg',
-                  height: '25 Inches',
-                  combType: 'Pea Comb',
-                  colorPattern: 'Golden Yellow & Red with Green Tail',
-                  temperament: 'Dominant, Alert, Strong Upright Stance',
-                  diet: 'Sprouted Bajra, Almond paste, Boiled Desi Eggs & Greens',
-                  vaccinationStatus: 'Fully Vaccinated',
-                  vaccines: 'Ranikhet ND-Lasota, Fowl Pox, IBD, Dewormed',
-                  badge: 'Farm Stud',
-                  imageUrl1: '',
-                  imageUrl2: '',
-                  videoUrl: '',
-                  lineage: 'Direct son of champion line. Heavy bone structure.',
-                  healthWarranty: '100% Certified Disease-Free & Verified Heritage Bloodline.',
-                  description: 'Prime breeding stud with excellent plumage and powerful posture.',
-                  featured: true,
-                });
-                setActiveTab('add');
-              }}
-              className="inline-flex items-center space-x-1.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-stone-950 font-bold px-4 py-2 rounded-xl text-xs shadow-md transition"
+              onClick={() => setActiveTab('roosters')}
+              className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-bold transition cursor-pointer ${
+                activeTab === 'roosters'
+                  ? 'bg-amber-500 text-stone-950 shadow-md font-extrabold'
+                  : 'text-slate-300 hover:bg-slate-800/60 hover:text-white'
+              }`}
             >
-              <Plus className="w-4 h-4" />
-              <span>Add New Rooster</span>
+              <div className="flex items-center space-x-2.5">
+                <Layers className="w-4 h-4" />
+                <span>Roosters Catalog</span>
+              </div>
+              <span className={`text-[10px] px-1.5 py-0.5 rounded-md font-mono ${
+                activeTab === 'roosters' ? 'bg-stone-950 text-amber-400' : 'bg-slate-800 text-slate-300'
+              }`}>
+                {totalRoosters}
+              </span>
             </button>
 
+            {/* 2. Customer Orders */}
+            <button
+              onClick={() => setActiveTab('orders')}
+              className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-bold transition cursor-pointer ${
+                activeTab === 'orders'
+                  ? 'bg-amber-500 text-stone-950 shadow-md font-extrabold'
+                  : 'text-slate-300 hover:bg-slate-800/60 hover:text-white'
+              }`}
+            >
+              <div className="flex items-center space-x-2.5">
+                <Package className="w-4 h-4" />
+                <span>Customer Orders</span>
+              </div>
+              {pendingOrdersCount > 0 ? (
+                <span className="text-[10px] px-1.5 py-0.5 rounded-md font-bold bg-rose-500 text-white animate-pulse">
+                  {pendingOrdersCount} new
+                </span>
+              ) : (
+                <span className={`text-[10px] px-1.5 py-0.5 rounded-md font-mono ${
+                  activeTab === 'orders' ? 'bg-stone-950 text-amber-400' : 'bg-slate-800 text-slate-300'
+                }`}>
+                  {orders.length}
+                </span>
+              )}
+            </button>
+
+            {/* 3. Registered Customers */}
+            <button
+              onClick={() => setActiveTab('customers')}
+              className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-bold transition cursor-pointer ${
+                activeTab === 'customers'
+                  ? 'bg-amber-500 text-stone-950 shadow-md font-extrabold'
+                  : 'text-slate-300 hover:bg-slate-800/60 hover:text-white'
+              }`}
+            >
+              <div className="flex items-center space-x-2.5">
+                <Users className="w-4 h-4" />
+                <span>Customer Hub</span>
+              </div>
+              <span className={`text-[10px] px-1.5 py-0.5 rounded-md font-mono ${
+                activeTab === 'customers' ? 'bg-stone-950 text-amber-400' : 'bg-slate-800 text-slate-300'
+              }`}>
+                {customers.length}
+              </span>
+            </button>
+
+            {/* 4. Farm Visit Requests */}
+            <button
+              onClick={() => setActiveTab('inquiries')}
+              className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-bold transition cursor-pointer ${
+                activeTab === 'inquiries'
+                  ? 'bg-amber-500 text-stone-950 shadow-md font-extrabold'
+                  : 'text-slate-300 hover:bg-slate-800/60 hover:text-white'
+              }`}
+            >
+              <div className="flex items-center space-x-2.5">
+                <Calendar className="w-4 h-4" />
+                <span>Visit Requests</span>
+              </div>
+              {pendingInquiriesCount > 0 ? (
+                <span className="text-[10px] px-1.5 py-0.5 rounded-md font-bold bg-amber-500 text-stone-950">
+                  {pendingInquiriesCount}
+                </span>
+              ) : (
+                <span className={`text-[10px] px-1.5 py-0.5 rounded-md font-mono ${
+                  activeTab === 'inquiries' ? 'bg-stone-950 text-amber-400' : 'bg-slate-800 text-slate-300'
+                }`}>
+                  {totalInquiries}
+                </span>
+              )}
+            </button>
+
+            {/* 5. Add Rooster Profile */}
+            <div className="pt-2">
+              <button
+                onClick={() => {
+                  setEditingRooster(null);
+                  setActiveTab('add');
+                }}
+                className={`w-full flex items-center space-x-2 px-3.5 py-2.5 rounded-xl text-xs font-bold transition cursor-pointer ${
+                  activeTab === 'add'
+                    ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-md font-extrabold'
+                    : 'text-emerald-400 hover:bg-emerald-500/10'
+                }`}
+              >
+                <Plus className="w-4 h-4" />
+                <span>{editingRooster ? 'Edit Rooster Profile' : '+ Add New Rooster'}</span>
+              </button>
+            </div>
+          </nav>
+        </div>
+
+        {/* Sidebar Footer Controls */}
+        <div className="p-4 border-t border-slate-800/80 space-y-2 bg-[#161b22]/50">
+          <Link
+            href="/"
+            className="flex items-center justify-between p-2 rounded-xl text-xs font-semibold text-slate-300 hover:text-white hover:bg-slate-800/60 transition"
+          >
+            <div className="flex items-center space-x-2">
+              <ExternalLink className="w-3.5 h-3.5 text-sky-400" />
+              <span>View Public Store</span>
+            </div>
+            <ArrowRight className="w-3 h-3 text-slate-500" />
+          </Link>
+
+          <button
+            onClick={handleLogout}
+            className="w-full flex items-center space-x-2 p-2 rounded-xl text-xs font-semibold text-rose-400 hover:bg-rose-500/10 transition cursor-pointer"
+          >
+            <LogOut className="w-3.5 h-3.5" />
+            <span>Lock & Sign Out</span>
+          </button>
+        </div>
+      </aside>
+
+      {/* =======================================================================
+         2. MOBILE FIXED APP BAR & SLIDE-OUT DRAWER (< lg devices)
+         ======================================================================= */}
+      <div className="lg:hidden sticky top-0 z-40 bg-[#0d1117] text-white border-b border-slate-800 shadow-md">
+        <div className="px-4 py-3 flex items-center justify-between">
+          <div className="flex items-center space-x-2.5">
+            <button
+              onClick={() => setIsMobileNavOpen(!isMobileNavOpen)}
+              className="p-1.5 rounded-lg bg-slate-800 text-slate-200 active:scale-95 transition"
+              aria-label="Toggle Navigation Drawer"
+            >
+              {isMobileNavOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            </button>
+
+            <span className="font-black text-sm tracking-wide text-white flex items-center space-x-1">
+              <span>🐓 JP FARMS</span>
+              <span className="text-[9px] bg-amber-500 text-stone-950 font-black px-1.5 py-0.5 rounded">
+                Admin
+              </span>
+            </span>
+          </div>
+
+          <div className="flex items-center space-x-2">
+            <Link
+              href="/"
+              className="p-1.5 rounded-lg bg-slate-800 text-sky-400 hover:text-sky-300 text-xs font-bold flex items-center space-x-1"
+              title="View Public Store"
+            >
+              <ExternalLink className="w-4 h-4" />
+              <span className="text-[11px] hidden min-[360px]:inline">Store</span>
+            </Link>
+
+            <button
+              onClick={handleLogout}
+              className="p-1.5 rounded-lg bg-rose-950/60 text-rose-400 hover:text-rose-300 transition"
+              title="Lock Admin"
+            >
+              <LogOut className="w-4 h-4" />
+            </button>
           </div>
         </div>
-      </header>
 
-      {/* Main Container */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 space-y-8">
-        
-        {/* Navigation Tabs */}
-        <div className="flex items-center space-x-3 border-b border-stone-200 pb-4 overflow-x-auto">
+        {/* Mobile Horizontal Quick-Tab Strip (Smooth Swipeable Thumb Navigation) */}
+        <div className="px-3 py-2 bg-[#161b22] border-t border-slate-800/80 flex items-center space-x-1.5 overflow-x-auto scrollbar-none">
           <button
             onClick={() => setActiveTab('roosters')}
-            className={`px-4 py-2 rounded-xl text-xs font-bold transition flex items-center space-x-1.5 whitespace-nowrap ${
+            className={`px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition flex items-center space-x-1.5 ${
               activeTab === 'roosters'
-                ? 'bg-stone-900 text-amber-400 shadow-sm'
-                : 'bg-white text-stone-600 hover:bg-stone-200'
+                ? 'bg-amber-500 text-stone-950 shadow-xs'
+                : 'bg-slate-800/80 text-slate-300'
             }`}
           >
-            <Layers className="w-4 h-4" />
-            <span>Documented Roosters ({totalRoosters})</span>
+            <span>🐓 Birds</span>
+            <span className="text-[10px] font-mono opacity-80">({totalRoosters})</span>
           </button>
 
           <button
             onClick={() => setActiveTab('orders')}
-            className={`px-4 py-2 rounded-xl text-xs font-bold transition flex items-center space-x-1.5 whitespace-nowrap ${
+            className={`px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition flex items-center space-x-1.5 ${
               activeTab === 'orders'
-                ? 'bg-amber-500 text-stone-950 font-black shadow-sm'
-                : 'bg-white text-stone-600 hover:bg-stone-200'
+                ? 'bg-amber-500 text-stone-950 shadow-xs'
+                : 'bg-slate-800/80 text-slate-300'
             }`}
           >
-            <Banknote className="w-4 h-4" />
-            <span>Customer Orders ({orders.length})</span>
-            {orders.some(o => o.status === 'confirmed') && (
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+            <span>📦 Orders</span>
+            {pendingOrdersCount > 0 ? (
+              <span className="text-[9px] font-black bg-rose-500 text-white px-1 rounded-full">
+                {pendingOrdersCount}
+              </span>
+            ) : (
+              <span className="text-[10px] font-mono opacity-80">({orders.length})</span>
             )}
           </button>
 
           <button
             onClick={() => setActiveTab('customers')}
-            className={`px-4 py-2 rounded-xl text-xs font-bold transition flex items-center space-x-1.5 whitespace-nowrap ${
+            className={`px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition flex items-center space-x-1.5 ${
               activeTab === 'customers'
-                ? 'bg-amber-500 text-stone-950 font-black shadow-sm'
-                : 'bg-white text-stone-600 hover:bg-stone-200'
+                ? 'bg-amber-500 text-stone-950 shadow-xs'
+                : 'bg-slate-800/80 text-slate-300'
             }`}
           >
-            <Users className="w-4 h-4" />
-            <span>Registered Users ({customers.length})</span>
+            <span>👥 Users</span>
+            <span className="text-[10px] font-mono opacity-80">({customers.length})</span>
           </button>
 
           <button
             onClick={() => setActiveTab('inquiries')}
-            className={`px-4 py-2 rounded-xl text-xs font-bold transition flex items-center space-x-1.5 whitespace-nowrap ${
+            className={`px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition flex items-center space-x-1.5 ${
               activeTab === 'inquiries'
-                ? 'bg-stone-900 text-amber-400 shadow-sm'
-                : 'bg-white text-stone-600 hover:bg-stone-200'
+                ? 'bg-amber-500 text-stone-950 shadow-xs'
+                : 'bg-slate-800/80 text-slate-300'
             }`}
           >
-            <MessageCircle className="w-4 h-4" />
-            <span>Farm Visit Requests ({totalInquiries})</span>
+            <span>💬 Visits</span>
+            <span className="text-[10px] font-mono opacity-80">({totalInquiries})</span>
           </button>
 
           <button
-            onClick={() => setActiveTab('add')}
-            className={`px-4 py-2 rounded-xl text-xs font-bold transition flex items-center space-x-1.5 whitespace-nowrap ${
+            onClick={() => {
+              setEditingRooster(null);
+              setActiveTab('add');
+            }}
+            className={`px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition flex items-center space-x-1 ${
               activeTab === 'add'
-                ? 'bg-stone-900 text-amber-400 shadow-sm'
-                : 'bg-white text-stone-600 hover:bg-stone-200'
+                ? 'bg-emerald-500 text-white shadow-xs font-black'
+                : 'bg-emerald-950/60 text-emerald-400 border border-emerald-800/50'
             }`}
           >
-            <Plus className="w-4 h-4" />
-            <span>{editingRooster ? 'Edit Rooster' : 'New Rooster Profile'}</span>
+            <Plus className="w-3.5 h-3.5" />
+            <span>Add Bird</span>
           </button>
         </div>
 
-        {/* Analytics Top Cards */}
-        {activeTab === 'orders' ? (
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-            <div className="bg-white p-5 rounded-2xl border border-stone-200 shadow-sm">
-              <p className="text-xs font-semibold text-stone-500 uppercase">Gross Revenue</p>
-              <p className="text-3xl font-black text-emerald-700 mt-1">₹{totalRevenue.toLocaleString('en-IN')}</p>
-              <p className="text-[11px] text-stone-400 mt-1">Total value of all placed orders</p>
-            </div>
+        {/* Mobile Full Slide-Down Navigation Drawer */}
+        {isMobileNavOpen && (
+          <div className="p-4 bg-[#0d1117] border-b border-slate-800 space-y-2 animate-in slide-in-from-top-2 duration-200">
+            <button
+              onClick={() => {
+                setActiveTab('roosters');
+                setIsMobileNavOpen(false);
+              }}
+              className="w-full flex items-center justify-between p-2.5 rounded-xl bg-slate-800/60 text-xs font-bold"
+            >
+              <span>🐓 Rooster Showcase Catalog</span>
+              <span className="text-amber-400">{totalRoosters} birds</span>
+            </button>
 
-            <div className="bg-white p-5 rounded-2xl border border-stone-200 shadow-sm">
-              <p className="text-xs font-semibold text-stone-500 uppercase">Awaiting Approval</p>
-              <div className="flex items-center space-x-2 mt-1">
-                <p className="text-3xl font-black text-amber-500">{pendingOrdersCount}</p>
-                {pendingOrdersCount > 0 && (
-                  <span className="w-2.5 h-2.5 rounded-full bg-amber-500 animate-ping" />
-                )}
-              </div>
-              <p className="text-[11px] text-stone-400 mt-1">Requires accept or reject decision</p>
-            </div>
+            <button
+              onClick={() => {
+                setActiveTab('orders');
+                setIsMobileNavOpen(false);
+              }}
+              className="w-full flex items-center justify-between p-2.5 rounded-xl bg-slate-800/60 text-xs font-bold"
+            >
+              <span>📦 Live Crate Customer Orders</span>
+              <span className="text-emerald-400">{orders.length} orders</span>
+            </button>
 
-            <div className="bg-white p-5 rounded-2xl border border-stone-200 shadow-sm">
-              <p className="text-xs font-semibold text-stone-500 uppercase">In-Transit Crates</p>
-              <p className="text-3xl font-black text-sky-600 mt-1">{dispatchedOrdersCount}</p>
-              <p className="text-[11px] text-stone-400 mt-1">En route to customers</p>
-            </div>
+            <button
+              onClick={() => {
+                setActiveTab('customers');
+                setIsMobileNavOpen(false);
+              }}
+              className="w-full flex items-center justify-between p-2.5 rounded-xl bg-slate-800/60 text-xs font-bold"
+            >
+              <span>👥 Registered Customer Directory</span>
+              <span className="text-sky-400">{customers.length} users</span>
+            </button>
 
-            <div className="bg-white p-5 rounded-2xl border border-stone-200 shadow-sm">
-              <p className="text-xs font-semibold text-stone-500 uppercase">Delivered & Closed</p>
-              <p className="text-3xl font-black text-emerald-600 mt-1">{deliveredOrdersCount}</p>
-              <p className="text-[11px] text-stone-400 mt-1">Completed bio-secure handoffs</p>
-            </div>
-          </div>
-        ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-            <div className="bg-white p-5 rounded-2xl border border-stone-200 shadow-sm">
-              <p className="text-xs font-semibold text-stone-500 uppercase">Documented Birds</p>
-              <p className="text-3xl font-black text-stone-900 mt-1">{totalRoosters}</p>
-              <p className="text-[11px] text-stone-400 mt-1">Live showcase entries</p>
-            </div>
+            <button
+              onClick={() => {
+                setActiveTab('inquiries');
+                setIsMobileNavOpen(false);
+              }}
+              className="w-full flex items-center justify-between p-2.5 rounded-xl bg-slate-800/60 text-xs font-bold"
+            >
+              <span>💬 Farm Visit Inquiries</span>
+              <span className="text-purple-400">{totalInquiries} requests</span>
+            </button>
 
-            <div className="bg-white p-5 rounded-2xl border border-stone-200 shadow-sm">
-              <p className="text-xs font-semibold text-stone-500 uppercase">Champion Strains</p>
-              <p className="text-3xl font-black text-amber-600 mt-1">{championCount}</p>
-              <p className="text-[11px] text-stone-400 mt-1">Direct pedigree lines</p>
-            </div>
-
-            <div className="bg-white p-5 rounded-2xl border border-stone-200 shadow-sm">
-              <p className="text-xs font-semibold text-stone-500 uppercase">HD Video Reels</p>
-              <p className="text-3xl font-black text-emerald-600 mt-1">{videoCount}</p>
-              <p className="text-[11px] text-stone-400 mt-1">Available on Rooster TV</p>
-            </div>
-
-            <div className="bg-white p-5 rounded-2xl border border-stone-200 shadow-sm">
-              <p className="text-xs font-semibold text-stone-500 uppercase">Visitor Requests</p>
-              <p className="text-3xl font-black text-stone-900 mt-1">{totalInquiries}</p>
-              <p className="text-[11px] text-stone-400 mt-1">Received via website</p>
-            </div>
+            <button
+              onClick={() => {
+                setEditingRooster(null);
+                setActiveTab('add');
+                setIsMobileNavOpen(false);
+              }}
+              className="w-full flex items-center justify-center space-x-1.5 p-2.5 rounded-xl bg-emerald-600 text-white text-xs font-black shadow-xs"
+            >
+              <Plus className="w-4 h-4" />
+              <span>Register New Rooster Specimen</span>
+            </button>
           </div>
         )}
+      </div>
 
-        {/* TAB 1: ROOSTERS INVENTORY */}
-        {activeTab === 'roosters' && (
-          <div className="space-y-6">
-            
-            {/* Search & Actions Bar */}
-            <div className="bg-white p-4 rounded-2xl border border-stone-200 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4">
-              <div className="relative w-full sm:w-80">
-                <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-stone-400" />
-                <input
-                  type="text"
-                  placeholder="Search by Tag ID, Name or Breed..."
-                  value={searchFilter}
-                  onChange={(e) => setSearchFilter(e.target.value)}
-                  className="w-full pl-9 pr-3 py-2 text-xs rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-amber-500"
-                />
-              </div>
+      {/* =======================================================================
+         3. MAIN CONTENT CANVAS
+         ======================================================================= */}
+      <main className="flex-1 min-w-0 p-3 sm:p-6 lg:p-8 space-y-6">
+        
+        {/* Desktop Header Top-Bar */}
+        <div className="hidden lg:flex items-center justify-between pb-4 border-b border-slate-200">
+          <div>
+            <div className="flex items-center space-x-2 text-xs text-slate-500 font-semibold mb-1">
+              <span>JP Farms Admin</span>
+              <span>/</span>
+              <span className="text-slate-900 capitalize font-bold">{activeTab}</span>
+            </div>
+            <h2 className="text-2xl font-black text-slate-950 tracking-tight">
+              {activeTab === 'roosters' && 'Living Rooster Catalog'}
+              {activeTab === 'orders' && 'Live Animal Orders & Dispatch'}
+              {activeTab === 'customers' && 'Registered Enthusiast Hub'}
+              {activeTab === 'inquiries' && 'Farm Visit Reservations'}
+              {activeTab === 'add' && (editingRooster ? `Edit Rooster #${editingRooster.tagId}` : 'Register New Purebred Rooster')}
+            </h2>
+          </div>
 
-              <div className="flex items-center space-x-2">
-                <button
-                  onClick={() => {
-                    if (confirm('Reset roosters catalog to original default farm records?')) {
-                      resetToDefault();
-                    }
-                  }}
-                  className="text-xs text-stone-500 hover:text-stone-800 flex items-center space-x-1 px-3 py-2 rounded-xl bg-stone-100 hover:bg-stone-200"
-                  title="Restore original demo birds"
-                >
-                  <RotateCcw className="w-3.5 h-3.5" />
-                  <span>Reset Demo Data</span>
-                </button>
+          <div className="flex items-center space-x-3">
+            {activeTab === 'orders' && (
+              <button
+                type="button"
+                onClick={handleExportOrdersCSV}
+                className="flex items-center space-x-1.5 bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 font-bold px-3 py-2 rounded-xl text-xs shadow-xs transition"
+              >
+                <Download className="w-3.5 h-3.5 text-slate-500" />
+                <span>Export CSV</span>
+              </button>
+            )}
+
+            <button
+              type="button"
+              onClick={() => {
+                setEditingRooster(null);
+                setActiveTab('add');
+              }}
+              className="flex items-center space-x-1.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-stone-950 font-black px-4 py-2 rounded-xl text-xs shadow-sm transition active:scale-95 cursor-pointer"
+            >
+              <Plus className="w-4 h-4" />
+              <span>Add New Rooster</span>
+            </button>
+          </div>
+        </div>
+
+        {/* =====================================================================
+           EXECUTIVE KPI METRICS CARDS (Shopify / Stripe Standard)
+           Responsive: 2 columns on mobile, 4 columns on desktop
+           ===================================================================== */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4 lg:gap-5">
+          
+          {/* Card 1: Birds Inventory */}
+          <div 
+            onClick={() => setActiveTab('roosters')}
+            className={`p-3.5 sm:p-5 rounded-2xl bg-white border transition shadow-xs cursor-pointer ${
+              activeTab === 'roosters' ? 'border-amber-500 ring-2 ring-amber-500/10' : 'border-slate-200 hover:border-slate-300'
+            }`}
+          >
+            <div className="flex items-center justify-between mb-2 sm:mb-3">
+              <span className="text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider">
+                Catalog Birds
+              </span>
+              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-amber-50 text-amber-700 flex items-center justify-center font-bold">
+                🐓
               </div>
             </div>
+            <div className="text-xl sm:text-2xl font-black text-slate-950">
+              {totalRoosters}
+            </div>
+            <p className="text-[10px] sm:text-[11px] text-slate-500 font-medium truncate mt-1">
+              <strong className="text-amber-700 font-bold">{championCount}</strong> Champion • <strong className="text-slate-700 font-bold">{farmStudCount}</strong> Studs
+            </p>
+          </div>
 
-            {/* Roosters Table */}
-            <div className="bg-white rounded-2xl border border-stone-200 shadow-sm overflow-hidden">
-              <div className="overflow-x-auto">
-                <table className="w-full text-left text-xs">
-                  <thead className="bg-stone-50 border-b border-stone-200 text-stone-600 font-bold uppercase tracking-wider">
-                    <tr>
-                      <th className="py-3.5 px-4">Rooster</th>
-                      <th className="py-3.5 px-4">Tag ID</th>
-                      <th className="py-3.5 px-4">Breed & Category</th>
-                      <th className="py-3.5 px-4">Weight / Age</th>
-                      <th className="py-3.5 px-4">Exhibition Badge</th>
-                      <th className="py-3.5 px-4">Media</th>
-                      <th className="py-3.5 px-4 text-right">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-stone-200">
-                    {filteredRoosters.map((rooster) => (
-                      <tr key={rooster.id} className="hover:bg-stone-50/80 transition">
-                        
-                        {/* Rooster Photo & Name */}
-                        <td className="py-3 px-4">
-                          <div className="flex items-center space-x-3">
-                            <img
-                              src={rooster.images[0] || 'https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?auto=format&fit=crop&w=200&q=80'}
-                              alt=""
-                              className="w-12 h-12 rounded-xl object-cover border border-stone-200 shrink-0"
-                            />
-                            <div>
-                              <p className="font-bold text-stone-900 text-sm">{rooster.name}</p>
-                              <p className="text-[11px] text-stone-500">{rooster.combType}</p>
-                            </div>
+          {/* Card 2: Live Animal Orders */}
+          <div 
+            onClick={() => setActiveTab('orders')}
+            className={`p-3.5 sm:p-5 rounded-2xl bg-white border transition shadow-xs cursor-pointer ${
+              activeTab === 'orders' ? 'border-amber-500 ring-2 ring-amber-500/10' : 'border-slate-200 hover:border-slate-300'
+            }`}
+          >
+            <div className="flex items-center justify-between mb-2 sm:mb-3">
+              <span className="text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider">
+                Total Orders
+              </span>
+              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center font-bold">
+                <Package className="w-4 h-4 text-emerald-600" />
+              </div>
+            </div>
+            <div className="text-xl sm:text-2xl font-black text-slate-950">
+              {orders.length}
+            </div>
+            <p className="text-[10px] sm:text-[11px] text-slate-500 font-medium truncate mt-1">
+              {pendingOrdersCount > 0 ? (
+                <span className="text-rose-600 font-bold">⚡ {pendingOrdersCount} Pending Approval</span>
+              ) : (
+                <span className="text-emerald-700 font-semibold">✓ All orders processed</span>
+              )}
+            </p>
+          </div>
+
+          {/* Card 3: Gross Order Value */}
+          <div 
+            onClick={() => setActiveTab('orders')}
+            className="p-3.5 sm:p-5 rounded-2xl bg-white border border-slate-200 shadow-xs"
+          >
+            <div className="flex items-center justify-between mb-2 sm:mb-3">
+              <span className="text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider">
+                Gross Order Value
+              </span>
+              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-sky-50 text-sky-700 flex items-center justify-center font-bold">
+                <Banknote className="w-4 h-4 text-sky-600" />
+              </div>
+            </div>
+            <div className="text-xl sm:text-2xl font-black text-slate-950">
+              ₹{totalRevenue.toLocaleString('en-IN')}
+            </div>
+            <p className="text-[10px] sm:text-[11px] text-slate-500 font-medium truncate mt-1">
+              <strong className="text-emerald-700 font-bold">{deliveredOrdersCount}</strong> Fulfilled • {dispatchedOrdersCount} In Transit
+            </p>
+          </div>
+
+          {/* Card 4: Visit Inquiries */}
+          <div 
+            onClick={() => setActiveTab('inquiries')}
+            className={`p-3.5 sm:p-5 rounded-2xl bg-white border transition shadow-xs cursor-pointer ${
+              activeTab === 'inquiries' ? 'border-amber-500 ring-2 ring-amber-500/10' : 'border-slate-200 hover:border-slate-300'
+            }`}
+          >
+            <div className="flex items-center justify-between mb-2 sm:mb-3">
+              <span className="text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider">
+                Farm Inquiries
+              </span>
+              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-purple-50 text-purple-700 flex items-center justify-center font-bold">
+                <Calendar className="w-4 h-4 text-purple-600" />
+              </div>
+            </div>
+            <div className="text-xl sm:text-2xl font-black text-slate-950">
+              {totalInquiries}
+            </div>
+            <p className="text-[10px] sm:text-[11px] text-slate-500 font-medium truncate mt-1">
+              <strong className="text-purple-700 font-bold">{customers.length}</strong> Registered Buyers
+            </p>
+          </div>
+
+        </div>
+
+        {/* =====================================================================
+           TAB 1: ROOSTERS CATALOG (Dual-View: Mobile Grid + Desktop Table)
+           ===================================================================== */}
+        {activeTab === 'roosters' && (
+          <div className="space-y-4">
+            
+            {/* Filter & View Switcher Bar */}
+            <div className="bg-white p-3 sm:p-4 rounded-2xl border border-slate-200 shadow-xs flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+              
+              {/* Search Bar */}
+              <div className="relative flex-1 max-w-md">
+                <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                <input
+                  type="text"
+                  placeholder="Search tag (e.g. JP-AS-101), name or breed..."
+                  value={searchFilter}
+                  onChange={(e) => setSearchFilter(e.target.value)}
+                  className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-hidden focus:border-amber-500"
+                />
+                {searchFilter && (
+                  <button 
+                    onClick={() => setSearchFilter('')}
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-xs text-slate-400 hover:text-slate-600"
+                  >
+                    ×
+                  </button>
+                )}
+              </div>
+
+              {/* Category & View Controls */}
+              <div className="flex items-center space-x-2">
+                <select
+                  value={categoryFilter}
+                  onChange={(e) => setCategoryFilter(e.target.value)}
+                  className="px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 focus:outline-hidden"
+                >
+                  <option value="all">All Breeds ({roosters.length})</option>
+                  <option value="aseel-peela">Pure Aseel (Peela)</option>
+                  <option value="aseel-kagar">Aseel (Kagar)</option>
+                  <option value="aseel-sindhi">Sindhi Heavy Aseel</option>
+                  <option value="kadaknath">Pure Kadaknath</option>
+                  <option value="country-desi">Country Desi</option>
+                  <option value="breeding-pairs">Breeding Units</option>
+                </select>
+
+                {/* View Switcher: Table vs Cards */}
+                <div className="flex items-center space-x-1 bg-slate-100 p-1 rounded-xl">
+                  <button
+                    type="button"
+                    onClick={() => setRoosterViewMode('table')}
+                    className={`p-1.5 rounded-lg text-xs font-bold transition ${
+                      roosterViewMode === 'table' ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-500'
+                    }`}
+                    title="Dense Table View"
+                  >
+                    <List className="w-4 h-4" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setRoosterViewMode('grid')}
+                    className={`p-1.5 rounded-lg text-xs font-bold transition ${
+                      roosterViewMode === 'grid' ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-500'
+                    }`}
+                    title="Card Grid View"
+                  >
+                    <LayoutGrid className="w-4 h-4" />
+                  </button>
+                </div>
+
+                <button
+                  onClick={resetToDefault}
+                  className="p-2 rounded-xl border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 text-xs font-semibold"
+                  title="Reset demo catalogue"
+                >
+                  <RotateCcw className="w-3.5 h-3.5" />
+                </button>
+              </div>
+
+            </div>
+
+            {/* Content Display: Card Grid vs Table */}
+            {filteredRoosters.length === 0 ? (
+              <div className="bg-white rounded-2xl p-12 text-center border border-dashed border-slate-300">
+                <p className="text-sm font-bold text-slate-700">No birds match this search filter.</p>
+                <button
+                  onClick={() => { setSearchFilter(''); setCategoryFilter('all'); }}
+                  className="mt-2 text-xs text-amber-700 font-bold hover:underline"
+                >
+                  Clear all filters
+                </button>
+              </div>
+            ) : roosterViewMode === 'grid' ? (
+              /* ===============================================================
+                 MOBILE & DESKTOP CARD GRID (Rich Visual Showcase Cards)
+                 =============================================================== */
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
+                {filteredRoosters.map((rooster) => (
+                  <div 
+                    key={rooster.id}
+                    className="bg-white rounded-2xl border border-slate-200 hover:border-amber-500/70 hover:shadow-md transition overflow-hidden flex flex-col justify-between"
+                  >
+                    <div>
+                      {/* Photo & Floating Badges */}
+                      <div className="relative aspect-4/3 w-full bg-slate-900 overflow-hidden">
+                        <img 
+                          src={rooster.images[0] || 'https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?auto=format&fit=crop&w=800&q=80'} 
+                          alt={rooster.name}
+                          className="w-full h-full object-cover object-center"
+                        />
+                        <div className="absolute top-2 left-2 flex items-center space-x-1 font-mono text-[10px] font-bold bg-black/85 text-amber-400 px-2 py-0.5 rounded-md border border-amber-500/30">
+                          <span>TAG: {rooster.tagId}</span>
+                        </div>
+                        {rooster.videoUrl && (
+                          <div className="absolute top-2 right-2 p-1 rounded-full bg-black/75 text-amber-400" title="Video Available">
+                            <Video className="w-3.5 h-3.5" />
                           </div>
-                        </td>
-
-                        {/* Tag ID */}
-                        <td className="py-3 px-4">
-                          <span className="font-mono font-bold bg-stone-100 text-stone-800 px-2.5 py-1 rounded border border-stone-200">
-                            {rooster.tagId}
+                        )}
+                        <div className="absolute bottom-2 left-2">
+                          <span className={`text-[10px] px-2 py-0.5 rounded-md ${getBadgeStyle(rooster.badge)}`}>
+                            {rooster.badge}
                           </span>
-                        </td>
+                        </div>
+                      </div>
 
-                        {/* Breed */}
-                        <td className="py-3 px-4">
-                          <p className="font-semibold text-stone-800">{rooster.breed}</p>
-                          <span className="text-[10px] text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded font-mono">
-                            {rooster.category}
+                      {/* Content */}
+                      <div className="p-3 space-y-1.5">
+                        <h4 className="text-sm font-extrabold text-slate-950 truncate">
+                          {rooster.name}
+                        </h4>
+                        <p className="text-[11px] text-slate-500 font-medium truncate">
+                          {rooster.breed}
+                        </p>
+
+                        <div className="flex items-center justify-between pt-1">
+                          <div>
+                            <span className="text-xs text-slate-400 line-through mr-1.5">
+                              ₹{(rooster.originalPrice || Math.round((rooster.price || 9500) * 1.25)).toLocaleString('en-IN')}
+                            </span>
+                            <span className="text-sm font-black text-slate-950">
+                              ₹{(rooster.price || 9500).toLocaleString('en-IN')}
+                            </span>
+                          </div>
+                          <span className="text-[10px] text-slate-600 font-mono bg-slate-100 px-1.5 py-0.5 rounded">
+                            {rooster.weight} • {rooster.height}
                           </span>
-                        </td>
+                        </div>
 
-                        {/* Weight & Age */}
-                        <td className="py-3 px-4">
-                          <p className="font-bold text-stone-900">{rooster.weight}</p>
-                          <p className="text-stone-500">{rooster.age}</p>
-                        </td>
-
-                        {/* Badge Dropdown */}
-                        <td className="py-3 px-4">
+                        {/* Inline Badge Dropdown */}
+                        <div className="pt-1">
                           <select
                             value={rooster.badge}
                             onChange={(e) => toggleBadge(rooster.id, e.target.value as RoosterBadge)}
-                            className="font-bold text-[11px] rounded-lg px-2.5 py-1 bg-stone-50 border border-stone-300 text-stone-800"
+                            className="w-full text-[11px] font-bold py-1 px-2 rounded-lg bg-slate-50 border border-slate-200 text-slate-700"
                           >
                             <option value="Champion Line">👑 Champion Line</option>
                             <option value="Farm Stud">⭐ Farm Stud</option>
@@ -854,475 +1255,400 @@ export const AdminPanel: React.FC = () => {
                             <option value="Breeding Flock">🌾 Breeding Flock</option>
                             <option value="Young Star">✨ Young Star</option>
                           </select>
-                        </td>
+                        </div>
+                      </div>
+                    </div>
 
-                        {/* Media indicators */}
-                        <td className="py-3 px-4">
-                          <div className="flex items-center space-x-1.5">
-                            <span className="text-[10px] bg-stone-100 text-stone-600 px-1.5 py-0.5 rounded font-medium flex items-center">
-                              <ImageIcon className="w-3 h-3 mr-1" />
-                              {rooster.images.length}
-                            </span>
-                            {rooster.videoUrl && (
-                              <span className="text-[10px] bg-amber-100 text-amber-800 px-1.5 py-0.5 rounded font-bold flex items-center">
-                                <Video className="w-3 h-3 mr-1" />
-                                Video
-                              </span>
-                            )}
-                          </div>
-                        </td>
+                    {/* Actions Bar */}
+                    <div className="p-3 pt-0 border-t border-slate-100 grid grid-cols-2 gap-2 mt-2">
+                      <button
+                        type="button"
+                        onClick={() => handleEditClick(rooster)}
+                        className="flex items-center justify-center space-x-1 bg-slate-100 hover:bg-amber-100 hover:text-amber-950 text-slate-800 font-bold py-1.5 rounded-lg text-xs transition"
+                      >
+                        <Edit3 className="w-3.5 h-3.5 text-amber-700" />
+                        <span>Edit</span>
+                      </button>
 
-                        {/* Edit & Delete Action Buttons */}
-                        <td className="py-3 px-4 text-right">
-                          <div className="flex items-center justify-end space-x-2">
-                            <button
-                              onClick={() => handleEditClick(rooster)}
-                              className="p-1.5 text-stone-500 hover:text-amber-700 hover:bg-stone-100 rounded-lg transition"
-                              title="Edit Rooster"
-                            >
-                              <Edit3 className="w-4 h-4" />
-                            </button>
-                            <button
-                              onClick={() => {
-                                if (confirm(`Are you sure you want to remove rooster ${rooster.tagId}?`)) {
-                                  deleteRooster(rooster.id);
-                                }
-                              }}
-                              className="p-1.5 text-stone-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition"
-                              title="Delete Rooster"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </button>
-                          </div>
-                        </td>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (confirm(`Delete rooster #${rooster.tagId} (${rooster.name}) from catalogue?`)) {
+                            deleteRooster(rooster.id);
+                          }
+                        }}
+                        className="flex items-center justify-center space-x-1 bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold py-1.5 rounded-lg text-xs transition"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                        <span>Delete</span>
+                      </button>
+                    </div>
 
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+                  </div>
+                ))}
               </div>
-            </div>
+            ) : (
+              /* ===============================================================
+                 DESKTOP DENSE DATA TABLE (Clean Stripe / Linear Style Table)
+                 =============================================================== */
+              <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-xs">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-xs">
+                    <thead className="bg-slate-50/80 border-b border-slate-200 text-slate-500 font-bold uppercase tracking-wider text-[10px]">
+                      <tr>
+                        <th className="py-3 px-4">Rooster Specimen</th>
+                        <th className="py-3 px-4">Tag ID</th>
+                        <th className="py-3 px-4">Breed & Category</th>
+                        <th className="py-3 px-4">Weight / Age</th>
+                        <th className="py-3 px-4">Price</th>
+                        <th className="py-3 px-4">Exhibition Badge</th>
+                        <th className="py-3 px-4 text-right">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100">
+                      {filteredRoosters.map((rooster) => (
+                        <tr key={rooster.id} className="hover:bg-slate-50/60 transition group">
+                          {/* Rooster Name & Photo */}
+                          <td className="py-3 px-4">
+                            <div className="flex items-center space-x-3">
+                              <img
+                                src={rooster.images[0] || 'https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?auto=format&fit=crop&w=800&q=80'}
+                                alt={rooster.name}
+                                className="w-10 h-10 rounded-xl object-cover border border-slate-200 shrink-0 shadow-2xs"
+                              />
+                              <div>
+                                <p className="font-extrabold text-slate-900 group-hover:text-amber-700 transition">
+                                  {rooster.name}
+                                </p>
+                                <p className="text-[10px] text-slate-400">
+                                  {rooster.combType || 'Pea Comb'}
+                                </p>
+                              </div>
+                            </div>
+                          </td>
+
+                          {/* Tag ID */}
+                          <td className="py-3 px-4 font-mono font-bold text-slate-700">
+                            <span className="bg-slate-100 px-2 py-0.5 rounded-md border border-slate-200">
+                              {rooster.tagId}
+                            </span>
+                          </td>
+
+                          {/* Breed */}
+                          <td className="py-3 px-4">
+                            <p className="font-semibold text-slate-800">{rooster.breed}</p>
+                            <span className="text-[10px] text-amber-700 font-mono">
+                              {rooster.category}
+                            </span>
+                          </td>
+
+                          {/* Weight & Height */}
+                          <td className="py-3 px-4 font-medium text-slate-600">
+                            <p>{rooster.weight}</p>
+                            <p className="text-[10px] text-slate-400">{rooster.age}</p>
+                          </td>
+
+                          {/* Price */}
+                          <td className="py-3 px-4 font-mono font-black text-slate-900">
+                            ₹{(rooster.price || 9500).toLocaleString('en-IN')}
+                          </td>
+
+                          {/* Badge Dropdown */}
+                          <td className="py-3 px-4">
+                            <select
+                              value={rooster.badge}
+                              onChange={(e) => toggleBadge(rooster.id, e.target.value as RoosterBadge)}
+                              className="text-[11px] font-bold py-1 px-2 rounded-lg bg-slate-50 border border-slate-200 text-slate-700"
+                            >
+                              <option value="Champion Line">👑 Champion Line</option>
+                              <option value="Farm Stud">⭐ Farm Stud</option>
+                              <option value="Heritage Pure">🌿 Heritage Pure</option>
+                              <option value="Breeding Flock">🌾 Breeding Flock</option>
+                              <option value="Young Star">✨ Young Star</option>
+                            </select>
+                          </td>
+
+                          {/* Actions */}
+                          <td className="py-3 px-4 text-right">
+                            <div className="flex items-center justify-end space-x-1.5">
+                              <button
+                                type="button"
+                                onClick={() => handleEditClick(rooster)}
+                                className="p-1.5 rounded-lg text-slate-600 hover:text-amber-800 hover:bg-amber-50 transition"
+                                title="Edit bird"
+                              >
+                                <Edit3 className="w-4 h-4" />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  if (confirm(`Delete #${rooster.tagId} (${rooster.name})?`)) {
+                                    deleteRooster(rooster.id);
+                                  }
+                                }}
+                                className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition"
+                                title="Delete bird"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
 
           </div>
         )}
 
-        {/* TAB 2: LIVE CUSTOMER ORDERS (Amazon/Flipkart Style Command Center) */}
+        {/* =====================================================================
+           TAB 2: CUSTOMER ORDERS & LIVE DISPATCH TRACKING
+           ===================================================================== */}
         {activeTab === 'orders' && (
-          <div className="space-y-6">
+          <div className="space-y-4">
             
-            {/* Header & Filter Controls */}
-            <div className="bg-white p-5 rounded-2xl border border-stone-200 shadow-sm space-y-4">
-              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pb-3 border-b border-stone-100">
-                <div>
-                  <h3 className="font-extrabold text-stone-900 text-lg flex items-center space-x-2">
-                    <Banknote className="w-5 h-5 text-amber-600" />
-                    <span>Customer Orders & Live Crate Dispatches</span>
-                    <span className="bg-amber-100 text-amber-950 text-xs px-2.5 py-0.5 rounded-full font-black border border-amber-300">
-                      {orders.length} Placed
-                    </span>
-                  </h3>
-                  <p className="text-xs text-stone-500 mt-0.5">
-                    Real-time orders placed via website cart & Buy Now. Verify buyers, print crate transit passes, and dispatch live climate crates.
-                  </p>
-                </div>
-
-                <div className="flex items-center space-x-2">
-                  <button
-                    onClick={handleExportOrdersCSV}
-                    className="inline-flex items-center space-x-1.5 bg-stone-100 hover:bg-stone-200 text-stone-700 font-bold px-3.5 py-2 rounded-xl text-xs transition"
-                    title="Export all orders to CSV for logistics"
-                  >
-                    <Download className="w-3.5 h-3.5 text-stone-600" />
-                    <span>Export CSV</span>
-                  </button>
-                </div>
+            {/* Orders Header Search & Filter Bar */}
+            <div className="bg-white p-3 sm:p-4 rounded-2xl border border-slate-200 shadow-xs flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+              
+              <div className="relative flex-1 max-w-md">
+                <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                <input
+                  type="text"
+                  placeholder="Search by Order ID, customer, phone, city or bird..."
+                  value={orderSearchQuery}
+                  onChange={(e) => setOrderSearchQuery(e.target.value)}
+                  className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-hidden focus:border-amber-500"
+                />
               </div>
 
-              {/* Search & Status Filter Pills */}
-              <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
-                <div className="relative flex-1 max-w-md">
-                  <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-stone-400" />
-                  <input
-                    type="text"
-                    placeholder="Search by Order ID, Name, Phone, City, Breed or Tag..."
-                    value={orderSearchQuery}
-                    onChange={(e) => setOrderSearchQuery(e.target.value)}
-                    className="w-full pl-9 pr-4 py-2 text-xs rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-amber-500 bg-stone-50/50"
-                  />
-                  {orderSearchQuery && (
-                    <button
-                      onClick={() => setOrderSearchQuery('')}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-600 text-xs"
-                    >
-                      ✕
-                    </button>
-                  )}
-                </div>
-
-                {/* Status Pills */}
-                <div className="flex items-center space-x-1.5 overflow-x-auto pb-1 sm:pb-0">
+              {/* Status Filter Chips */}
+              <div className="flex items-center space-x-1 overflow-x-auto pb-1 sm:pb-0 scrollbar-none">
+                {[
+                  { id: 'all', label: `All (${orders.length})` },
+                  { id: 'pending_approval', label: `Pending (${pendingOrdersCount})` },
+                  { id: 'confirmed', label: `Ready (${confirmedOrdersCount})` },
+                  { id: 'dispatched', label: `In Transit (${dispatchedOrdersCount})` },
+                  { id: 'delivered', label: `Delivered (${deliveredOrdersCount})` },
+                  { id: 'rejected', label: `Rejected (${rejectedOrdersCount})` },
+                ].map((st) => (
                   <button
-                    onClick={() => setOrderStatusFilter('all')}
-                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition whitespace-nowrap ${
-                      orderStatusFilter === 'all'
+                    key={st.id}
+                    type="button"
+                    onClick={() => setOrderStatusFilter(st.id as any)}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition cursor-pointer ${
+                      orderStatusFilter === st.id
                         ? 'bg-stone-900 text-white shadow-xs'
-                        : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
+                        : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
                     }`}
                   >
-                    All ({orders.length})
+                    {st.label}
                   </button>
-
-                  <button
-                    onClick={() => setOrderStatusFilter('pending_approval')}
-                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center space-x-1.5 whitespace-nowrap ${
-                      orderStatusFilter === 'pending_approval'
-                        ? 'bg-amber-500 text-stone-950 font-black shadow-xs ring-2 ring-amber-300'
-                        : 'bg-amber-50 text-amber-900 hover:bg-amber-100 border border-amber-300'
-                    }`}
-                  >
-                    <span className={`w-2 h-2 rounded-full bg-amber-500 ${pendingOrdersCount > 0 ? 'animate-ping' : ''}`}></span>
-                    <span>Pending Review ({pendingOrdersCount})</span>
-                  </button>
-
-                  <button
-                    onClick={() => setOrderStatusFilter('confirmed')}
-                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center space-x-1.5 whitespace-nowrap ${
-                      orderStatusFilter === 'confirmed'
-                        ? 'bg-emerald-600 text-white font-black shadow-xs'
-                        : 'bg-emerald-50 text-emerald-900 hover:bg-emerald-100 border border-emerald-200'
-                    }`}
-                  >
-                    <CheckCircle2 className="w-3.5 h-3.5" />
-                    <span>Confirmed ({confirmedOrdersCount})</span>
-                  </button>
-
-                  <button
-                    onClick={() => setOrderStatusFilter('dispatched')}
-                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center space-x-1.5 whitespace-nowrap ${
-                      orderStatusFilter === 'dispatched'
-                        ? 'bg-sky-600 text-white shadow-xs'
-                        : 'bg-sky-50 text-sky-900 hover:bg-sky-100 border border-sky-200'
-                    }`}
-                  >
-                    <Truck className="w-3.5 h-3.5" />
-                    <span>In Transit ({dispatchedOrdersCount})</span>
-                  </button>
-
-                  <button
-                    onClick={() => setOrderStatusFilter('delivered')}
-                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center space-x-1.5 whitespace-nowrap ${
-                      orderStatusFilter === 'delivered'
-                        ? 'bg-teal-700 text-white shadow-xs'
-                        : 'bg-teal-50 text-teal-900 hover:bg-teal-100 border border-teal-200'
-                    }`}
-                  >
-                    <Lock className="w-3.5 h-3.5" />
-                    <span>Delivered ({deliveredOrdersCount})</span>
-                  </button>
-
-                  <button
-                    onClick={() => setOrderStatusFilter('rejected')}
-                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center space-x-1.5 whitespace-nowrap ${
-                      orderStatusFilter === 'rejected'
-                        ? 'bg-rose-600 text-white shadow-xs'
-                        : 'bg-rose-50 text-rose-900 hover:bg-rose-100 border border-rose-200'
-                    }`}
-                  >
-                    <X className="w-3.5 h-3.5" />
-                    <span>Rejected ({rejectedOrdersCount})</span>
-                  </button>
-                </div>
+                ))}
               </div>
+
             </div>
 
-            {/* Orders Feed */}
+            {/* Orders List: Mobile-First Executive Order Cards */}
             {filteredOrders.length === 0 ? (
-              <div className="bg-white rounded-2xl border border-stone-200 p-12 text-center space-y-3">
-                <div className="w-12 h-12 rounded-full bg-stone-100 flex items-center justify-center mx-auto text-stone-400">
-                  <Package className="w-6 h-6" />
-                </div>
-                <h4 className="font-bold text-stone-800 text-base">No orders found</h4>
-                <p className="text-xs text-stone-500 max-w-sm mx-auto">
-                  {orderSearchQuery
-                    ? `No orders matching "${orderSearchQuery}". Try clearing search filters.`
-                    : `No orders in "${orderStatusFilter}" status at this moment.`}
-                </p>
-                {(orderSearchQuery || orderStatusFilter !== 'all') && (
-                  <button
-                    onClick={() => {
-                      setOrderSearchQuery('');
-                      setOrderStatusFilter('all');
-                    }}
-                    className="text-xs font-bold text-amber-700 hover:underline pt-2 inline-block"
-                  >
-                    Reset Filters
-                  </button>
-                )}
+              <div className="bg-white rounded-2xl p-12 text-center border border-dashed border-slate-300">
+                <Package className="w-8 h-8 text-slate-300 mx-auto mb-2" />
+                <p className="text-sm font-bold text-slate-700">No orders found in this category.</p>
               </div>
             ) : (
-              <div className="space-y-4">
+              <div className="space-y-3 sm:space-y-4">
                 {filteredOrders.map((order) => {
-                  const birdsListFormatted = order.items && order.items.length > 0
-                    ? order.items.map((i) => `• *${i.roosterName}* (TAG: #${i.roosterTag}) - ₹${i.price.toLocaleString('en-IN')} x ${i.quantity}`).join('\n')
-                    : `• *${order.roosterName}* (TAG: #${order.roosterTag}) - ₹${order.price.toLocaleString('en-IN')}`;
-
-                  const dispatchWhatsAppUrl = generateWhatsAppLink({
+                  const statusInfo = getOrderStatusBadge(order.status);
+                  const whatsAppOrderUrl = generateWhatsAppLink({
                     phone: order.phoneNumber,
-                    customMessage: `🐓 *JP FARMS • LIVE CRATE DISPATCH NOTICE*
-
-Dear *${order.customerName}*,
-Your order *#${order.id}* has been prepared and certified for dispatch!
-
-📦 *Consigned Roosters:*
-${birdsListFormatted}
-
-🚚 *Transit Mode:* ${order.deliveryType === 'doorstep_live_crate' ? 'Climate-Controlled Live Animal Crate' : 'Farm Gate Pickup'}
-📍 *Delivery Destination:* ${order.deliveryAddress}, ${order.city}, ${order.state} - ${order.pincode}
-💰 *Total Payable:* ₹${order.price.toLocaleString('en-IN')} (${order.paymentMethod.toUpperCase()})
-
-🩺 *Veterinary Status:* Avian Health Exam Passed • Ranikhet/ND & Fowl Pox Certified
-
-Our live transport driver will call you 2 hours prior to arrival. Thank you for choosing JP Farms!`,
+                    customMessage: `Hello ${order.customerName}! 🐓 This is JP Farms dispatch team regarding your order #${order.id}.`,
                   });
 
                   return (
-                    <div
+                    <div 
                       key={order.id}
-                      className="bg-white p-5 rounded-2xl border border-stone-200 shadow-sm hover:border-amber-300 transition space-y-4"
+                      className="bg-white rounded-2xl border border-slate-200 p-4 sm:p-5 shadow-xs hover:border-slate-300 transition space-y-3"
                     >
-                      {/* Top Bar: Order ID, Date, Amount, Status */}
-                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-stone-100">
-                        <div className="flex items-center space-x-3">
-                          <span className="font-mono text-xs font-black px-2.5 py-1 rounded-lg bg-stone-900 text-amber-400 tracking-wide shadow-xs">
-                            {order.id}
+                      {/* Top Row: Order ID, Date & Status */}
+                      <div className="flex flex-wrap items-center justify-between gap-2 pb-2.5 border-b border-slate-100">
+                        <div className="flex items-center space-x-2">
+                          <span className="font-mono font-black text-xs sm:text-sm text-slate-900">
+                            #{order.id}
                           </span>
-                          <span className="text-xs text-stone-400 font-medium">
-                            {order.orderDate}
-                          </span>
-                          <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full uppercase tracking-wider bg-stone-100 text-stone-700">
-                            {order.deliveryType === 'doorstep_live_crate' ? '🚚 Live Crate' : '🏡 Farm Pickup'}
-                          </span>
-                          <span className={`text-[10px] font-extrabold px-2 py-0.5 rounded-full uppercase tracking-wider ${
-                            order.paymentMethod === 'cod' ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' : 'bg-sky-50 text-sky-800 border border-sky-200'
-                          }`}>
-                            {order.paymentMethod === 'cod' ? '💵 COD' : '📱 UPI Paid'}
+                          <span className="text-slate-400 text-xs">•</span>
+                          <span className="text-[11px] text-slate-500 font-medium">
+                            {new Date(order.orderDate).toLocaleDateString('en-IN', {
+                              day: 'numeric',
+                              month: 'short',
+                              year: 'numeric',
+                              hour: '2-digit',
+                              minute: '2-digit',
+                            })}
                           </span>
                         </div>
 
-                        <div className="flex items-center space-x-3 self-end sm:self-auto">
-                          <div className="text-right">
-                            <span className="text-[10px] uppercase font-bold text-stone-400 block">Total Amount</span>
-                            <p className="text-lg font-black text-emerald-700 leading-tight">
-                              ₹{order.price.toLocaleString('en-IN')}
-                            </p>
-                          </div>
+                        <span className={`text-[11px] font-extrabold px-2.5 py-1 rounded-full border ${statusInfo.style}`}>
+                          {statusInfo.label}
+                        </span>
+                      </div>
 
-                          {order.status === 'delivered' ? (
-                            <div className="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl text-xs font-black bg-emerald-100 text-emerald-900 border border-emerald-300 shadow-xs" title="Delivered orders are locked and cannot be edited">
-                              <Lock className="w-3.5 h-3.5 text-emerald-700" />
-                              <span>🟢 Delivered (Locked)</span>
-                            </div>
-                          ) : order.status === 'rejected' ? (
-                            <div className="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl text-xs font-black bg-rose-100 text-rose-900 border border-rose-300 shadow-xs">
-                              <X className="w-3.5 h-3.5 text-rose-700" />
-                              <span>🔴 Rejected</span>
-                            </div>
-                          ) : order.status === 'pending_approval' ? (
-                            <div className="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl text-xs font-black bg-amber-100 text-amber-950 border border-amber-400 shadow-xs ring-2 ring-amber-300/50 animate-pulse">
-                              <Clock className="w-3.5 h-3.5 text-amber-800" />
-                              <span>⏳ Pending Decision</span>
-                            </div>
-                          ) : (
-                            <select
-                              value={order.status}
-                              onChange={(e) => updateOrderStatus(order.id, e.target.value as any)}
-                              className={`text-xs font-extrabold rounded-xl px-3 py-1.5 border shadow-xs transition ${
-                                order.status === 'confirmed'
-                                  ? 'bg-amber-50 text-amber-900 border-amber-300 ring-2 ring-amber-200/50'
-                                  : 'bg-sky-50 text-sky-900 border-sky-300 ring-2 ring-sky-200/50'
-                              }`}
+                      {/* Middle Grid: Customer & Delivery details */}
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+                        {/* Customer */}
+                        <div>
+                          <p className="text-[10px] text-slate-400 uppercase font-bold">Buyer Details</p>
+                          <p className="font-extrabold text-slate-900 mt-0.5">{order.customerName}</p>
+                          <div className="flex items-center space-x-2 mt-1">
+                            <a
+                              href={`tel:${order.phoneNumber}`}
+                              className="inline-flex items-center space-x-1 text-slate-600 font-mono hover:text-amber-800"
                             >
-                              <option value="confirmed">🟡 Order Confirmed (Accepted)</option>
-                              <option value="dispatched">🚚 Dispatched / In Transit</option>
-                              <option value="delivered">🟢 Delivered & Complete (Locks Order)</option>
-                            </select>
-                          )}
+                              <Phone className="w-3 h-3 text-emerald-600" />
+                              <span>{order.phoneNumber}</span>
+                            </a>
+                            <a
+                              href={whatsAppOrderUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded hover:bg-emerald-100"
+                            >
+                              WhatsApp
+                            </a>
+                          </div>
+                        </div>
+
+                        {/* Destination */}
+                        <div>
+                          <p className="text-[10px] text-slate-400 uppercase font-bold">Fulfillment & Destination</p>
+                          <p className="font-semibold text-slate-800 mt-0.5">
+                            {order.deliveryType === 'farm_pickup' ? '🏡 Farm Estate Pickup' : '🚚 Doorstep Climate Crate'}
+                          </p>
+                          <p className="text-[11px] text-slate-500 truncate mt-0.5" title={order.deliveryAddress}>
+                            {order.deliveryAddress}
+                          </p>
+                          <p className="text-[10px] text-slate-400 font-medium">
+                            {order.city}, {order.state} • {order.pincode}
+                          </p>
+                        </div>
+
+                        {/* Order Items & Price */}
+                        <div className="sm:text-right">
+                          <p className="text-[10px] text-slate-400 uppercase font-bold">Total Amount</p>
+                          <p className="text-base font-black text-slate-950 mt-0.5">
+                            ₹{order.price.toLocaleString('en-IN')}
+                          </p>
+                          <p className="text-[11px] text-slate-600 font-medium mt-0.5">
+                            {order.items && order.items.length > 0
+                              ? `${order.items.length} ${order.items.length === 1 ? 'Rooster' : 'Roosters'}`
+                              : order.roosterName}
+                          </p>
+                          <span className="text-[10px] uppercase font-bold text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded">
+                            {order.paymentMethod === 'cod' ? 'Cash on Delivery' : 'Online / UPI'}
+                          </span>
                         </div>
                       </div>
 
-                      {/* Birds in this Consignment (Multi-item breakdown) */}
-                      {order.items && order.items.length > 0 ? (
-                        <div className="bg-stone-50/80 rounded-xl p-3 border border-stone-200 space-y-2">
-                          <div className="flex items-center justify-between text-xs font-bold text-stone-700 pb-1 border-b border-stone-200/70">
-                            <span className="flex items-center space-x-1.5">
-                              <Package className="w-3.5 h-3.5 text-amber-600" />
-                              <span>Consigned Heritage Birds ({order.items.length} {order.items.length === 1 ? 'Rooster' : 'Roosters'})</span>
-                            </span>
-                            <span className="text-stone-500 font-medium">Live Animal Crate Package</span>
-                          </div>
-                          
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
-                            {order.items.map((item, idx) => (
-                              <div
-                                key={idx}
-                                className="flex items-center justify-between bg-white p-2.5 rounded-xl border border-stone-200 shadow-xs"
-                              >
-                                <div className="flex items-center space-x-3">
-                                  <img
-                                    src={item.roosterImage || 'https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?auto=format&fit=crop&w=200&q=80'}
-                                    alt={item.roosterName}
-                                    className="w-12 h-12 rounded-lg object-cover border border-stone-200 shrink-0"
-                                  />
-                                  <div>
-                                    <h5 className="font-bold text-stone-900 text-xs">{item.roosterName}</h5>
-                                    <p className="text-[11px] font-mono text-amber-800 font-bold">TAG: #{item.roosterTag}</p>
-                                    <p className="text-[10px] text-stone-500">{item.roosterBreed}</p>
-                                  </div>
-                                </div>
-                                <div className="text-right">
-                                  <p className="text-xs font-bold text-stone-900">₹{item.price.toLocaleString('en-IN')} × {item.quantity}</p>
-                                  <p className="text-[11px] font-extrabold text-emerald-700">₹{(item.price * item.quantity).toLocaleString('en-IN')}</p>
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      ) : (
-                        <div className="flex items-center space-x-3 bg-stone-50 p-3 rounded-xl border border-stone-200">
-                          <img
-                            src={order.roosterImage || 'https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?auto=format&fit=crop&w=200&q=80'}
-                            alt={order.roosterName}
-                            className="w-12 h-12 rounded-lg object-cover border border-stone-200 shrink-0"
-                          />
-                          <div>
-                            <span className="font-mono text-xs text-amber-800 font-bold">TAG: #{order.roosterTag}</span>
-                            <h5 className="font-bold text-stone-900 text-xs">{order.roosterName}</h5>
-                            <p className="text-[11px] text-stone-500">{order.roosterBreed}</p>
-                          </div>
+                      {/* Birds List Thumbnails */}
+                      {order.items && order.items.length > 0 && (
+                        <div className="pt-2 border-t border-slate-100 flex items-center space-x-2 overflow-x-auto pb-1 scrollbar-none">
+                          {order.items.map((item, idx) => (
+                            <div 
+                              key={idx}
+                              className="flex items-center space-x-2 bg-slate-50 p-1.5 rounded-xl border border-slate-200 shrink-0"
+                            >
+                              {item.roosterImage && (
+                                <img 
+                                  src={item.roosterImage} 
+                                  alt={item.roosterName} 
+                                  className="w-7 h-7 rounded-lg object-cover"
+                                />
+                              )}
+                              <span className="text-[11px] font-bold text-slate-800">
+                                {item.roosterName}
+                              </span>
+                              <span className="text-[10px] font-mono text-amber-700 bg-amber-50 px-1 rounded">
+                                #{item.roosterTag}
+                              </span>
+                            </div>
+                          ))}
                         </div>
                       )}
 
-                      {/* Customer & Delivery Information */}
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs bg-stone-50/60 p-3.5 rounded-xl border border-stone-200">
-                        <div>
-                          <span className="block text-[10px] uppercase font-bold text-stone-400">Buyer Contact</span>
-                          <p className="font-bold text-stone-900 text-sm mt-0.5">{order.customerName}</p>
-                          <a
-                            href={`tel:${order.phoneNumber}`}
-                            className="text-stone-600 hover:text-amber-700 font-mono font-bold flex items-center space-x-1 mt-0.5"
-                          >
-                            <Phone className="w-3 h-3 text-stone-400" />
-                            <span>{order.phoneNumber}</span>
-                          </a>
-                        </div>
-
-                        <div>
-                          <span className="block text-[10px] uppercase font-bold text-stone-400">Destination Address</span>
-                          <p className="text-stone-800 leading-snug mt-0.5">
-                            {order.deliveryAddress}, {order.city}, {order.state} - {order.pincode}
-                          </p>
-                          <span className="inline-block mt-1 text-[10px] font-bold text-sky-700">
-                            {order.deliveryType === 'doorstep_live_crate' ? '🚚 Climate Crate Doorstep Delivery' : '🏡 Farm Gate Pickup'}
-                          </span>
-                        </div>
-
-                        <div>
-                          <span className="block text-[10px] uppercase font-bold text-stone-400">Payment & Special Notes</span>
-                          <p className="font-bold text-stone-900 uppercase mt-0.5">
-                            {order.paymentMethod === 'cod' ? '💵 Cash on Delivery (Pay at Crate Unboxing)' : order.paymentMethod === 'upi' ? '📱 Instant UPI / GPay' : '🪙 Advance Token'}
-                          </p>
-                          {order.notes ? (
-                            <p className="text-[11px] text-stone-600 italic mt-1 bg-amber-50/60 p-1.5 rounded border border-amber-200/50">
-                              &ldquo;{order.notes}&rdquo;
-                            </p>
-                          ) : (
-                            <p className="text-[11px] text-stone-400 italic mt-1">No special instructions</p>
-                          )}
-                        </div>
-                      </div>
-
-                      {/* Action Toolbar */}
-                      <div className="flex flex-wrap items-center justify-between gap-2.5 pt-3 border-t border-stone-100">
-                        {order.status === 'pending_approval' ? (
-                          <div className="flex items-center space-x-2">
-                            {/* Accept Order Button */}
-                            <button
-                              type="button"
-                              onClick={() => acceptOrder(order.id)}
-                              className="flex items-center justify-center space-x-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold py-2 px-4 rounded-xl text-xs transition active:scale-95 shadow-sm cursor-pointer"
-                              title="Accept & Confirm Order (Sends live alert to customer)"
-                            >
-                              <CheckCircle2 className="w-4 h-4 text-white" />
-                              <span>Accept Order</span>
-                            </button>
-
-                            {/* Reject Order Button */}
-                            <button
-                              type="button"
-                              onClick={() => {
-                                setRejectingOrder(order);
-                                setSelectedRejectReason('Destination address exceeds 20 km live animal delivery radius');
-                                setCustomRejectReason('');
-                              }}
-                              className="flex items-center justify-center space-x-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 font-bold py-2 px-3.5 rounded-xl text-xs transition active:scale-95 cursor-pointer"
-                              title="Reject this order and choose/type reason"
-                            >
-                              <X className="w-4 h-4 text-rose-600" />
-                              <span>Reject Order</span>
-                            </button>
-                          </div>
-                        ) : order.status === 'confirmed' ? (
-                          <div className="flex items-center space-x-2">
-                            <button
-                              type="button"
-                              onClick={() => updateOrderStatus(order.id, 'dispatched')}
-                              className="flex items-center justify-center space-x-1.5 bg-sky-600 hover:bg-sky-500 text-white font-bold py-2 px-3.5 rounded-xl text-xs transition shadow-xs cursor-pointer"
-                              title="Dispatch rooster in Climate Crate (notifies customer)"
-                            >
-                              <Truck className="w-3.5 h-3.5 text-white" />
-                              <span>Mark In-Transit (Dispatched)</span>
-                            </button>
-                            <span className="text-[11px] text-stone-400">Accepted by Admin</span>
-                          </div>
-                        ) : order.status === 'dispatched' ? (
-                          <div className="flex items-center space-x-2">
-                            <button
-                              type="button"
-                              onClick={() => updateOrderStatus(order.id, 'delivered')}
-                              className="flex items-center justify-center space-x-1.5 bg-teal-700 hover:bg-teal-600 text-white font-bold py-2 px-3.5 rounded-xl text-xs transition shadow-xs cursor-pointer"
-                              title="Mark delivered (locks this order permanently)"
-                            >
-                              <CheckCircle2 className="w-3.5 h-3.5 text-white" />
-                              <span>Mark Delivered & Handed Over</span>
-                            </button>
-                            <span className="text-[11px] text-sky-600 font-medium">Live GPS Crate Active</span>
-                          </div>
-                        ) : order.status === 'delivered' ? (
-                          <div className="flex items-center space-x-2 text-xs font-bold text-emerald-800 bg-emerald-50 border border-emerald-200 px-3 py-1.5 rounded-xl">
-                            <Lock className="w-3.5 h-3.5 text-emerald-600" />
-                            <span>Bio-Secure Handoff Complete • Order Record Locked</span>
-                          </div>
-                        ) : order.status === 'rejected' ? (
-                          <div className="flex items-center space-x-2 text-xs font-semibold text-rose-800 bg-rose-50 border border-rose-200 px-3 py-1.5 rounded-xl">
-                            <AlertCircle className="w-3.5 h-3.5 text-rose-600 shrink-0" />
-                            <span>
-                              Rejected: <strong>{order.rejectionReason || 'Not approved by farm management'}</strong>
-                            </span>
-                          </div>
-                        ) : null}
-
-                        {/* Print Crate Pass */}
-                        {order.status !== 'rejected' && (
+                      {/* Order Action Buttons */}
+                      <div className="pt-2 border-t border-slate-100 flex flex-wrap items-center justify-between gap-2">
+                        <div className="flex items-center space-x-2">
                           <button
                             type="button"
                             onClick={() => setPrintingOrder(order)}
-                            className="flex items-center justify-center space-x-1.5 bg-stone-900 hover:bg-stone-800 text-white font-bold py-2 px-3.5 rounded-xl text-xs transition shadow-xs cursor-pointer ml-auto"
-                            title="Generate printable bio-secure crate dispatch slip & veterinary certificate"
+                            className="flex items-center space-x-1 bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold px-3 py-1.5 rounded-xl text-xs transition"
                           >
-                            <Printer className="w-3.5 h-3.5 text-amber-400" />
-                            <span>Print Crate Pass</span>
+                            <Printer className="w-3.5 h-3.5" />
+                            <span>Print Dispatch Slip</span>
                           </button>
-                        )}
+
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (confirm(`Permanently remove order #${order.id}?`)) {
+                                deleteOrder(order.id);
+                              }
+                            }}
+                            className="p-1.5 text-slate-400 hover:text-rose-600 rounded-lg"
+                            title="Delete order"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+
+                        {/* Status Transition Triggers */}
+                        <div className="flex items-center space-x-2">
+                          {order.status === 'pending_approval' && (
+                            <>
+                              <button
+                                type="button"
+                                onClick={() => acceptOrder(order.id)}
+                                className="flex items-center space-x-1 bg-emerald-600 hover:bg-emerald-700 text-white font-black px-3 py-1.5 rounded-xl text-xs shadow-xs active:scale-95 transition"
+                              >
+                                <Check className="w-3.5 h-3.5" />
+                                <span>Accept Order</span>
+                              </button>
+
+                              <button
+                                type="button"
+                                onClick={() => setRejectingOrder(order)}
+                                className="flex items-center space-x-1 bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold px-3 py-1.5 rounded-xl text-xs transition"
+                              >
+                                <X className="w-3.5 h-3.5" />
+                                <span>Reject</span>
+                              </button>
+                            </>
+                          )}
+
+                          {order.status === 'confirmed' && (
+                            <button
+                              type="button"
+                              onClick={() => updateOrderStatus(order.id, 'dispatched')}
+                              className="flex items-center space-x-1 bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-3 py-1.5 rounded-xl text-xs shadow-xs active:scale-95 transition"
+                            >
+                              <Truck className="w-3.5 h-3.5" />
+                              <span>Dispatch Crate 🚚</span>
+                            </button>
+                          )}
+
+                          {order.status === 'dispatched' && (
+                            <button
+                              type="button"
+                              onClick={() => updateOrderStatus(order.id, 'delivered')}
+                              className="flex items-center space-x-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-3 py-1.5 rounded-xl text-xs shadow-xs active:scale-95 transition"
+                            >
+                              <CheckCircle2 className="w-3.5 h-3.5" />
+                              <span>Mark Delivered ✅</span>
+                            </button>
+                          )}
+                        </div>
+
                       </div>
 
                     </div>
@@ -1334,347 +1660,271 @@ Our live transport driver will call you 2 hours prior to arrival. Thank you for 
           </div>
         )}
 
-        {/* TAB 3: INQUIRIES & VISITOR REQUESTS */}
-        {activeTab === 'inquiries' && (
+        {/* =====================================================================
+           TAB 3: REGISTERED CUSTOMERS DIRECTORY
+           ===================================================================== */}
+        {activeTab === 'customers' && (
           <div className="space-y-4">
-            <div className="bg-white p-4 rounded-2xl border border-stone-200 shadow-sm flex items-center justify-between">
-              <div>
-                <h3 className="font-bold text-stone-900 text-base">Farm Visit Requests & Enthusiast Inquiries</h3>
-                <p className="text-xs text-stone-500">Contact visitors directly on WhatsApp or phone to welcome them to JP Farms.</p>
+            
+            <div className="bg-white p-3 sm:p-4 rounded-2xl border border-slate-200 shadow-xs flex items-center justify-between">
+              <div className="relative flex-1 max-w-md">
+                <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                <input
+                  type="text"
+                  placeholder="Search buyer by name, email, phone or city..."
+                  value={customerSearchQuery}
+                  onChange={(e) => setCustomerSearchQuery(e.target.value)}
+                  className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-hidden"
+                />
               </div>
+              <span className="text-xs font-bold text-slate-500">
+                {filteredCustomers.length} Enthusiasts
+              </span>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {inquiries.map((inq) => {
-                const customerWhatsAppUrl = `https://wa.me/${inq.phoneNumber.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(
-                  `Hi ${inq.customerName}, this is JP Farms regarding your visit request for Rooster #${inq.roosterTag || ''} (${inq.roosterName || ''}).`
-                )}`;
+            {filteredCustomers.length === 0 ? (
+              <div className="bg-white rounded-2xl p-12 text-center border border-dashed border-slate-300">
+                <Users className="w-8 h-8 text-slate-300 mx-auto mb-2" />
+                <p className="text-sm font-bold text-slate-700">No registered customers match your search.</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+                {filteredCustomers.map((cust) => {
+                  const custOrders = orders.filter(o => o.userId === cust.uid || (cust.phone && o.phoneNumber === cust.phone));
+                  const custSpend = custOrders.reduce((sum, o) => sum + o.price, 0);
+                  const custWhatsApp = cust.phone ? generateWhatsAppLink({
+                    phone: cust.phone,
+                    customMessage: `Hello ${cust.name || 'Friend'}! 🐓 JP Farms here.`,
+                  }) : '';
 
-                return (
-                  <div key={inq.id} className="bg-white rounded-2xl border border-stone-200 p-5 shadow-sm space-y-3">
-                    
-                    <div className="flex items-start justify-between">
-                      <div>
-                        {inq.roosterTag && (
-                          <div className="flex items-center space-x-2">
-                            <span className="font-mono text-xs font-bold bg-amber-100 text-amber-900 px-2 py-0.5 rounded">
-                              {inq.roosterTag}
-                            </span>
-                            <span className="text-xs font-bold text-stone-900">{inq.roosterName}</span>
-                          </div>
-                        )}
-                        <p className="text-xs text-stone-400 mt-0.5">{inq.createdAt}</p>
+                  return (
+                    <div 
+                      key={cust.uid}
+                      className="bg-white rounded-2xl border border-slate-200 p-4 shadow-xs hover:border-slate-300 transition space-y-3"
+                    >
+                      <div className="flex items-center space-x-3">
+                        <div className="w-11 h-11 rounded-full bg-gradient-to-br from-amber-500 to-amber-600 text-stone-950 font-black text-sm flex items-center justify-center shadow-xs">
+                          {cust.name ? cust.name.charAt(0).toUpperCase() : '👤'}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <h4 className="text-sm font-extrabold text-slate-900 truncate">
+                            {cust.name || 'Avian Enthusiast'}
+                          </h4>
+                          <p className="text-[11px] text-slate-500 truncate">{cust.email}</p>
+                        </div>
                       </div>
 
-                      <select
-                        value={inq.status}
-                        onChange={(e) => updateInquiryStatus(inq.id, e.target.value as any)}
-                        className="text-[11px] font-bold rounded-lg px-2 py-1 bg-stone-100 border border-stone-200"
-                      >
-                        <option value="new">New Request</option>
-                        <option value="contacted">Contacted / Confirmed</option>
-                        <option value="archived">Archived</option>
-                      </select>
+                      <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-100 text-xs space-y-1">
+                        <div className="flex items-center justify-between text-slate-600">
+                          <span>Phone:</span>
+                          <span className="font-mono font-bold text-slate-900">
+                            {cust.phone || 'Not provided'}
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-between text-slate-600">
+                          <span>Joined:</span>
+                          <span className="font-semibold text-slate-900">
+                            {new Date(cust.joinedAt).toLocaleDateString('en-IN', { month: 'short', day: 'numeric', year: 'numeric' })}
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-between text-slate-600">
+                          <span>Total Orders:</span>
+                          <span className="font-extrabold text-slate-900">{custOrders.length}</span>
+                        </div>
+                        <div className="flex items-center justify-between text-slate-600">
+                          <span>Total Spent:</span>
+                          <span className="font-black text-emerald-700">₹{custSpend.toLocaleString('en-IN')}</span>
+                        </div>
+                      </div>
+
+                      {cust.phone && (
+                        <div className="pt-1 flex items-center space-x-2">
+                          <a
+                            href={`tel:${cust.phone}`}
+                            className="flex-1 flex items-center justify-center space-x-1 bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold py-1.5 rounded-lg text-xs transition"
+                          >
+                            <Phone className="w-3.5 h-3.5 text-emerald-600" />
+                            <span>Call</span>
+                          </a>
+                          <a
+                            href={custWhatsApp}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex-1 flex items-center justify-center space-x-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-1.5 rounded-lg text-xs transition"
+                          >
+                            <MessageCircle className="w-3.5 h-3.5" />
+                            <span>WhatsApp</span>
+                          </a>
+                        </div>
+                      )}
                     </div>
+                  );
+                })}
+              </div>
+            )}
 
-                    <div className="bg-stone-50 p-3 rounded-xl border border-stone-100 text-xs space-y-1">
-                      <p><strong className="text-stone-700">Visitor:</strong> {inq.customerName}</p>
-                      <p><strong className="text-stone-700">Phone:</strong> {inq.phoneNumber}</p>
-                      <p><strong className="text-stone-700">Location:</strong> {inq.cityState}</p>
-                      <p className="pt-1 text-stone-600 italic">&ldquo;{inq.message}&rdquo;</p>
-                    </div>
-
-                    <div className="flex items-center gap-2 pt-1">
-                      <a
-                        href={customerWhatsAppUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex-1 flex items-center justify-center space-x-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2 rounded-xl text-xs transition"
-                      >
-                        <MessageCircle className="w-3.5 h-3.5" />
-                        <span>Chat on WhatsApp</span>
-                      </a>
-
-                      <a
-                        href={`tel:${inq.phoneNumber}`}
-                        className="flex items-center justify-center space-x-1.5 bg-stone-100 hover:bg-stone-200 text-stone-800 font-semibold py-2 px-3 rounded-xl text-xs transition"
-                      >
-                        <Phone className="w-3.5 h-3.5" />
-                        <span>Call</span>
-                      </a>
-                    </div>
-
-                  </div>
-                );
-              })}
-            </div>
           </div>
         )}
 
-        {/* TAB 4: REGISTERED CUSTOMERS DIRECTORY (Google Sign-In Accounts) */}
-        {activeTab === 'customers' && (
-          <div className="space-y-6">
-            <div className="bg-white p-5 rounded-2xl border border-stone-200 shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+        {/* =====================================================================
+           TAB 4: FARM VISIT INQUIRIES & APPOINTMENTS
+           ===================================================================== */}
+        {activeTab === 'inquiries' && (
+          <div className="space-y-4">
+            
+            <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs flex items-center justify-between">
               <div>
-                <h3 className="font-extrabold text-stone-900 text-lg flex items-center space-x-2">
-                  <Users className="w-5 h-5 text-amber-600" />
-                  <span>Registered Customers (Google Sign-In)</span>
-                  <span className="bg-amber-100 text-amber-950 text-xs px-2.5 py-0.5 rounded-full font-black border border-amber-300">
-                    {customers.length} Verified Users
-                  </span>
+                <h3 className="text-sm font-black text-slate-900">Visitor Appointments & Strain Inquiries</h3>
+                <p className="text-xs text-slate-500">Coordinate on-site visits to inspect lineage specimens</p>
+              </div>
+              <span className="text-xs font-mono font-bold bg-amber-100 text-amber-900 px-2 py-0.5 rounded-md">
+                {inquiries.length} Inquiries
+              </span>
+            </div>
+
+            {inquiries.length === 0 ? (
+              <div className="bg-white rounded-2xl p-12 text-center border border-dashed border-slate-300">
+                <Calendar className="w-8 h-8 text-slate-300 mx-auto mb-2" />
+                <p className="text-sm font-bold text-slate-700">No farm visit inquiries logged yet.</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+                {inquiries.map((inquiry) => {
+                  const inquiryWhatsApp = generateWhatsAppLink({
+                    phone: inquiry.phoneNumber,
+                    customMessage: `Hello ${inquiry.customerName}! 🐓 JP Farms here regarding your inquiry for ${inquiry.roosterName || 'heritage breeds'}.`,
+                  });
+
+                  return (
+                    <div 
+                      key={inquiry.id}
+                      className="bg-white rounded-2xl border border-slate-200 p-4 shadow-xs space-y-3"
+                    >
+                      <div className="flex items-start justify-between">
+                        <div>
+                          <h4 className="text-sm font-black text-slate-900">{inquiry.customerName}</h4>
+                          <p className="text-[11px] text-slate-500 font-mono">{inquiry.phoneNumber}</p>
+                        </div>
+                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-md uppercase ${
+                          inquiry.status === 'contacted' ? 'bg-sky-100 text-sky-800' :
+                          inquiry.status === 'archived' ? 'bg-slate-100 text-slate-700' :
+                          'bg-amber-100 text-amber-800 animate-pulse'
+                        }`}>
+                          {inquiry.status}
+                        </span>
+                      </div>
+
+                      <div className="bg-slate-50 rounded-xl p-2.5 text-xs space-y-1">
+                        <p><strong>City / State:</strong> {inquiry.cityState || 'Not specified'}</p>
+                        <p><strong>Inquiry Type:</strong> <span className="capitalize">{inquiry.inquiryType.replace('_', ' ')}</span></p>
+                        {inquiry.roosterName && (
+                          <p><strong>Bird Interest:</strong> {inquiry.roosterName} (#{inquiry.roosterTag})</p>
+                        )}
+                        {inquiry.message && (
+                          <p className="text-slate-600 italic pt-1 border-t border-slate-200 text-[11px]">
+                            "{inquiry.message}"
+                          </p>
+                        )}
+                      </div>
+
+                      <div className="flex items-center space-x-2 pt-1">
+                        <select
+                          value={inquiry.status}
+                          onChange={(e) => updateInquiryStatus(inquiry.id, e.target.value as any)}
+                          className="flex-1 text-[11px] font-bold py-1.5 px-2 rounded-lg bg-slate-100 border border-slate-200 text-slate-700"
+                        >
+                          <option value="new">New Inquiry</option>
+                          <option value="contacted">Contacted</option>
+                          <option value="archived">Archived</option>
+                        </select>
+
+                        <a
+                          href={inquiryWhatsApp}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="p-1.5 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition"
+                          title="WhatsApp visitor"
+                        >
+                          <MessageCircle className="w-4 h-4" />
+                        </a>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+
+          </div>
+        )}
+
+        {/* =====================================================================
+           TAB 5: ADD / EDIT ROOSTER FORM (Frictionless Mobile-First Form)
+           ===================================================================== */}
+        {activeTab === 'add' && (
+          <form onSubmit={handleSubmit} className="bg-white rounded-2xl border border-slate-200 p-4 sm:p-7 shadow-xs space-y-6 max-w-4xl mx-auto">
+            
+            <div className="flex items-center justify-between pb-4 border-b border-slate-200">
+              <div>
+                <h3 className="text-lg font-black text-slate-900">
+                  {editingRooster ? `Edit Rooster Profile #${editingRooster.tagId}` : 'Register New Heritage Rooster'}
                 </h3>
-                <p className="text-xs text-stone-500 mt-0.5">
-                  Automatically captured customer leads with Google Email & Phone numbers. Reach buyers directly via WhatsApp or phone.
+                <p className="text-xs text-slate-500">
+                  Document biological traits, comb structure, plumage, and media
                 </p>
               </div>
 
-              <div className="flex items-center space-x-2 self-start sm:self-auto">
+              {editingRooster && (
                 <button
+                  type="button"
                   onClick={() => {
-                    const headers = ['Customer Name', 'Google Email', 'Mobile Phone', 'Joined Date', 'Last Active', 'Total Orders'];
-                    const rows = customers.map((c) => {
-                      const userOrders = orders.filter(
-                        (o) => o.customerName.toLowerCase() === c.name.toLowerCase() || (c.email && o.notes?.includes(c.email))
-                      );
-                      return [
-                        `"${c.name}"`,
-                        `"${c.email}"`,
-                        `"${c.phone || 'N/A'}"`,
-                        `"${c.joinedAt}"`,
-                        `"${c.lastLoginAt}"`,
-                        userOrders.length,
-                      ];
-                    });
-                    const csvContent = [headers.join(','), ...rows.map((r) => r.join(','))].join('\n');
-                    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-                    const url = URL.createObjectURL(blob);
-                    const link = document.createElement('a');
-                    link.href = url;
-                    link.setAttribute('download', `jp_farms_customers_${new Date().toISOString().slice(0, 10)}.csv`);
-                    document.body.appendChild(link);
-                    link.click();
-                    document.body.removeChild(link);
+                    setEditingRooster(null);
+                    setActiveTab('roosters');
                   }}
-                  className="inline-flex items-center space-x-1.5 bg-stone-900 hover:bg-stone-800 text-white text-xs font-bold px-3.5 py-2 rounded-xl transition shadow-xs"
-                  title="Download all customer phone numbers and emails to CSV"
+                  className="text-xs font-bold text-slate-500 hover:text-slate-800"
                 >
-                  <Download className="w-3.5 h-3.5" />
-                  <span>Export Leads (CSV)</span>
+                  Cancel
                 </button>
-
-                <div className="text-xs font-bold bg-amber-50 border border-amber-200 text-amber-900 px-3 py-2 rounded-xl">
-                  Google OAuth Active
-                </div>
-              </div>
+              )}
             </div>
 
-            {/* Customers Table / Grid */}
-            <div className="bg-white rounded-2xl border border-stone-200 shadow-sm overflow-hidden">
-              <div className="overflow-x-auto">
-                <table className="w-full text-left text-xs">
-                  <thead className="bg-stone-50 border-b border-stone-200 text-stone-600 font-bold uppercase tracking-wider text-[11px]">
-                    <tr>
-                      <th className="py-3.5 px-4">Customer</th>
-                      <th className="py-3.5 px-4">Google Email</th>
-                      <th className="py-3.5 px-4">Mobile / WhatsApp</th>
-                      <th className="py-3.5 px-4">Joined Date</th>
-                      <th className="py-3.5 px-4">Last Active</th>
-                      <th className="py-3.5 px-4 text-center">Orders Placed</th>
-                      <th className="py-3.5 px-4 text-right">Instant Contact</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-stone-200">
-                    {customers.map((cust) => {
-                      // Match orders by customer name or email
-                      const userOrders = orders.filter(
-                        (o) => o.customerName.toLowerCase() === cust.name.toLowerCase() || (cust.email && o.notes?.includes(cust.email))
-                      );
-                      const totalCustomerSpent = userOrders.reduce((sum, o) => sum + o.price, 0);
+            {/* Section 1: Identification & Pricing */}
+            <div className="space-y-3">
+              <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center space-x-1.5">
+                <Tag className="w-3.5 h-3.5 text-amber-600" />
+                <span>1. Identification & Valuation</span>
+              </h4>
 
-                      return (
-                        <tr key={cust.uid} className="hover:bg-stone-50/80 transition">
-                          <td className="py-3.5 px-4">
-                            <div className="flex items-center space-x-3">
-                              <img
-                                src={cust.photoURL || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=120&q=80'}
-                                alt=""
-                                className="w-10 h-10 rounded-full object-cover border border-stone-200"
-                              />
-                              <div>
-                                <p className="font-bold text-stone-900 text-sm">{cust.name}</p>
-                                <span className="text-[10px] text-emerald-700 bg-emerald-50 px-1.5 py-0.2 rounded font-semibold inline-flex items-center space-x-0.5">
-                                  <span>✓ Google Verified</span>
-                                </span>
-                              </div>
-                            </div>
-                          </td>
-
-                          <td className="py-3.5 px-4 font-mono text-stone-700">
-                            {cust.email}
-                          </td>
-
-                          <td className="py-3.5 px-4">
-                            {cust.phone ? (
-                              <div className="flex items-center space-x-1.5 font-mono font-bold text-stone-900">
-                                <Phone className="w-3.5 h-3.5 text-amber-600 shrink-0" />
-                                <span>{cust.phone}</span>
-                              </div>
-                            ) : (
-                              <span className="text-[11px] text-stone-400 italic">
-                                Pending input
-                              </span>
-                            )}
-                          </td>
-
-                          <td className="py-3.5 px-4 text-stone-500">
-                            {cust.joinedAt}
-                          </td>
-
-                          <td className="py-3.5 px-4 text-stone-500">
-                            {cust.lastLoginAt}
-                          </td>
-
-                          <td className="py-3.5 px-4 text-center">
-                            {userOrders.length > 0 ? (
-                              <span className="font-bold text-emerald-800 bg-emerald-50 px-2.5 py-1 rounded-full text-xs border border-emerald-200">
-                                {userOrders.length} {userOrders.length === 1 ? 'Order' : 'Orders'} (₹{totalCustomerSpent.toLocaleString('en-IN')})
-                              </span>
-                            ) : (
-                              <span className="text-stone-400 font-medium text-[11px]">Browsing / 0 Orders</span>
-                            )}
-                          </td>
-
-                          <td className="py-3.5 px-4 text-right space-x-1.5 whitespace-nowrap">
-                            {cust.phone ? (
-                              <>
-                                <a
-                                  href={`https://wa.me/${cust.phone.replace(/\D/g, '')}?text=${encodeURIComponent(`Hello ${cust.name}! Thank you for registering at JP Farms. How can we assist you with our champion roosters today?`)}`}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="inline-flex items-center space-x-1 text-white bg-emerald-600 hover:bg-emerald-700 px-3 py-1.5 rounded-xl font-bold transition text-xs shadow-xs"
-                                  title="Chat on WhatsApp"
-                                >
-                                  <MessageCircle className="w-3.5 h-3.5" />
-                                  <span>WhatsApp</span>
-                                </a>
-
-                                <a
-                                  href={`tel:${cust.phone.replace(/\s+/g, '')}`}
-                                  className="inline-flex items-center space-x-1 text-stone-700 hover:text-stone-900 bg-stone-100 hover:bg-stone-200 px-2.5 py-1.5 rounded-xl font-bold transition text-xs"
-                                  title="Call Customer"
-                                >
-                                  <Phone className="w-3.5 h-3.5 text-stone-600" />
-                                  <span>Call</span>
-                                </a>
-                              </>
-                            ) : (
-                              <a
-                                href={`mailto:${cust.email}?subject=Welcome%20to%20JP%20Farms%20Heritage%20Roosters`}
-                                className="inline-flex items-center space-x-1 text-stone-600 hover:text-amber-800 bg-stone-100 hover:bg-stone-200 px-3 py-1.5 rounded-xl font-bold transition text-xs"
-                              >
-                                <Mail className="w-3.5 h-3.5 text-stone-500" />
-                                <span>Email</span>
-                              </a>
-                            )}
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* TAB 3: ADD / EDIT ROOSTER FORM */}
-        {activeTab === 'add' && (
-          <div className="max-w-3xl mx-auto bg-white rounded-3xl border border-stone-200 shadow-sm p-6 sm:p-8 space-y-6">
-            
-            <div className="border-b border-stone-200 pb-4">
-              <h2 className="text-xl font-extrabold text-stone-900">
-                {editingRooster ? `Edit Rooster: ${editingRooster.tagId}` : 'Add New Rooster to Farm Showcase'}
-              </h2>
-              <p className="text-xs text-stone-500">
-                Upload photos, walking video link, physical measurements, and bloodline history.
-              </p>
-            </div>
-
-            <form onSubmit={handleSubmit} className="space-y-6">
-              
-              {/* Row 1: Tag ID & Name */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div>
-                  <label className="block text-xs font-bold text-stone-700 mb-1">
-                    Tag ID (Leg Band / Microchip) *
-                  </label>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Tag ID</label>
                   <input
                     type="text"
                     required
-                    placeholder="e.g. JP-AS-105"
                     value={formData.tagId}
                     onChange={(e) => setFormData({ ...formData, tagId: e.target.value })}
-                    className="w-full px-3.5 py-2 text-xs rounded-xl border border-stone-300 font-mono font-bold focus:ring-2 focus:ring-amber-500"
+                    placeholder="e.g. JP-AS-105"
+                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-mono font-bold"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-stone-700 mb-1">
-                    Rooster Name / Title *
-                  </label>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Rooster Name</label>
                   <input
                     type="text"
                     required
-                    placeholder="e.g. Sikandar - Pure Peela Aseel"
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    className="w-full px-3.5 py-2 text-xs rounded-xl border border-stone-300 focus:ring-2 focus:ring-amber-500"
-                  />
-                </div>
-              </div>
-
-              {/* Row 2: Breed & Category & Badge */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div>
-                  <label className="block text-xs font-bold text-stone-700 mb-1">
-                    Breed Description *
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="e.g. Pure Aseel (Peela Bloodline)"
-                    value={formData.breed}
-                    onChange={(e) => setFormData({ ...formData, breed: e.target.value })}
-                    className="w-full px-3.5 py-2 text-xs rounded-xl border border-stone-300 focus:ring-2 focus:ring-amber-500"
+                    placeholder="e.g. Sultan - Sindhi Heavy Stud"
+                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-stone-700 mb-1">
-                    Category Filter *
-                  </label>
-                  <select
-                    value={formData.category}
-                    onChange={(e) => setFormData({ ...formData, category: e.target.value as RoosterCategory })}
-                    className="w-full px-3.5 py-2 text-xs rounded-xl border border-stone-300 focus:ring-2 focus:ring-amber-500"
-                  >
-                    <option value="aseel-peela">Pure Aseel (Peela)</option>
-                    <option value="aseel-kagar">Aseel (Kagar)</option>
-                    <option value="aseel-sindhi">Sindhi Heavy Aseel</option>
-                    <option value="kadaknath">Pure Kadaknath</option>
-                    <option value="country-desi">Country Desi (Natu Kodi)</option>
-                    <option value="breeding-pairs">Breeding Trio / Pair</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold text-stone-700 mb-1">
-                    Exhibition Badge *
-                  </label>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Exhibition Badge</label>
                   <select
                     value={formData.badge}
                     onChange={(e) => setFormData({ ...formData, badge: e.target.value as RoosterBadge })}
-                    className="w-full px-3.5 py-2 text-xs rounded-xl border border-stone-300 focus:ring-2 focus:ring-amber-500 font-bold"
+                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold"
                   >
                     <option value="Champion Line">👑 Champion Line</option>
                     <option value="Farm Stud">⭐ Farm Stud</option>
@@ -1685,522 +1935,338 @@ Our live transport driver will call you 2 hours prior to arrival. Thank you for 
                 </div>
               </div>
 
-              {/* Row 2.5: E-Commerce Pricing */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 rounded-2xl bg-amber-50/60 border border-amber-200/80">
-                <div>
-                  <label className="block text-xs font-bold text-stone-900 mb-1">
-                    Selling Price (₹ INR) *
-                  </label>
-                  <input
-                    type="number"
-                    required
-                    placeholder="e.g. 14500"
-                    value={formData.price}
-                    onChange={(e) => setFormData({ ...formData, price: Number(e.target.value) || 0 })}
-                    className="w-full px-3.5 py-2 text-xs rounded-xl border border-stone-300 font-bold focus:ring-2 focus:ring-amber-500"
-                  />
-                  <span className="text-[10px] text-stone-500">Customer checkout amount (e.g. ₹14,500)</span>
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold text-stone-900 mb-1">
-                    Original / Strikethrough Price (₹ INR)
-                  </label>
-                  <input
-                    type="number"
-                    placeholder="e.g. 18000"
-                    value={formData.originalPrice}
-                    onChange={(e) => setFormData({ ...formData, originalPrice: Number(e.target.value) || 0 })}
-                    className="w-full px-3.5 py-2 text-xs rounded-xl border border-stone-300 focus:ring-2 focus:ring-amber-500"
-                  />
-                  <span className="text-[10px] text-stone-500">Displays discount percentage badge (e.g. 19% OFF)</span>
-                </div>
-              </div>
-
-              {/* Row 3: Physical Specs (Weight, Age, Height, Comb) */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                <div>
-                  <label className="block text-xs font-semibold text-stone-700 mb-1">Weight *</label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="e.g. 3.8 Kg"
-                    value={formData.weight}
-                    onChange={(e) => setFormData({ ...formData, weight: e.target.value })}
-                    className="w-full px-3 py-2 text-xs rounded-xl border border-stone-300"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-semibold text-stone-700 mb-1">Age *</label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="e.g. 14 Months"
-                    value={formData.age}
-                    onChange={(e) => setFormData({ ...formData, age: e.target.value })}
-                    className="w-full px-3 py-2 text-xs rounded-xl border border-stone-300"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-semibold text-stone-700 mb-1">Height *</label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="e.g. 26 Inches"
-                    value={formData.height}
-                    onChange={(e) => setFormData({ ...formData, height: e.target.value })}
-                    className="w-full px-3 py-2 text-xs rounded-xl border border-stone-300"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-semibold text-stone-700 mb-1">Comb Type</label>
-                  <input
-                    type="text"
-                    placeholder="e.g. Pea Comb"
-                    value={formData.combType}
-                    onChange={(e) => setFormData({ ...formData, combType: e.target.value })}
-                    className="w-full px-3 py-2 text-xs rounded-xl border border-stone-300"
-                  />
-                </div>
-              </div>
-
-              {/* Row 4: Color, Temperament, Diet */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div>
-                  <label className="block text-xs font-semibold text-stone-700 mb-1">Color & Plumage</label>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Breed Line</label>
                   <input
                     type="text"
-                    placeholder="e.g. Golden Yellow & Red"
-                    value={formData.colorPattern}
-                    onChange={(e) => setFormData({ ...formData, colorPattern: e.target.value })}
-                    className="w-full px-3 py-2 text-xs rounded-xl border border-stone-300"
+                    required
+                    value={formData.breed}
+                    onChange={(e) => setFormData({ ...formData, breed: e.target.value })}
+                    placeholder="e.g. Pure Aseel (Peela)"
+                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-stone-700 mb-1">Temperament / Stance</label>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Selling Price (₹)</label>
                   <input
-                    type="text"
-                    placeholder="e.g. Dominant, Alert, Upright"
-                    value={formData.temperament}
-                    onChange={(e) => setFormData({ ...formData, temperament: e.target.value })}
-                    className="w-full px-3 py-2 text-xs rounded-xl border border-stone-300"
+                    type="number"
+                    required
+                    value={formData.price}
+                    onChange={(e) => setFormData({ ...formData, price: Number(e.target.value) })}
+                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-mono font-bold"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-stone-700 mb-1">Vaccination Status</label>
-                  <select
-                    value={formData.vaccinationStatus}
-                    onChange={(e) => setFormData({ ...formData, vaccinationStatus: e.target.value as any })}
-                    className="w-full px-3 py-2 text-xs rounded-xl border border-stone-300 font-medium"
-                  >
-                    <option value="Fully Vaccinated">Fully Vaccinated</option>
-                    <option value="Core Vaccines Completed">Core Vaccines Completed</option>
-                    <option value="Dewormed & Certified">Dewormed & Certified</option>
-                  </select>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Original Price (₹)</label>
+                  <input
+                    type="number"
+                    value={formData.originalPrice}
+                    onChange={(e) => setFormData({ ...formData, originalPrice: Number(e.target.value) })}
+                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-mono"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Section 2: Biological & Anatomical Traits */}
+            <div className="space-y-3 pt-3 border-t border-slate-100">
+              <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center space-x-1.5">
+                <Sparkles className="w-3.5 h-3.5 text-amber-600" />
+                <span>2. Physical & Anatomical Specs</span>
+              </h4>
+
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Age</label>
+                  <input
+                    type="text"
+                    value={formData.age}
+                    onChange={(e) => setFormData({ ...formData, age: e.target.value })}
+                    placeholder="e.g. 14 Months"
+                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Weight</label>
+                  <input
+                    type="text"
+                    value={formData.weight}
+                    onChange={(e) => setFormData({ ...formData, weight: e.target.value })}
+                    placeholder="e.g. 3.85 Kg"
+                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Height</label>
+                  <input
+                    type="text"
+                    value={formData.height}
+                    onChange={(e) => setFormData({ ...formData, height: e.target.value })}
+                    placeholder="e.g. 26 Inches"
+                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Comb Type</label>
+                  <input
+                    type="text"
+                    value={formData.combType}
+                    onChange={(e) => setFormData({ ...formData, combType: e.target.value })}
+                    placeholder="e.g. Pea Comb (Compact)"
+                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs"
+                  />
                 </div>
               </div>
 
-              {/* Row 5: Media Uploads (Photos & Walking Video) */}
-              <div className="space-y-3 bg-stone-50 p-4 rounded-2xl border border-stone-200">
-                <h4 className="text-xs font-bold uppercase tracking-wider text-stone-800 flex items-center space-x-1.5">
-                  <Video className="w-4 h-4 text-amber-600" />
-                  <span>Media Uploads (Photos & Walking Video)</span>
-                </h4>
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">Color & Plumage Pattern</label>
+                <input
+                  type="text"
+                  value={formData.colorPattern}
+                  onChange={(e) => setFormData({ ...formData, colorPattern: e.target.value })}
+                  placeholder="e.g. Golden Yellow & Red with Green Tail Sheen"
+                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs"
+                />
+              </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-[11px] font-semibold text-stone-700 mb-1">
-                      Primary Photo (URL or File Upload)
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">Description</label>
+                <textarea
+                  rows={3}
+                  value={formData.description}
+                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs resize-none"
+                />
+              </div>
+            </div>
+
+            {/* Section 3: High-Res Media & Video Documentation */}
+            <div className="space-y-3 pt-3 border-t border-slate-100">
+              <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center space-x-1.5">
+                <ImageIcon className="w-3.5 h-3.5 text-amber-600" />
+                <span>3. HD Media Documentation</span>
+              </h4>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {/* Photo 1 */}
+                <div className="space-y-1.5">
+                  <label className="block text-xs font-bold text-slate-700">Primary Photo URL</label>
+                  <input
+                    type="url"
+                    value={formData.imageUrl1}
+                    onChange={(e) => setFormData({ ...formData, imageUrl1: e.target.value })}
+                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-mono"
+                  />
+                  <div className="flex items-center space-x-2 pt-1">
+                    <label className="cursor-pointer bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold px-3 py-1.5 rounded-lg inline-flex items-center space-x-1">
+                      <Upload className="w-3.5 h-3.5" />
+                      <span>Upload File</span>
+                      <input 
+                        type="file" 
+                        accept="image/*" 
+                        className="hidden" 
+                        onChange={(e) => handleFileUpload(e, 'imageUrl1')} 
+                      />
                     </label>
-                    <input
-                      type="text"
-                      placeholder="Paste Image URL"
-                      value={formData.imageUrl1}
-                      onChange={(e) => setFormData({ ...formData, imageUrl1: e.target.value })}
-                      className="w-full px-3 py-1.5 text-xs rounded-lg border border-stone-300 mb-1"
-                    />
-                    <div className="flex items-center justify-between">
-                      <label className="flex items-center space-x-1 text-[11px] text-amber-700 hover:text-amber-800 cursor-pointer font-medium">
-                        <Upload className="w-3 h-3" />
-                        <span>{uploadingField === 'imageUrl1' ? `Uploading (${uploadProgress}%)...` : 'Upload Photo File'}</span>
-                        <input 
-                          type="file" 
-                          accept="image/*" 
-                          className="hidden" 
-                          disabled={uploadingField === 'imageUrl1'}
-                          onChange={(e) => handleFileUpload(e, 'imageUrl1')} 
-                        />
-                      </label>
-                      {formData.imageUrl1 && (
-                        <span className="text-[10px] text-emerald-600 font-semibold">✓ Photo Ready</span>
-                      )}
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-[11px] font-semibold text-stone-700 mb-1">
-                      Walking / Crowing Video (MP4 URL or File Upload)
-                    </label>
-                    <input
-                      type="text"
-                      placeholder="Paste MP4 / Video URL"
-                      value={formData.videoUrl}
-                      onChange={(e) => setFormData({ ...formData, videoUrl: e.target.value })}
-                      className="w-full px-3 py-1.5 text-xs rounded-lg border border-stone-300 mb-1 font-mono text-[11px]"
-                    />
-                    <div className="flex items-center justify-between">
-                      <label className="flex items-center space-x-1 text-[11px] text-amber-700 hover:text-amber-800 cursor-pointer font-medium">
-                        <Upload className="w-3 h-3" />
-                        <span>{uploadingField === 'videoUrl' ? `Uploading Video (${uploadProgress}%)...` : 'Upload Video File'}</span>
-                        <input 
-                          type="file" 
-                          accept="video/*" 
-                          className="hidden" 
-                          disabled={uploadingField === 'videoUrl'}
-                          onChange={(e) => handleFileUpload(e, 'videoUrl')} 
-                        />
-                      </label>
-                      {formData.videoUrl && (
-                        <span className="text-[10px] text-emerald-600 font-semibold">✓ Video Attached</span>
-                      )}
-                    </div>
+                    {uploadingField === 'imageUrl1' && (
+                      <span className="text-[10px] text-amber-600 font-bold animate-pulse">
+                        Uploading ({uploadProgress}%)...
+                      </span>
+                    )}
                   </div>
                 </div>
-              </div>
 
-              {/* Row 6: Description & Bloodline */}
-              <div className="space-y-3">
-                <div>
-                  <label className="block text-xs font-semibold text-stone-700 mb-1">
-                    Pedigree / Bloodline Lineage Note
-                  </label>
+                {/* Video URL */}
+                <div className="space-y-1.5">
+                  <label className="block text-xs font-bold text-slate-700">Video Demonstration (MP4)</label>
                   <input
-                    type="text"
-                    placeholder="e.g. Direct bloodline of Garuda Champion. High bone density."
-                    value={formData.lineage}
-                    onChange={(e) => setFormData({ ...formData, lineage: e.target.value })}
-                    className="w-full px-3.5 py-2 text-xs rounded-xl border border-stone-300"
+                    type="url"
+                    value={formData.videoUrl}
+                    onChange={(e) => setFormData({ ...formData, videoUrl: e.target.value })}
+                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-mono"
                   />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-semibold text-stone-700 mb-1">
-                    Full Description & Stance Notes
-                  </label>
-                  <textarea
-                    rows={3}
-                    placeholder="Describe temperament, crowing frequency, comb formation, gait..."
-                    value={formData.description}
-                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                    className="w-full px-3.5 py-2 text-xs rounded-xl border border-stone-300"
-                  ></textarea>
+                  <div className="flex items-center space-x-2 pt-1">
+                    <label className="cursor-pointer bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold px-3 py-1.5 rounded-lg inline-flex items-center space-x-1">
+                      <Video className="w-3.5 h-3.5" />
+                      <span>Upload Video File</span>
+                      <input 
+                        type="file" 
+                        accept="video/*" 
+                        className="hidden" 
+                        onChange={(e) => handleFileUpload(e, 'videoUrl')} 
+                      />
+                    </label>
+                  </div>
                 </div>
               </div>
+            </div>
 
-              {/* Submit Buttons */}
-              <div className="flex items-center justify-end space-x-3 pt-4 border-t border-stone-200">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setEditingRooster(null);
-                    setActiveTab('roosters');
-                  }}
-                  className="px-5 py-2.5 text-xs font-semibold text-stone-600 hover:text-stone-900"
-                >
-                  Cancel
-                </button>
+            {/* Submit Action */}
+            <div className="pt-4 border-t border-slate-200 flex items-center justify-end space-x-3">
+              <button
+                type="button"
+                onClick={() => setActiveTab('roosters')}
+                className="px-4 py-2.5 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50 text-xs font-bold"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 via-amber-600 to-amber-500 text-stone-950 font-black text-xs shadow-md active:scale-95 transition"
+              >
+                {editingRooster ? 'Save Changes' : 'Publish Rooster to Catalogue'}
+              </button>
+            </div>
 
-                <button
-                  type="submit"
-                  className="bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-stone-950 font-bold px-6 py-2.5 rounded-xl text-xs shadow-md transition"
-                >
-                  {editingRooster ? 'Update Rooster Listing' : 'Publish Rooster to Showcase'}
-                </button>
-              </div>
-
-            </form>
-
-          </div>
+          </form>
         )}
 
       </main>
 
-      {/* PRINTABLE LIVE CRATE SHIPPING PASS & VETERINARY CERTIFICATE MODAL */}
+      {/* =======================================================================
+         4. BIOLOGICAL DISPATCH BILL / INVOICE PRINT MODAL
+         ======================================================================= */}
       {printingOrder && (
-        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
-          <div className="bg-white text-stone-900 rounded-3xl max-w-3xl w-full p-6 sm:p-8 shadow-2xl relative border border-stone-300 my-8 space-y-6">
+        <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-white text-stone-900 rounded-3xl max-w-2xl w-full p-6 sm:p-8 shadow-2xl relative space-y-6">
             
-            {/* Top Toolbar (Hidden during print) */}
-            <div className="flex items-center justify-between pb-4 border-b border-stone-200 print:hidden">
-              <div className="flex items-center space-x-2">
-                <ShieldCheck className="w-5 h-5 text-emerald-600" />
-                <h3 className="font-extrabold text-stone-900 text-sm sm:text-base">
-                  Live Animal Transit Pass & Veterinary Health Slip
-                </h3>
+            <div className="flex items-center justify-between pb-4 border-b border-stone-200">
+              <div className="flex items-center space-x-2 text-xs font-bold text-slate-500">
+                <Printer className="w-4 h-4 text-amber-600" />
+                <span>OFFICIAL LIVE ANIMAL TRANSIT CONSIGNMENT</span>
               </div>
+              <button
+                onClick={() => setPrintingOrder(null)}
+                className="p-1 rounded-lg text-slate-400 hover:text-slate-700"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
 
-              <div className="flex items-center space-x-2">
-                <button
-                  onClick={() => window.print()}
-                  className="inline-flex items-center space-x-1.5 bg-amber-500 hover:bg-amber-400 text-stone-950 font-black px-4 py-2 rounded-xl text-xs shadow-md transition"
-                >
-                  <Printer className="w-4 h-4" />
-                  <span>Print Slip / Save PDF</span>
-                </button>
-
-                <button
-                  onClick={() => setPrintingOrder(null)}
-                  className="p-2 text-stone-400 hover:text-stone-700 rounded-xl hover:bg-stone-100 transition"
-                  title="Close Pass"
-                >
-                  <X className="w-5 h-5" />
-                </button>
+            <div className="p-4 rounded-2xl bg-amber-50/50 border border-amber-200 text-xs space-y-2">
+              <div className="flex justify-between font-bold">
+                <span>Consignment Order ID:</span>
+                <span className="font-mono text-stone-950">#{printingOrder.id}</span>
+              </div>
+              <div className="flex justify-between">
+                <span>Customer:</span>
+                <span className="font-bold text-stone-900">{printingOrder.customerName}</span>
+              </div>
+              <div className="flex justify-between">
+                <span>Phone:</span>
+                <span className="font-mono">{printingOrder.phoneNumber}</span>
+              </div>
+              <div className="flex justify-between">
+                <span>Destination:</span>
+                <span>{printingOrder.deliveryAddress}, {printingOrder.city}</span>
+              </div>
+              <div className="flex justify-between font-bold text-emerald-800 pt-1 border-t border-amber-200">
+                <span>Consignment Value:</span>
+                <span>₹{printingOrder.price.toLocaleString('en-IN')}</span>
               </div>
             </div>
 
-            {/* Official Pass Document Content (Printable Area) */}
-            <div className="bg-white p-6 rounded-2xl border-2 border-stone-900 space-y-6 font-sans">
-              
-              {/* Document Header */}
-              <div className="flex items-start justify-between border-b-2 border-stone-900 pb-4">
-                <div>
-                  <div className="flex items-center space-x-2">
-                    <span className="text-xl font-black tracking-tight text-stone-950">JP FARMS</span>
-                    <span className="text-[10px] uppercase font-bold tracking-widest px-1.5 py-0.5 rounded bg-stone-900 text-amber-400">
-                      EST. 2016
-                    </span>
-                  </div>
-                  <p className="text-xs font-semibold text-stone-600">Heritage Desi Rooster Conservation & Championship Breeding Estate</p>
-                  <p className="text-[11px] text-stone-500">Helpline: +91 1234567890 • info@jpfarmsofficial.com • Andhra Pradesh, India</p>
-                </div>
+            <div className="p-3 bg-stone-900 text-amber-300 rounded-xl text-[11px] font-bold">
+              ⚡ LIVE BIRD PROTOCOL: Store crate upright in ventilated compartment. Seed & hydration trays secured.
+            </div>
 
-                <div className="text-right">
-                  <span className="inline-block bg-emerald-100 text-emerald-950 text-[10px] font-black px-2.5 py-1 rounded border border-emerald-300 uppercase tracking-wider">
-                    ✓ BIO-SECURE TRANSIT CLEARED
-                  </span>
-                  <p className="font-mono text-xs font-black text-stone-900 mt-1">CONSIGNMENT #{printingOrder.id}</p>
-                  <p className="text-[10px] text-stone-400">{printingOrder.orderDate}</p>
-                </div>
-              </div>
-
-              {/* Consignee & Dispatch Routing */}
-              <div className="grid grid-cols-2 gap-4 text-xs bg-stone-50 p-4 rounded-xl border border-stone-200">
-                <div>
-                  <span className="block text-[10px] font-extrabold uppercase tracking-wider text-stone-400">
-                    CONSIGNEE (BUYER) DETAILS
-                  </span>
-                  <p className="font-black text-stone-950 text-sm mt-0.5">{printingOrder.customerName}</p>
-                  <p className="font-mono font-bold text-stone-700 mt-0.5">{printingOrder.phoneNumber}</p>
-                  <p className="text-stone-800 mt-1 leading-snug">
-                    {printingOrder.deliveryAddress}, {printingOrder.city}, {printingOrder.state} - {printingOrder.pincode}
-                  </p>
-                </div>
-
-                <div>
-                  <span className="block text-[10px] font-extrabold uppercase tracking-wider text-stone-400">
-                    DISPATCH & PAYMENT MANIFEST
-                  </span>
-                  <p className="font-bold text-stone-900 mt-0.5">
-                    Mode: {printingOrder.deliveryType === 'doorstep_live_crate' ? '🚚 Climate-Controlled Live Animal Crate' : '🏡 Farm Gate Pickup'}
-                  </p>
-                  <p className="font-bold text-stone-900 mt-0.5">
-                    Payment Method: {printingOrder.paymentMethod === 'cod' ? 'Cash on Delivery (Pay at Unboxing)' : 'Instant UPI / Prepaid'}
-                  </p>
-                  <p className="font-black text-emerald-800 text-base mt-1">
-                    Total Amount: ₹{printingOrder.price.toLocaleString('en-IN')}
-                  </p>
-                  {printingOrder.notes && (
-                    <p className="text-[11px] text-stone-600 italic mt-0.5">Note: &ldquo;{printingOrder.notes}&rdquo;</p>
-                  )}
-                </div>
-              </div>
-
-              {/* Consigned Birds Table */}
-              <div className="space-y-2">
-                <span className="block text-[10px] font-extrabold uppercase tracking-wider text-stone-500">
-                  CONSIGNED BIRDS INVENTORY
-                </span>
-                <div className="overflow-x-auto">
-                  <table className="w-full text-xs text-left border border-stone-200 rounded-xl overflow-hidden min-w-[500px]">
-                    <thead className="bg-stone-100 text-stone-700 uppercase font-bold text-[10px]">
-                      <tr>
-                        <th className="py-2 px-3">Tag ID</th>
-                        <th className="py-2 px-3">Rooster Name</th>
-                        <th className="py-2 px-3">Heritage Breed</th>
-                        <th className="py-2 px-3 text-center">Qty</th>
-                        <th className="py-2 px-3 text-right">Price</th>
-                        <th className="py-2 px-3 text-right">Avian Health Exam</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-stone-200">
-                      {printingOrder.items && printingOrder.items.length > 0 ? (
-                        printingOrder.items.map((item, idx) => (
-                          <tr key={idx} className="bg-white">
-                            <td className="py-2 px-3 font-mono font-bold text-amber-800">#{item.roosterTag}</td>
-                            <td className="py-2 px-3 font-bold text-stone-900">{item.roosterName}</td>
-                            <td className="py-2 px-3 text-stone-600">{item.roosterBreed}</td>
-                            <td className="py-2 px-3 text-center font-bold">{item.quantity}</td>
-                            <td className="py-2 px-3 text-right font-bold text-stone-900">₹{(item.price * item.quantity).toLocaleString('en-IN')}</td>
-                            <td className="py-2 px-3 text-right text-emerald-700 font-extrabold text-[11px]">✓ PASSED (Active)</td>
-                          </tr>
-                        ))
-                      ) : (
-                        <tr className="bg-white">
-                          <td className="py-2 px-3 font-mono font-bold text-amber-800">#{printingOrder.roosterTag}</td>
-                          <td className="py-2 px-3 font-bold text-stone-900">{printingOrder.roosterName}</td>
-                          <td className="py-2 px-3 text-stone-600">{printingOrder.roosterBreed}</td>
-                          <td className="py-2 px-3 text-center font-bold">1</td>
-                          <td className="py-2 px-3 text-right font-bold text-stone-900">₹{printingOrder.price.toLocaleString('en-IN')}</td>
-                          <td className="py-2 px-3 text-right text-emerald-700 font-extrabold text-[11px]">✓ PASSED (Active)</td>
-                        </tr>
-                      )}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-
-              {/* Veterinary Clearance Box */}
-              <div className="p-3.5 bg-emerald-50/70 border border-emerald-200 rounded-xl text-xs space-y-1">
-                <div className="flex items-center space-x-1.5 text-emerald-900 font-extrabold">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                  <span>VETERINARY HEALTH & BIO-SECURITY CLEARANCE</span>
-                </div>
-                <p className="text-[11px] text-emerald-950 leading-relaxed">
-                  The roosters documented in this consignment have undergone physical examination prior to boxing. Vaccinated against <strong>Ranikhet (ND-Lasota)</strong>, <strong>Fowl Pox</strong>, and <strong>Infectious Bursal Disease (IBD)</strong> with verified deworming schedule. Certified 100% free from communicable avian diseases.
-                </p>
-              </div>
-
-              {/* Live Animal Transport Instructions */}
-              <div className="p-3 bg-amber-50 border border-amber-300 rounded-xl text-xs space-y-1">
-                <p className="font-extrabold text-amber-950 uppercase tracking-wide flex items-center space-x-1.5">
-                  <AlertCircle className="w-3.5 h-3.5 text-amber-600" />
-                  <span>CRITICAL LIVE BIRD TRANSIT PROTOCOL</span>
-                </p>
-                <ul className="text-[10px] text-amber-900 list-disc list-inside space-y-0.5 font-medium">
-                  <li>Keep crate upright and well-ventilated at all times. Do not cover air vents.</li>
-                  <li>Do not stack heavy items or cargo on top of this live bird carrier.</li>
-                  <li>Store in shaded vehicle compartment between 20°C to 30°C. Protect from rain and direct midday sun.</li>
-                  <li>Seed and water sponge trays are affixed inside. Handle with care.</li>
-                </ul>
-              </div>
-
-              {/* Signature Block */}
-              <div className="grid grid-cols-2 gap-8 pt-4 border-t border-stone-200 text-xs">
-                <div>
-                  <p className="text-[10px] text-stone-400 uppercase font-bold">Consignment Inspector</p>
-                  <p className="font-bold text-stone-900 mt-6 pt-1 border-t border-stone-300">JP Farms Logistics Officer</p>
-                </div>
-                <div className="text-right">
-                  <p className="text-[10px] text-stone-400 uppercase font-bold">Veterinary Clearance Officer</p>
-                  <p className="font-bold text-stone-900 mt-6 pt-1 border-t border-stone-300">Certified Avian Specialist</p>
-                </div>
-              </div>
-
+            <div className="flex items-center justify-end space-x-3 pt-3 border-t border-slate-200">
+              <button
+                type="button"
+                onClick={() => setPrintingOrder(null)}
+                className="px-4 py-2 rounded-xl text-xs font-bold text-slate-600 bg-slate-100"
+              >
+                Close
+              </button>
+              <button
+                type="button"
+                onClick={() => window.print()}
+                className="px-5 py-2 rounded-xl text-xs font-black bg-stone-950 text-white flex items-center space-x-1.5 shadow-md"
+              >
+                <Printer className="w-3.5 h-3.5" />
+                <span>Print Official Slip</span>
+              </button>
             </div>
 
           </div>
         </div>
       )}
 
-      {/* REJECT ORDER WITH DOCUMENTED REASON MODAL */}
+      {/* =======================================================================
+         5. REJECT ORDER WITH REASON MODAL
+         ======================================================================= */}
       {rejectingOrder && (
-        <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto animate-in fade-in duration-200">
-          <div className="bg-white text-stone-900 rounded-3xl max-w-lg w-full p-6 sm:p-7 shadow-2xl relative border border-rose-200 space-y-5 animate-in zoom-in-95 duration-200">
-            {/* Modal Header */}
+        <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-white text-stone-900 rounded-3xl max-w-lg w-full p-6 shadow-2xl relative border border-rose-200 space-y-4">
+            
             <div className="flex items-start justify-between pb-3 border-b border-stone-200">
-              <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 rounded-2xl bg-rose-100 text-rose-600 flex items-center justify-center font-bold">
-                  <X className="w-5 h-5" />
-                </div>
-                <div>
-                  <h3 className="font-black text-stone-900 text-base">Reject Customer Order</h3>
-                  <p className="text-xs text-stone-500 font-mono">Order #{rejectingOrder.id} • {rejectingOrder.customerName}</p>
-                </div>
+              <div>
+                <h3 className="font-black text-stone-900 text-base">Reject Customer Order</h3>
+                <p className="text-xs text-stone-500 font-mono">Order #{rejectingOrder.id} • {rejectingOrder.customerName}</p>
               </div>
               <button
                 type="button"
                 onClick={() => setRejectingOrder(null)}
-                className="p-1.5 text-stone-400 hover:text-stone-700 hover:bg-stone-100 rounded-xl transition"
+                className="p-1 text-stone-400 hover:text-stone-700"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            {/* Order Brief Summary */}
-            <div className="bg-stone-50 rounded-2xl p-3.5 border border-stone-200 text-xs space-y-1.5">
-              <div className="flex justify-between text-stone-600">
-                <span>Consigned Bird:</span>
-                <span className="font-bold text-stone-900">{rejectingOrder.roosterName}</span>
-              </div>
-              <div className="flex justify-between text-stone-600">
-                <span>Destination:</span>
-                <span className="font-medium text-stone-900">{rejectingOrder.city}, {rejectingOrder.state}</span>
-              </div>
-              <div className="flex justify-between text-stone-600">
-                <span>Payable Amount:</span>
-                <span className="font-bold text-emerald-700">₹{rejectingOrder.price.toLocaleString('en-IN')}</span>
-              </div>
-            </div>
-
-            {/* Select Rejection Reason */}
-            <div className="space-y-3">
+            <div className="space-y-2">
               <label className="block text-xs font-bold text-stone-800 uppercase tracking-wide">
-                Select Reason for Rejection <span className="text-rose-500">*</span>
+                Select Reason for Rejection
               </label>
 
-              <div className="space-y-2">
-                {[
-                  'Destination address exceeds 20 km live animal delivery radius',
-                  'Selected rooster is currently undergoing 14-day avian quarantine',
-                  'Customer requested cancellation or duplicate order placed',
-                  'Customer unreachable for doorstep bio-secure delivery confirmation',
-                  'Other (specify custom reason below)',
-                ].map((reason) => (
-                  <label
-                    key={reason}
-                    className={`flex items-start space-x-3 p-3 rounded-xl border text-xs font-medium cursor-pointer transition ${
-                      selectedRejectReason === reason
-                        ? 'bg-rose-50/80 border-rose-300 text-rose-950 font-bold ring-1 ring-rose-300'
-                        : 'bg-white border-stone-200 text-stone-700 hover:bg-stone-50'
-                    }`}
-                  >
-                    <input
-                      type="radio"
-                      name="rejectReason"
-                      value={reason}
-                      checked={selectedRejectReason === reason}
-                      onChange={() => setSelectedRejectReason(reason)}
-                      className="mt-0.5 text-rose-600 focus:ring-rose-500 cursor-pointer"
-                    />
-                    <span>{reason}</span>
-                  </label>
-                ))}
-              </div>
+              {[
+                'Destination address exceeds 20 km live animal delivery radius',
+                'Selected rooster is currently undergoing 14-day avian quarantine',
+                'Customer requested cancellation or duplicate order placed',
+                'Customer unreachable for doorstep bio-secure delivery confirmation',
+                'Other (specify custom reason below)',
+              ].map((reason) => (
+                <label
+                  key={reason}
+                  className={`flex items-start space-x-2.5 p-2.5 rounded-xl border text-xs cursor-pointer transition ${
+                    selectedRejectReason === reason
+                      ? 'bg-rose-50 border-rose-300 text-rose-950 font-bold'
+                      : 'bg-white border-stone-200 text-stone-700 hover:bg-stone-50'
+                  }`}
+                >
+                  <input
+                    type="radio"
+                    name="rejectReason"
+                    value={reason}
+                    checked={selectedRejectReason === reason}
+                    onChange={() => setSelectedRejectReason(reason)}
+                    className="mt-0.5 text-rose-600 cursor-pointer"
+                  />
+                  <span>{reason}</span>
+                </label>
+              ))}
 
               {selectedRejectReason === 'Other (specify custom reason below)' && (
-                <div className="pt-2">
-                  <textarea
-                    rows={3}
-                    placeholder="Type the specific reason why this order cannot be fulfilled..."
-                    value={customRejectReason}
-                    onChange={(e) => setCustomRejectReason(e.target.value)}
-                    className="w-full p-3 text-xs border border-stone-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-rose-500"
-                  />
-                </div>
+                <textarea
+                  rows={2}
+                  placeholder="Specify custom reason..."
+                  value={customRejectReason}
+                  onChange={(e) => setCustomRejectReason(e.target.value)}
+                  className="w-full p-2.5 text-xs border border-stone-300 rounded-xl"
+                />
               )}
             </div>
 
-            {/* Action Buttons */}
             <div className="flex items-center justify-end space-x-2 pt-3 border-t border-stone-200">
               <button
                 type="button"
                 onClick={() => setRejectingOrder(null)}
-                className="px-4 py-2 text-xs font-bold text-stone-600 hover:text-stone-900 bg-stone-100 hover:bg-stone-200 rounded-xl transition"
+                className="px-4 py-2 text-xs font-bold text-stone-600 bg-stone-100 rounded-xl"
               >
                 Cancel
               </button>
@@ -2214,11 +2280,12 @@ Our live transport driver will call you 2 hours prior to arrival. Thank you for 
                   rejectOrder(rejectingOrder.id, effectiveReason);
                   setRejectingOrder(null);
                 }}
-                className="px-5 py-2.5 text-xs font-black text-white bg-rose-600 hover:bg-rose-500 rounded-xl transition active:scale-95 shadow-md shadow-rose-600/20"
+                className="px-5 py-2 text-xs font-black text-white bg-rose-600 hover:bg-rose-500 rounded-xl active:scale-95 shadow-md"
               >
-                Confirm Rejection & Notify Buyer
+                Confirm Rejection
               </button>
             </div>
+
           </div>
         </div>
       )}
