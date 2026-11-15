@@ -1116,9 +1116,14 @@ export const AdminPanel: React.FC = () => {
 
           {/* Card 2: Live Animal Orders */}
           <div 
-            onClick={() => setActiveTab('orders')}
+            onClick={() => {
+              setActiveTab('orders');
+              setOrderStatusFilter('all');
+            }}
             className={`p-3.5 sm:p-5 rounded-2xl bg-white border transition shadow-xs cursor-pointer ${
-              activeTab === 'orders' ? 'border-amber-500 ring-2 ring-amber-500/10' : 'border-slate-200 hover:border-slate-300'
+              activeTab === 'orders' && orderStatusFilter !== 'delivered'
+                ? 'border-amber-500 ring-2 ring-amber-500/10' 
+                : 'border-slate-200 hover:border-slate-300'
             }`}
           >
             <div className="flex items-center justify-between mb-2 sm:mb-3">
@@ -1143,8 +1148,15 @@ export const AdminPanel: React.FC = () => {
 
           {/* Card 3: Gross Order Value */}
           <div 
-            onClick={() => setActiveTab('orders')}
-            className="p-3.5 sm:p-5 rounded-2xl bg-white border border-slate-200 shadow-xs"
+            onClick={() => {
+              setActiveTab('orders');
+              setOrderStatusFilter('delivered');
+            }}
+            className={`p-3.5 sm:p-5 rounded-2xl bg-white border transition shadow-xs cursor-pointer ${
+              activeTab === 'orders' && orderStatusFilter === 'delivered'
+                ? 'border-sky-500 ring-2 ring-sky-500/20 shadow-xs'
+                : 'border-slate-200 hover:border-slate-300'
+            }`}
           >
             <div className="flex items-center justify-between mb-2 sm:mb-3">
               <span className="text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider">
@@ -1154,8 +1166,13 @@ export const AdminPanel: React.FC = () => {
                 <Banknote className="w-4 h-4 text-sky-600" />
               </div>
             </div>
-            <div className="text-xl sm:text-2xl font-black text-slate-950">
-              ₹{totalRevenue.toLocaleString('en-IN')}
+            <div className="text-xl sm:text-2xl font-black text-slate-950 flex items-baseline justify-between">
+              <span>₹{totalRevenue.toLocaleString('en-IN')}</span>
+              {activeTab === 'orders' && orderStatusFilter === 'delivered' && (
+                <span className="text-[9px] font-black uppercase text-sky-700 bg-sky-100 px-2 py-0.5 rounded-full">
+                  Fulfilled
+                </span>
+              )}
             </div>
             <p className="text-[10px] sm:text-[11px] text-slate-500 font-medium truncate mt-1">
               <strong className="text-emerald-700 font-bold">{deliveredOrdersCount}</strong> Fulfilled • {dispatchedOrdersCount} In Transit
