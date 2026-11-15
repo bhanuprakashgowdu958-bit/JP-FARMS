@@ -61,6 +61,7 @@ import { generateWhatsAppLink } from '@/lib/utils';
 import { FARM_INFO, ROOSTER_CATEGORIES_META, BreedCategoryMeta } from '@/lib/data';
 import { isFirebaseConfigured, db } from '@/lib/firebase';
 import { uploadRoosterMediaToFirebase } from '@/lib/firebaseService';
+import { compressImageToDataUrl } from '@/lib/imageCompressor';
 
 export const AdminPanel: React.FC = () => {
   const { 
@@ -348,38 +349,58 @@ export const AdminPanel: React.FC = () => {
     const file = e.target.files?.[0];
     if (!file) return;
 
+    // Photos: Automatic zero-cost compression for direct Cloud Firestore storage
+    if (field === 'imageUrl1' || field === 'imageUrl2') {
+      setUploadingField(field);
+      setUploadProgress(40);
+      try {
+        const cloudDataUrl = await compressImageToDataUrl(file);
+        setUploadProgress(100);
+        setFormData(prev => ({ ...prev, [field]: cloudDataUrl }));
+      } catch (err: any) {
+        console.warn('Canvas compression fallback to direct FileReader:', err);
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+          const res = ev.target?.result;
+          if (typeof res === 'string') {
+            setFormData(prev => ({ ...prev, [field]: res }));
+          }
+        };
+        reader.readAsDataURL(file);
+      } finally {
+        setTimeout(() => {
+          setUploadingField(null);
+          setUploadProgress(0);
+        }, 300);
+      }
+      return;
+    }
+
+    // Video uploads:
     const localPreviewUrl = URL.createObjectURL(file);
     setFormData(prev => ({ ...prev, [field]: localPreviewUrl }));
     setUploadingField(field);
-    setUploadProgress(15);
+    setUploadProgress(20);
 
     try {
-      if (isFirebaseConfigured) {
-        const folder = field === 'videoUrl' ? 'rooster-videos' : 'rooster-photos';
-        const downloadUrl = await uploadRoosterMediaToFirebase(file, folder, (percent) => {
-          setUploadProgress(percent);
-        });
-        setFormData(prev => ({ ...prev, [field]: downloadUrl }));
-      } else {
-        const uploadData = new FormData();
-        uploadData.append('file', file);
-        const uploadHeaders: Record<string, string> = {};
-        const adminToken = typeof window !== 'undefined' ? sessionStorage.getItem('jp_farms_admin_token') : null;
-        if (adminToken) {
-          uploadHeaders['x-admin-token'] = adminToken;
-        }
-        const res = await fetch('/api/upload', {
-          method: 'POST',
-          headers: uploadHeaders,
-          body: uploadData,
-        });
-        const data = await res.json();
-        if (data.success && data.url) {
-          setFormData(prev => ({ ...prev, [field]: data.url }));
-        }
+      const uploadData = new FormData();
+      uploadData.append('file', file);
+      const uploadHeaders: Record<string, string> = {};
+      const adminToken = typeof window !== 'undefined' ? sessionStorage.getItem('jp_farms_admin_token') : null;
+      if (adminToken) {
+        uploadHeaders['x-admin-token'] = adminToken;
+      }
+      const res = await fetch('/api/upload', {
+        method: 'POST',
+        headers: uploadHeaders,
+        body: uploadData,
+      });
+      const data = await res.json();
+      if (data.success && data.url) {
+        setFormData(prev => ({ ...prev, [field]: data.url }));
       }
     } catch (err: any) {
-      console.warn('Upload fallback to preview:', err);
+      console.warn('Video upload fallback to preview:', err);
     } finally {
       setUploadingField(null);
       setUploadProgress(0);
