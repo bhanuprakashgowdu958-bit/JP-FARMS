@@ -79,6 +79,24 @@ export function saveStoredInquiries(inquiries: CustomerInquiry[]): void {
   }
 }
 
+function getAdminAuthHeaders(): Record<string, string> {
+  const headers: Record<string, string> = { 
+    'Content-Type': 'application/json',
+  };
+  if (typeof window !== 'undefined') {
+    const adminToken = sessionStorage.getItem('jp_farms_admin_token');
+    if (adminToken) {
+      headers['x-admin-token'] = adminToken;
+      headers['authorization'] = `Bearer ${adminToken}`;
+    }
+    const adminUser = getStoredUser();
+    if (adminUser?.email) {
+      headers['x-admin-email'] = adminUser.email;
+    }
+  }
+  return headers;
+}
+
 export function useRoosters() {
   const [roosters, setRoosters] = useState<Rooster[]>(INITIAL_ROOSTERS);
   const [isLoaded, setIsLoaded] = useState(false);
@@ -145,10 +163,7 @@ export function useRoosters() {
       try {
         await fetch('/api/roosters', {
           method: 'POST',
-          headers: { 
-            'Content-Type': 'application/json',
-            'x-admin-email': getStoredUser()?.email || '',
-          },
+          headers: getAdminAuthHeaders(),
           body: JSON.stringify(created),
         });
       } catch (e) {
@@ -175,10 +190,7 @@ export function useRoosters() {
       try {
         await fetch('/api/roosters', {
           method: 'PUT',
-          headers: { 
-            'Content-Type': 'application/json',
-            'x-admin-email': getStoredUser()?.email || '',
-          },
+          headers: getAdminAuthHeaders(),
           body: JSON.stringify({ id, ...updates }),
         });
       } catch (e) {
@@ -203,9 +215,7 @@ export function useRoosters() {
       try {
         await fetch(`/api/roosters?id=${encodeURIComponent(id)}`, {
           method: 'DELETE',
-          headers: {
-            'x-admin-email': getStoredUser()?.email || '',
-          },
+          headers: getAdminAuthHeaders(),
         });
       } catch (e) {
         console.error('Failed to sync rooster deletion to server', e);
@@ -308,15 +318,9 @@ export function useInquiries() {
     setInquiries(updated);
 
     try {
-      const adminUser = getStoredUser();
-      const patchHeaders: Record<string, string> = { 'Content-Type': 'application/json' };
-      if (adminUser?.email) {
-        patchHeaders['x-admin-email'] = adminUser.email;
-      }
-
       await fetch('/api/inquiries', {
         method: 'PATCH',
-        headers: patchHeaders,
+        headers: getAdminAuthHeaders(),
         body: JSON.stringify({ id, status }),
       });
     } catch (e) {
