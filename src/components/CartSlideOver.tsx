@@ -19,7 +19,8 @@ import {
   AlertTriangle,
   Navigation,
   Loader2,
-  Map
+  Map,
+  MessageCircle
 } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import confetti from 'canvas-confetti';
@@ -30,7 +31,7 @@ import { GoogleIcon } from './GoogleSignInButton';
 import { PhoneCaptureModal } from '@/components/PhoneCaptureModal';
 import { AddressCaptureModal } from '@/components/AddressCaptureModal';
 import { FARM_INFO, FARM_LOCATION } from '@/lib/data';
-import { calculateDistanceKm } from '@/lib/utils';
+import { calculateDistanceKm, generateWhatsAppLink } from '@/lib/utils';
 import { RoosterOrder } from '@/types/rooster';
 import type { LocationSelectResult } from './DeliveryZoneMap';
 
@@ -286,6 +287,12 @@ export const CartSlideOver: React.FC = () => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
+
+  const roosterTags = items.map((i) => `#${i.rooster.tagId} (${i.rooster.name})`).join(', ');
+  const whatsAppTransitUrl = generateWhatsAppLink({
+    phone: FARM_INFO.whatsapp,
+    customMessage: `Hello JP Farms! 🐓 I am ordering rooster(s) ${roosterTags}. My delivery location is ~${deliveryDistanceKm || '147'} km from your estate (outside the 20 km doorstep zone). Can we arrange special inter-district crated transit or discuss farm pickup schedule?`,
+  });
 
   const handleProceedToCheckout = () => {
     if (items.length === 0) return;
@@ -814,6 +821,85 @@ export const CartSlideOver: React.FC = () => {
                     </div>
                   )}
 
+                  {/* Fulfillment Method Selection: Doorstep vs Farm Pickup */}
+                  <div>
+                    <label className="block text-slate-700 font-semibold mb-1 text-xs">
+                      Fulfillment Method <span className="text-rose-500">*</span>
+                    </label>
+                    <div className="grid grid-cols-2 gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setDeliveryType('doorstep_live_crate')}
+                        className={`p-2.5 rounded-xl border text-left transition flex flex-col justify-between cursor-pointer ${
+                          deliveryType === 'doorstep_live_crate'
+                            ? 'border-amber-500 bg-amber-50/80 ring-2 ring-amber-500/20'
+                            : 'border-slate-200 bg-white hover:bg-slate-50'
+                        }`}
+                      >
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs font-bold text-slate-900 flex items-center space-x-1">
+                            <span>🚚 Doorstep Transit</span>
+                          </span>
+                          {deliveryDistanceKm !== null && deliveryDistanceKm > FARM_LOCATION.maxDeliveryRadiusKm && (
+                            <span className="text-[9px] font-bold text-rose-600 bg-rose-100 px-1.5 py-0.5 rounded">
+                              &gt;20 km
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-[10px] text-slate-500 mt-1">
+                          Live AC Crate (Max 20 km)
+                        </p>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => setDeliveryType('farm_pickup')}
+                        className={`p-2.5 rounded-xl border text-left transition flex flex-col justify-between cursor-pointer ${
+                          deliveryType === 'farm_pickup'
+                            ? 'border-emerald-600 bg-emerald-50/80 ring-2 ring-emerald-500/20'
+                            : 'border-slate-200 bg-white hover:bg-slate-50'
+                        }`}
+                      >
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs font-bold text-slate-900 flex items-center space-x-1">
+                            <span>🏡 Farm Pickup</span>
+                          </span>
+                          <span className="text-[9px] font-extrabold text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded">
+                            FREE
+                          </span>
+                        </div>
+                        <p className="text-[10px] text-slate-500 mt-1">
+                          Visit Estate, Meet Breeder & Take Bird
+                        </p>
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Farm Pickup Details Card */}
+                  {deliveryType === 'farm_pickup' && (
+                    <div className="bg-gradient-to-br from-emerald-50 via-teal-50 to-emerald-50 border border-emerald-300 rounded-xl p-3.5 space-y-2 shadow-xs">
+                      <div className="flex items-start space-x-2.5">
+                        <div className="w-7 h-7 rounded-lg bg-emerald-600 text-white flex items-center justify-center shrink-0 mt-0.5 shadow-xs">
+                          <CheckCircle2 className="w-4 h-4" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs font-black text-emerald-950">
+                            Farm Estate Pickup Selected (100% Free • All Distances Welcome)
+                          </p>
+                          <p className="text-[11px] text-emerald-800 leading-snug mt-0.5">
+                            Your bird will be biologically inspected, vaccinated, and kept in a private sanitized reservation coop awaiting your visit.
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="bg-white/90 rounded-lg p-2.5 text-[11px] text-slate-700 space-y-1 border border-emerald-200 shadow-2xs">
+                        <p><strong>📍 Pickup Estate:</strong> JP Farms Heritage Estate, Kurapalli, Bangarupalem Mandal, Chittoor Dist, AP - 517416</p>
+                        <p><strong>⏰ Visiting Hours:</strong> Open Daily (9:00 AM - 7:00 PM)</p>
+                        <p><strong>🎁 Inclusions:</strong> Complimentary live travel crate, health certificate & personal tour with our master breeder.</p>
+                      </div>
+                    </div>
+                  )}
+
                   {deliveryType === 'doorstep_live_crate' && (
                     <>
                       {hasAddress ? (
@@ -882,17 +968,39 @@ export const CartSlideOver: React.FC = () => {
                                   </span>
                                 </div>
                               ) : (
-                                <div className="mt-2 bg-gradient-to-br from-rose-50 via-amber-50 to-orange-50 border-2 border-dashed border-rose-300 rounded-xl p-3 shadow-xs">
+                                <div className="mt-2 bg-gradient-to-br from-rose-50 via-amber-50 to-orange-50 border-2 border-rose-300 rounded-xl p-3.5 shadow-sm space-y-2.5">
                                   <div className="flex items-start space-x-2">
                                     <AlertTriangle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
                                     <div className="flex-1 min-w-0">
                                       <p className="text-xs font-black text-rose-950">
-                                        Doorstep Delivery Unavailable at this Location
+                                        Doorstep Delivery Exceeds Safe 20 km Transit Radius (~{deliveryDistanceKm} km)
                                       </p>
                                       <p className="text-[11px] text-rose-800 leading-snug mt-0.5">
-                                        Your address is <strong>~{deliveryDistanceKm} km</strong> from JP Farms Estate (exceeds our <strong>20 km</strong> safe live animal transit radius).
+                                        For live animal welfare, direct 2-wheeler courier is strictly capped at 20 km. <strong>You can still get your rooster with the options below:</strong>
                                       </p>
                                     </div>
+                                  </div>
+
+                                  {/* Actionable buttons so customer never leaves the site */}
+                                  <div className="pt-2 border-t border-rose-200/80 grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                    <button
+                                      type="button"
+                                      onClick={() => setDeliveryType('farm_pickup')}
+                                      className="flex items-center justify-center space-x-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold py-2 px-3 rounded-xl text-xs shadow-sm active:scale-95 transition cursor-pointer"
+                                    >
+                                      <CheckCircle2 className="w-3.5 h-3.5" />
+                                      <span>Switch to Farm Pickup (Free)</span>
+                                    </button>
+
+                                    <a
+                                      href={whatsAppTransitUrl}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="flex items-center justify-center space-x-1.5 bg-stone-900 hover:bg-stone-850 text-amber-300 font-extrabold py-2 px-3 rounded-xl text-xs shadow-sm active:scale-95 transition"
+                                    >
+                                      <MessageCircle className="w-3.5 h-3.5 text-amber-400" />
+                                      <span>WhatsApp for Cargo Transit</span>
+                                    </a>
                                   </div>
                                 </div>
                               )
@@ -1112,14 +1220,25 @@ export const CartSlideOver: React.FC = () => {
                     <span>Update Mobile in Profile to Place Order</span>
                   </button>
                 ) : deliveryType === 'doorstep_live_crate' && deliveryDistanceKm !== null && deliveryDistanceKm > FARM_LOCATION.maxDeliveryRadiusKm ? (
-                  <button
-                    type="button"
-                    disabled
-                    className="w-full flex items-center justify-center space-x-2 bg-slate-300 text-slate-600 font-bold py-3.5 px-4 rounded-xl text-xs cursor-not-allowed select-none shadow-none"
-                  >
-                    <AlertTriangle className="w-4 h-4 text-slate-500" />
-                    <span>Outside 20 km Delivery Radius (Undeliverable)</span>
-                  </button>
+                  <div className="space-y-2">
+                    <button
+                      type="button"
+                      onClick={() => setDeliveryType('farm_pickup')}
+                      className="w-full flex items-center justify-center space-x-2 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-black py-3 px-4 rounded-xl text-xs transition shadow-lg shadow-emerald-600/25 active:scale-95 cursor-pointer"
+                    >
+                      <CheckCircle2 className="w-4 h-4" />
+                      <span>Switch to Free Farm Pickup & Place Order (₹{cartTotal.toLocaleString('en-IN')})</span>
+                    </button>
+                    <a
+                      href={whatsAppTransitUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-full flex items-center justify-center space-x-2 bg-stone-900 hover:bg-stone-850 text-amber-300 font-extrabold py-2.5 px-4 rounded-xl text-xs border border-amber-500/30 transition shadow-sm text-center"
+                    >
+                      <MessageCircle className="w-4 h-4 text-amber-400" />
+                      <span>Chat on WhatsApp for Inter-District Cargo</span>
+                    </a>
+                  </div>
                 ) : (
                   <button
                     type="submit"
