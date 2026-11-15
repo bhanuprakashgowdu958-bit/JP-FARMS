@@ -49,14 +49,16 @@ import {
   TrendingUp,
   MapPin,
   Play,
-  Share2
+  Share2,
+  Folder,
+  FolderOpen
 } from 'lucide-react';
 import { Rooster, RoosterCategory, RoosterBadge, CustomerInquiry, RoosterOrder } from '@/types/rooster';
 import { useRoosters, useInquiries, useOrders } from '@/lib/roosterStore';
 import { getRegisteredCustomers, RegisteredCustomer, useAuth, isBhanuEmail } from '@/lib/authStore';
 import { GoogleIcon } from '@/components/GoogleSignInButton';
 import { generateWhatsAppLink } from '@/lib/utils';
-import { FARM_INFO } from '@/lib/data';
+import { FARM_INFO, ROOSTER_CATEGORIES_META, BreedCategoryMeta } from '@/lib/data';
 import { isFirebaseConfigured, db } from '@/lib/firebase';
 import { uploadRoosterMediaToFirebase } from '@/lib/firebaseService';
 
@@ -77,7 +79,8 @@ export const AdminPanel: React.FC = () => {
   // Navigation State
   const [activeTab, setActiveTab] = useState<'roosters' | 'orders' | 'customers' | 'inquiries' | 'add'>('roosters');
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
-  const [roosterViewMode, setRoosterViewMode] = useState<'grid' | 'table'>('table');
+  const [roosterViewMode, setRoosterViewMode] = useState<'categories' | 'table' | 'grid'>('categories');
+  const [selectedCategoryFolder, setSelectedCategoryFolder] = useState<Exclude<RoosterCategory, 'all'> | null>(null);
 
   // Filters & Search
   const [searchFilter, setSearchFilter] = useState('');
@@ -276,6 +279,39 @@ export const AdminPanel: React.FC = () => {
     description: 'Prime breeding stud with excellent plumage and powerful upright posture.',
     featured: true,
   });
+
+  const openAddRoosterForCategory = (catKey: Exclude<RoosterCategory, 'all'>) => {
+    const meta = ROOSTER_CATEGORIES_META[catKey];
+    const randomTagNum = Math.floor(100 + Math.random() * 900);
+    setEditingRooster(null);
+    setFormData({
+      tagId: `${meta.tagPrefix}${randomTagNum}`,
+      name: `${meta.shortName} Specimen`,
+      breed: meta.name,
+      category: catKey,
+      price: catKey === 'breeding-pairs' ? 28000 : catKey === 'aseel-sindhi' ? 22000 : catKey === 'aseel-kagar' ? 16000 : catKey === 'kadaknath' ? 6500 : catKey === 'country-desi' ? 3200 : 14500,
+      originalPrice: catKey === 'breeding-pairs' ? 32000 : catKey === 'aseel-sindhi' ? 25000 : catKey === 'aseel-kagar' ? 19000 : catKey === 'kadaknath' ? 8000 : catKey === 'country-desi' ? 4000 : 18000,
+      age: '12 Months',
+      weight: catKey === 'aseel-sindhi' ? '4.4 Kg' : catKey === 'aseel-kagar' ? '4.1 Kg' : catKey === 'kadaknath' ? '2.4 Kg' : catKey === 'country-desi' ? '2.6 Kg' : '3.8 Kg',
+      height: '25 Inches',
+      combType: catKey === 'aseel-sindhi' ? 'Cushion Comb' : catKey === 'aseel-kagar' ? 'Walnut Comb' : catKey === 'kadaknath' ? 'Blackened Pea Comb' : catKey === 'country-desi' ? 'Single Serrated Comb' : 'Pea Comb',
+      colorPattern: meta.tagline,
+      temperament: 'Dominant, Alert, Strong Upright Stance',
+      diet: 'Sprouted Bajra, Almond paste, Boiled Desi Eggs & Greens',
+      vaccinationStatus: 'Fully Vaccinated',
+      vaccines: 'Ranikhet ND-Lasota, Fowl Pox, IBD, Dewormed',
+      badge: 'Farm Stud',
+      imageUrl1: '',
+      imageUrl2: '',
+      videoUrl: '',
+      lineage: `Pure bloodline maintained under ${meta.name} lineage standards.`,
+      healthWarranty: '100% Certified Disease-Free & Verified Heritage Bloodline.',
+      description: meta.description,
+      featured: true,
+    });
+    setActiveTab('add');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   const handleEditClick = (rooster: Rooster) => {
     setEditingRooster(rooster);
@@ -1205,308 +1241,854 @@ export const AdminPanel: React.FC = () => {
         </div>
 
         {/* =====================================================================
-           TAB 1: ROOSTERS CATALOG (Dual-View: Mobile Grid + Desktop Table)
+           TAB 1: ROOSTERS CATALOG (Showroom Folders + Dual Table/Grid Views)
            ===================================================================== */}
         {activeTab === 'roosters' && (
           <div className="space-y-4">
             
-            {/* Filter & View Switcher Bar */}
-            <div className="bg-white p-3 sm:p-4 rounded-2xl border border-slate-200 shadow-xs flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-              
-              {/* Search Bar */}
-              <div className="relative flex-1 max-w-md">
-                <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-                <input
-                  type="text"
-                  placeholder="Search tag (e.g. JP-AS-101), name or breed..."
-                  value={searchFilter}
-                  onChange={(e) => setSearchFilter(e.target.value)}
-                  className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-hidden focus:border-amber-500"
-                />
-                {searchFilter && (
-                  <button 
-                    onClick={() => setSearchFilter('')}
-                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-xs text-slate-400 hover:text-slate-600"
-                  >
-                    ×
-                  </button>
-                )}
-              </div>
+            {/* If user is inside a specific category showroom folder */}
+            {selectedCategoryFolder ? (
+              (() => {
+                const catMeta = ROOSTER_CATEGORIES_META[selectedCategoryFolder];
+                const catBirds = roosters.filter(r => r.category === selectedCategoryFolder);
+                const filteredCatBirds = catBirds.filter(r => {
+                  if (!searchFilter.trim()) return true;
+                  const q = searchFilter.toLowerCase();
+                  return r.tagId.toLowerCase().includes(q) ||
+                    r.name.toLowerCase().includes(q) ||
+                    r.breed.toLowerCase().includes(q);
+                });
+                const prices = catBirds.map(b => b.price).filter(Boolean);
+                const minPrice = prices.length ? Math.min(...prices) : 0;
+                const maxPrice = prices.length ? Math.max(...prices) : 0;
+                const priceRangeStr = prices.length === 0
+                  ? 'Awaiting Birds'
+                  : minPrice === maxPrice
+                  ? `₹${minPrice.toLocaleString('en-IN')}`
+                  : `₹${minPrice.toLocaleString('en-IN')} - ₹${maxPrice.toLocaleString('en-IN')}`;
 
-              {/* Category & View Controls */}
-              <div className="flex items-center space-x-2">
-                <select
-                  value={categoryFilter}
-                  onChange={(e) => setCategoryFilter(e.target.value)}
-                  className="px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 focus:outline-hidden"
-                >
-                  <option value="all">All Breeds ({roosters.length})</option>
-                  <option value="aseel-peela">Pure Aseel (Peela)</option>
-                  <option value="aseel-kagar">Aseel (Kagar)</option>
-                  <option value="aseel-sindhi">Sindhi Heavy Aseel</option>
-                  <option value="kadaknath">Pure Kadaknath</option>
-                  <option value="country-desi">Country Desi</option>
-                  <option value="breeding-pairs">Breeding Units</option>
-                </select>
+                return (
+                  <div className="space-y-4">
+                    {/* Breadcrumb Navigation Bar */}
+                    <div className="bg-white p-3.5 sm:p-4 rounded-2xl border border-slate-200 shadow-xs flex flex-wrap items-center justify-between gap-3">
+                      <div className="flex items-center space-x-2">
+                        <button
+                          type="button"
+                          onClick={() => { setSelectedCategoryFolder(null); setSearchFilter(''); }}
+                          className="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold transition cursor-pointer"
+                        >
+                          <ArrowLeft className="w-3.5 h-3.5" />
+                          <span>All Category Showrooms</span>
+                        </button>
+                        <ChevronRight className="w-4 h-4 text-slate-300" />
+                        <span className="text-lg">{catMeta.icon}</span>
+                        <span className="text-xs font-extrabold text-slate-900">{catMeta.name}</span>
+                        <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-md bg-amber-50 text-amber-900 border border-amber-200">
+                          {catBirds.length} Birds
+                        </span>
+                      </div>
 
-                {/* View Switcher: Table vs Cards */}
-                <div className="flex items-center space-x-1 bg-slate-100 p-1 rounded-xl">
-                  <button
-                    type="button"
-                    onClick={() => setRoosterViewMode('table')}
-                    className={`p-1.5 rounded-lg text-xs font-bold transition ${
-                      roosterViewMode === 'table' ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-500'
-                    }`}
-                    title="Dense Table View"
-                  >
-                    <List className="w-4 h-4" />
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setRoosterViewMode('grid')}
-                    className={`p-1.5 rounded-lg text-xs font-bold transition ${
-                      roosterViewMode === 'grid' ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-500'
-                    }`}
-                    title="Card Grid View"
-                  >
-                    <LayoutGrid className="w-4 h-4" />
-                  </button>
-                </div>
+                      <div className="flex items-center space-x-2">
+                        <button
+                          type="button"
+                          onClick={() => openAddRoosterForCategory(selectedCategoryFolder)}
+                          className="flex items-center space-x-1.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-stone-950 font-black px-4 py-2 rounded-xl text-xs shadow-xs transition active:scale-95 cursor-pointer"
+                        >
+                          <Plus className="w-4 h-4" />
+                          <span>+ Upload New {catMeta.shortName} Rooster</span>
+                        </button>
+                      </div>
+                    </div>
 
-                <button
-                  onClick={resetToDefault}
-                  className="p-2 rounded-xl border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 text-xs font-semibold"
-                  title="Reset demo catalogue"
-                >
-                  <RotateCcw className="w-3.5 h-3.5" />
-                </button>
-              </div>
+                    {/* Breed Workspace Hero Banner */}
+                    <div className="bg-gradient-to-r from-stone-950 via-stone-900 to-slate-900 text-white rounded-2xl p-5 border border-amber-500/20 shadow-sm relative overflow-hidden">
+                      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 relative z-10">
+                        <div className="space-y-1.5">
+                          <div className="flex items-center space-x-2.5">
+                            <span className="text-3xl">{catMeta.icon}</span>
+                            <div>
+                              <h3 className="text-xl font-black text-white tracking-tight flex items-center space-x-2">
+                                <span>{catMeta.name}</span>
+                                <span className="text-[10px] font-mono font-bold uppercase tracking-wider bg-amber-500/20 text-amber-300 px-2 py-0.5 rounded border border-amber-500/30">
+                                  Series: {catMeta.tagPrefix}###
+                                </span>
+                              </h3>
+                              <p className="text-xs text-amber-300 font-semibold">{catMeta.tagline}</p>
+                            </div>
+                          </div>
+                          <p className="text-xs text-slate-300 max-w-2xl leading-relaxed pt-1">
+                            {catMeta.description}
+                          </p>
+                        </div>
 
-            </div>
+                        <div className="flex items-center space-x-3 bg-stone-900/90 border border-white/10 rounded-xl p-3 shrink-0">
+                          <div className="text-center px-3 border-r border-white/10">
+                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Living Specimens</p>
+                            <p className="text-xl font-black text-amber-400">{catBirds.length}</p>
+                          </div>
+                          <div className="text-center px-3">
+                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Price Range</p>
+                            <p className="text-sm font-black text-white">{priceRangeStr}</p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
 
-            {/* Content Display: Card Grid vs Table */}
-            {filteredRoosters.length === 0 ? (
-              <div className="bg-white rounded-2xl p-12 text-center border border-dashed border-slate-300">
-                <p className="text-sm font-bold text-slate-700">No birds match this search filter.</p>
-                <button
-                  onClick={() => { setSearchFilter(''); setCategoryFilter('all'); }}
-                  className="mt-2 text-xs text-amber-700 font-bold hover:underline"
-                >
-                  Clear all filters
-                </button>
-              </div>
-            ) : roosterViewMode === 'grid' ? (
-              /* ===============================================================
-                 MOBILE & DESKTOP CARD GRID (Rich Visual Showcase Cards)
-                 =============================================================== */
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
-                {filteredRoosters.map((rooster) => (
-                  <div 
-                    key={rooster.id}
-                    className="bg-white rounded-2xl border border-slate-200 hover:border-amber-500/70 hover:shadow-md transition overflow-hidden flex flex-col justify-between"
-                  >
-                    <div>
-                      {/* Photo & Floating Badges */}
-                      <div className="relative aspect-4/3 w-full bg-slate-900 overflow-hidden">
-                        <img 
-                          src={rooster.images[0] || 'https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?auto=format&fit=crop&w=800&q=80'} 
-                          alt={rooster.name}
-                          className="w-full h-full object-cover object-center"
+                    {/* Showroom Filter & View Switcher */}
+                    <div className="bg-white p-3 sm:p-4 rounded-2xl border border-slate-200 shadow-xs flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+                      <div className="relative flex-1 max-w-md">
+                        <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                        <input
+                          type="text"
+                          placeholder={`Search ${catMeta.shortName} by tag ID, name...`}
+                          value={searchFilter}
+                          onChange={(e) => setSearchFilter(e.target.value)}
+                          className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-hidden focus:border-amber-500"
                         />
-                        <div className="absolute top-2 left-2 flex items-center space-x-1 font-mono text-[10px] font-bold bg-black/85 text-amber-400 px-2 py-0.5 rounded-md border border-amber-500/30">
-                          <span>TAG: {rooster.tagId}</span>
-                        </div>
-                        {rooster.videoUrl && (
-                          <div className="absolute top-2 right-2 p-1 rounded-full bg-black/75 text-amber-400" title="Video Available">
-                            <Video className="w-3.5 h-3.5" />
-                          </div>
-                        )}
-                        <div className="absolute bottom-2 left-2">
-                          <span className={`text-[10px] px-2 py-0.5 rounded-md ${getBadgeStyle(rooster.badge)}`}>
-                            {rooster.badge}
-                          </span>
-                        </div>
-                      </div>
-
-                      {/* Content */}
-                      <div className="p-3 space-y-1.5">
-                        <h4 className="text-sm font-extrabold text-slate-950 truncate">
-                          {rooster.name}
-                        </h4>
-                        <p className="text-[11px] text-slate-500 font-medium truncate">
-                          {rooster.breed}
-                        </p>
-
-                        <div className="flex items-center justify-between pt-1">
-                          <div>
-                            <span className="text-xs text-slate-400 line-through mr-1.5">
-                              ₹{(rooster.originalPrice || Math.round((rooster.price || 9500) * 1.25)).toLocaleString('en-IN')}
-                            </span>
-                            <span className="text-sm font-black text-slate-950">
-                              ₹{(rooster.price || 9500).toLocaleString('en-IN')}
-                            </span>
-                          </div>
-                          <span className="text-[10px] text-slate-600 font-mono bg-slate-100 px-1.5 py-0.5 rounded">
-                            {rooster.weight} • {rooster.height}
-                          </span>
-                        </div>
-
-                        {/* Inline Badge Dropdown */}
-                        <div className="pt-1">
-                          <select
-                            value={rooster.badge}
-                            onChange={(e) => toggleBadge(rooster.id, e.target.value as RoosterBadge)}
-                            className="w-full text-[11px] font-bold py-1 px-2 rounded-lg bg-slate-50 border border-slate-200 text-slate-700"
+                        {searchFilter && (
+                          <button 
+                            onClick={() => setSearchFilter('')}
+                            className="absolute right-2.5 top-1/2 -translate-y-1/2 text-xs text-slate-400 hover:text-slate-600"
                           >
-                            <option value="Champion Line">👑 Champion Line</option>
-                            <option value="Farm Stud">⭐ Farm Stud</option>
-                            <option value="Heritage Pure">🌿 Heritage Pure</option>
-                            <option value="Breeding Flock">🌾 Breeding Flock</option>
-                            <option value="Young Star">✨ Young Star</option>
-                          </select>
+                            ×
+                          </button>
+                        )}
+                      </div>
+
+                      <div className="flex items-center space-x-2">
+                        <span className="text-xs font-bold text-slate-500">
+                          {filteredCatBirds.length} of {catBirds.length} birds
+                        </span>
+
+                        <div className="flex items-center space-x-1 bg-slate-100 p-1 rounded-xl">
+                          <button
+                            type="button"
+                            onClick={() => setRoosterViewMode('grid')}
+                            className={`p-1.5 rounded-lg text-xs font-bold transition cursor-pointer ${
+                              roosterViewMode !== 'table' ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-500'
+                            }`}
+                            title="Grid View"
+                          >
+                            <LayoutGrid className="w-4 h-4" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setRoosterViewMode('table')}
+                            className={`p-1.5 rounded-lg text-xs font-bold transition cursor-pointer ${
+                              roosterViewMode === 'table' ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-500'
+                            }`}
+                            title="Table View"
+                          >
+                            <List className="w-4 h-4" />
+                          </button>
                         </div>
                       </div>
                     </div>
 
-                    {/* Actions Bar */}
-                    <div className="p-3 pt-0 border-t border-slate-100 grid grid-cols-2 gap-2 mt-2">
-                      <button
-                        type="button"
-                        onClick={() => handleEditClick(rooster)}
-                        className="flex items-center justify-center space-x-1 bg-slate-100 hover:bg-amber-100 hover:text-amber-950 text-slate-800 font-bold py-1.5 rounded-lg text-xs transition"
-                      >
-                        <Edit3 className="w-3.5 h-3.5 text-amber-700" />
-                        <span>Edit</span>
-                      </button>
+                    {/* Birds List */}
+                    {filteredCatBirds.length === 0 ? (
+                      <div className="bg-white rounded-2xl p-12 text-center border border-dashed border-slate-300 space-y-3">
+                        <span className="text-4xl">{catMeta.icon}</span>
+                        <div>
+                          <h4 className="text-sm font-black text-slate-900">
+                            {catBirds.length === 0 
+                              ? `No ${catMeta.name} roosters uploaded yet` 
+                              : `No birds match "${searchFilter}"`}
+                          </h4>
+                          <p className="text-xs text-slate-500 mt-1 max-w-md mx-auto">
+                            {catBirds.length === 0
+                              ? `Upload photos, videos, weights, and biological specs to open this breed showroom.`
+                              : `Try clearing your search query to see all registered birds.`}
+                          </p>
+                        </div>
+                        {catBirds.length === 0 ? (
+                          <button
+                            type="button"
+                            onClick={() => openAddRoosterForCategory(selectedCategoryFolder)}
+                            className="inline-flex items-center space-x-1.5 bg-amber-500 hover:bg-amber-400 text-stone-950 font-black px-4 py-2.5 rounded-xl text-xs transition cursor-pointer shadow-sm"
+                          >
+                            <Plus className="w-4 h-4" />
+                            <span>Upload First {catMeta.shortName} Rooster</span>
+                          </button>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => setSearchFilter('')}
+                            className="text-xs text-amber-700 font-bold hover:underline cursor-pointer"
+                          >
+                            Clear search filter
+                          </button>
+                        )}
+                      </div>
+                    ) : roosterViewMode === 'table' ? (
+                      /* Table View inside Category Workspace */
+                      <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-xs">
+                        <div className="overflow-x-auto">
+                          <table className="w-full text-left text-xs">
+                            <thead className="bg-slate-50/80 border-b border-slate-200 text-slate-500 font-bold uppercase tracking-wider text-[10px]">
+                              <tr>
+                                <th className="py-3 px-4">Rooster Specimen</th>
+                                <th className="py-3 px-4">Tag ID</th>
+                                <th className="py-3 px-4">Comb & Traits</th>
+                                <th className="py-3 px-4">Weight / Age</th>
+                                <th className="py-3 px-4">Price</th>
+                                <th className="py-3 px-4">Exhibition Badge</th>
+                                <th className="py-3 px-4 text-right">Actions</th>
+                              </tr>
+                            </thead>
+                            <tbody className="divide-y divide-slate-100">
+                              {filteredCatBirds.map((rooster) => (
+                                <tr key={rooster.id} className="hover:bg-slate-50/60 transition group">
+                                  <td className="py-3 px-4">
+                                    <div className="flex items-center space-x-3">
+                                      <img
+                                        src={rooster.images[0] || 'https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?auto=format&fit=crop&w=800&q=80'}
+                                        alt={rooster.name}
+                                        className="w-10 h-10 rounded-xl object-cover border border-slate-200 shrink-0 shadow-2xs"
+                                      />
+                                      <div>
+                                        <p className="font-extrabold text-slate-900 group-hover:text-amber-700 transition">
+                                          {rooster.name}
+                                        </p>
+                                        <p className="text-[10px] text-slate-400">
+                                          {rooster.combType || 'Pea Comb'}
+                                        </p>
+                                      </div>
+                                    </div>
+                                  </td>
+                                  <td className="py-3 px-4 font-mono font-bold text-slate-700">
+                                    <span className="bg-slate-100 px-2 py-0.5 rounded-md border border-slate-200">
+                                      {rooster.tagId}
+                                    </span>
+                                  </td>
+                                  <td className="py-3 px-4">
+                                    <p className="font-semibold text-slate-800">{rooster.combType}</p>
+                                    <span className="text-[10px] text-slate-400 truncate block max-w-xs">{rooster.colorPattern}</span>
+                                  </td>
+                                  <td className="py-3 px-4 font-medium text-slate-600">
+                                    <p>{rooster.weight}</p>
+                                    <p className="text-[10px] text-slate-400">{rooster.age}</p>
+                                  </td>
+                                  <td className="py-3 px-4 font-mono font-black text-slate-900">
+                                    ₹{(rooster.price || 9500).toLocaleString('en-IN')}
+                                  </td>
+                                  <td className="py-3 px-4">
+                                    <select
+                                      value={rooster.badge}
+                                      onChange={(e) => toggleBadge(rooster.id, e.target.value as RoosterBadge)}
+                                      className="text-[11px] font-bold py-1 px-2 rounded-lg bg-slate-50 border border-slate-200 text-slate-700"
+                                    >
+                                      <option value="Champion Line">👑 Champion Line</option>
+                                      <option value="Farm Stud">⭐ Farm Stud</option>
+                                      <option value="Heritage Pure">🌿 Heritage Pure</option>
+                                      <option value="Breeding Flock">🌾 Breeding Flock</option>
+                                      <option value="Young Star">✨ Young Star</option>
+                                    </select>
+                                  </td>
+                                  <td className="py-3 px-4 text-right">
+                                    <div className="flex items-center justify-end space-x-1.5">
+                                      <button
+                                        type="button"
+                                        onClick={() => handleEditClick(rooster)}
+                                        className="p-1.5 rounded-lg text-slate-600 hover:text-amber-800 hover:bg-amber-50 transition cursor-pointer"
+                                        title="Edit bird"
+                                      >
+                                        <Edit3 className="w-4 h-4" />
+                                      </button>
+                                      <button
+                                        type="button"
+                                        onClick={() => {
+                                          if (confirm(`Delete #${rooster.tagId} (${rooster.name})?`)) {
+                                            deleteRooster(rooster.id);
+                                          }
+                                        }}
+                                        className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition cursor-pointer"
+                                        title="Delete bird"
+                                      >
+                                        <Trash2 className="w-4 h-4" />
+                                      </button>
+                                    </div>
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                    ) : (
+                      /* Grid View inside Category Workspace */
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
+                        {filteredCatBirds.map((rooster) => (
+                          <div 
+                            key={rooster.id}
+                            className="bg-white rounded-2xl border border-slate-200 hover:border-amber-500/70 hover:shadow-md transition overflow-hidden flex flex-col justify-between"
+                          >
+                            <div>
+                              <div className="relative aspect-4/3 w-full bg-slate-900 overflow-hidden">
+                                <img 
+                                  src={rooster.images[0] || 'https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?auto=format&fit=crop&w=800&q=80'} 
+                                  alt={rooster.name}
+                                  className="w-full h-full object-cover object-center"
+                                />
+                                <div className="absolute top-2 left-2 flex items-center space-x-1 font-mono text-[10px] font-bold bg-black/85 text-amber-400 px-2 py-0.5 rounded-md border border-amber-500/30">
+                                  <span>TAG: {rooster.tagId}</span>
+                                </div>
+                                {rooster.videoUrl && (
+                                  <div className="absolute top-2 right-2 p-1 rounded-full bg-black/75 text-amber-400" title="Video Available">
+                                    <Video className="w-3.5 h-3.5" />
+                                  </div>
+                                )}
+                                <div className="absolute bottom-2 left-2">
+                                  <span className={`text-[10px] px-2 py-0.5 rounded-md ${getBadgeStyle(rooster.badge)}`}>
+                                    {rooster.badge}
+                                  </span>
+                                </div>
+                              </div>
 
-                      <button
-                        type="button"
-                        onClick={() => {
-                          if (confirm(`Delete rooster #${rooster.tagId} (${rooster.name}) from catalogue?`)) {
-                            deleteRooster(rooster.id);
-                          }
-                        }}
-                        className="flex items-center justify-center space-x-1 bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold py-1.5 rounded-lg text-xs transition"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                        <span>Delete</span>
-                      </button>
-                    </div>
-
-                  </div>
-                ))}
-              </div>
-            ) : (
-              /* ===============================================================
-                 DESKTOP DENSE DATA TABLE (Clean Stripe / Linear Style Table)
-                 =============================================================== */
-              <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-xs">
-                <div className="overflow-x-auto">
-                  <table className="w-full text-left text-xs">
-                    <thead className="bg-slate-50/80 border-b border-slate-200 text-slate-500 font-bold uppercase tracking-wider text-[10px]">
-                      <tr>
-                        <th className="py-3 px-4">Rooster Specimen</th>
-                        <th className="py-3 px-4">Tag ID</th>
-                        <th className="py-3 px-4">Breed & Category</th>
-                        <th className="py-3 px-4">Weight / Age</th>
-                        <th className="py-3 px-4">Price</th>
-                        <th className="py-3 px-4">Exhibition Badge</th>
-                        <th className="py-3 px-4 text-right">Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-100">
-                      {filteredRoosters.map((rooster) => (
-                        <tr key={rooster.id} className="hover:bg-slate-50/60 transition group">
-                          {/* Rooster Name & Photo */}
-                          <td className="py-3 px-4">
-                            <div className="flex items-center space-x-3">
-                              <img
-                                src={rooster.images[0] || 'https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?auto=format&fit=crop&w=800&q=80'}
-                                alt={rooster.name}
-                                className="w-10 h-10 rounded-xl object-cover border border-slate-200 shrink-0 shadow-2xs"
-                              />
-                              <div>
-                                <p className="font-extrabold text-slate-900 group-hover:text-amber-700 transition">
+                              <div className="p-3 space-y-1.5">
+                                <h4 className="text-sm font-extrabold text-slate-950 truncate">
                                   {rooster.name}
+                                </h4>
+                                <p className="text-[11px] text-slate-500 font-medium truncate">
+                                  {rooster.combType} • {rooster.temperament}
                                 </p>
-                                <p className="text-[10px] text-slate-400">
-                                  {rooster.combType || 'Pea Comb'}
-                                </p>
+
+                                <div className="flex items-center justify-between pt-1">
+                                  <div>
+                                    <span className="text-xs text-slate-400 line-through mr-1.5">
+                                      ₹{(rooster.originalPrice || Math.round((rooster.price || 9500) * 1.25)).toLocaleString('en-IN')}
+                                    </span>
+                                    <span className="text-sm font-black text-slate-950">
+                                      ₹{(rooster.price || 9500).toLocaleString('en-IN')}
+                                    </span>
+                                  </div>
+                                  <span className="text-[10px] text-slate-600 font-mono bg-slate-100 px-1.5 py-0.5 rounded">
+                                    {rooster.weight} • {rooster.height}
+                                  </span>
+                                </div>
+
+                                <div className="pt-1">
+                                  <select
+                                    value={rooster.badge}
+                                    onChange={(e) => toggleBadge(rooster.id, e.target.value as RoosterBadge)}
+                                    className="w-full text-[11px] font-bold py-1 px-2 rounded-lg bg-slate-50 border border-slate-200 text-slate-700"
+                                  >
+                                    <option value="Champion Line">👑 Champion Line</option>
+                                    <option value="Farm Stud">⭐ Farm Stud</option>
+                                    <option value="Heritage Pure">🌿 Heritage Pure</option>
+                                    <option value="Breeding Flock">🌾 Breeding Flock</option>
+                                    <option value="Young Star">✨ Young Star</option>
+                                  </select>
+                                </div>
                               </div>
                             </div>
-                          </td>
 
-                          {/* Tag ID */}
-                          <td className="py-3 px-4 font-mono font-bold text-slate-700">
-                            <span className="bg-slate-100 px-2 py-0.5 rounded-md border border-slate-200">
-                              {rooster.tagId}
-                            </span>
-                          </td>
-
-                          {/* Breed */}
-                          <td className="py-3 px-4">
-                            <p className="font-semibold text-slate-800">{rooster.breed}</p>
-                            <span className="text-[10px] text-amber-700 font-mono">
-                              {rooster.category}
-                            </span>
-                          </td>
-
-                          {/* Weight & Height */}
-                          <td className="py-3 px-4 font-medium text-slate-600">
-                            <p>{rooster.weight}</p>
-                            <p className="text-[10px] text-slate-400">{rooster.age}</p>
-                          </td>
-
-                          {/* Price */}
-                          <td className="py-3 px-4 font-mono font-black text-slate-900">
-                            ₹{(rooster.price || 9500).toLocaleString('en-IN')}
-                          </td>
-
-                          {/* Badge Dropdown */}
-                          <td className="py-3 px-4">
-                            <select
-                              value={rooster.badge}
-                              onChange={(e) => toggleBadge(rooster.id, e.target.value as RoosterBadge)}
-                              className="text-[11px] font-bold py-1 px-2 rounded-lg bg-slate-50 border border-slate-200 text-slate-700"
-                            >
-                              <option value="Champion Line">👑 Champion Line</option>
-                              <option value="Farm Stud">⭐ Farm Stud</option>
-                              <option value="Heritage Pure">🌿 Heritage Pure</option>
-                              <option value="Breeding Flock">🌾 Breeding Flock</option>
-                              <option value="Young Star">✨ Young Star</option>
-                            </select>
-                          </td>
-
-                          {/* Actions */}
-                          <td className="py-3 px-4 text-right">
-                            <div className="flex items-center justify-end space-x-1.5">
+                            <div className="p-3 pt-0 border-t border-slate-100 grid grid-cols-2 gap-2 mt-2">
                               <button
                                 type="button"
                                 onClick={() => handleEditClick(rooster)}
-                                className="p-1.5 rounded-lg text-slate-600 hover:text-amber-800 hover:bg-amber-50 transition"
-                                title="Edit bird"
+                                className="flex items-center justify-center space-x-1 bg-slate-100 hover:bg-amber-100 hover:text-amber-950 text-slate-800 font-bold py-1.5 rounded-lg text-xs transition cursor-pointer"
                               >
-                                <Edit3 className="w-4 h-4" />
+                                <Edit3 className="w-3.5 h-3.5 text-amber-700" />
+                                <span>Edit</span>
                               </button>
+
                               <button
                                 type="button"
                                 onClick={() => {
-                                  if (confirm(`Delete #${rooster.tagId} (${rooster.name})?`)) {
+                                  if (confirm(`Delete #${rooster.tagId} (${rooster.name}) from catalogue?`)) {
                                     deleteRooster(rooster.id);
                                   }
                                 }}
-                                className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition"
-                                title="Delete bird"
+                                className="flex items-center justify-center space-x-1 bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold py-1.5 rounded-lg text-xs transition cursor-pointer"
                               >
-                                <Trash2 className="w-4 h-4" />
+                                <Trash2 className="w-3.5 h-3.5" />
+                                <span>Delete</span>
                               </button>
                             </div>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                );
+              })()
+            ) : (
+              /* All Showrooms / All Roosters Root View */
+              <div className="space-y-4">
+                
+                {/* View Switcher & Search Bar */}
+                <div className="bg-white p-3 sm:p-4 rounded-2xl border border-slate-200 shadow-xs flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+                  
+                  {/* View Mode Switcher Pills */}
+                  <div className="flex items-center space-x-1 bg-slate-100 p-1 rounded-xl overflow-x-auto scrollbar-none">
+                    <button
+                      type="button"
+                      onClick={() => setRoosterViewMode('categories')}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center space-x-1.5 whitespace-nowrap cursor-pointer ${
+                        roosterViewMode === 'categories'
+                          ? 'bg-amber-500 text-stone-950 shadow-xs font-black'
+                          : 'text-slate-600 hover:text-slate-900'
+                      }`}
+                    >
+                      <FolderOpen className="w-3.5 h-3.5" />
+                      <span>📁 Breed Showrooms ({Object.keys(ROOSTER_CATEGORIES_META).length})</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setRoosterViewMode('table')}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center space-x-1.5 whitespace-nowrap cursor-pointer ${
+                        roosterViewMode === 'table'
+                          ? 'bg-white text-slate-900 shadow-xs font-black'
+                          : 'text-slate-600 hover:text-slate-900'
+                      }`}
+                    >
+                      <List className="w-3.5 h-3.5" />
+                      <span>📋 All Birds Table ({roosters.length})</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setRoosterViewMode('grid')}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center space-x-1.5 whitespace-nowrap cursor-pointer ${
+                        roosterViewMode === 'grid'
+                          ? 'bg-white text-slate-900 shadow-xs font-black'
+                          : 'text-slate-600 hover:text-slate-900'
+                      }`}
+                    >
+                      <LayoutGrid className="w-3.5 h-3.5" />
+                      <span>🖼️ All Birds Grid ({roosters.length})</span>
+                    </button>
+                  </div>
+
+                  {/* Search and Category Filter for table/grid */}
+                  <div className="flex items-center space-x-2">
+                    <div className="relative flex-1 sm:w-64">
+                      <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                      <input
+                        type="text"
+                        placeholder="Search tag, name or breed..."
+                        value={searchFilter}
+                        onChange={(e) => setSearchFilter(e.target.value)}
+                        className="w-full pl-9 pr-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-hidden focus:border-amber-500"
+                      />
+                      {searchFilter && (
+                        <button 
+                          onClick={() => setSearchFilter('')}
+                          className="absolute right-2.5 top-1/2 -translate-y-1/2 text-xs text-slate-400 hover:text-slate-600"
+                        >
+                          ×
+                        </button>
+                      )}
+                    </div>
+
+                    {roosterViewMode !== 'categories' && (
+                      <select
+                        value={categoryFilter}
+                        onChange={(e) => setCategoryFilter(e.target.value)}
+                        className="px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 focus:outline-hidden"
+                      >
+                        <option value="all">All Breeds ({roosters.length})</option>
+                        <option value="aseel-peela">Pure Aseel (Peela)</option>
+                        <option value="aseel-kagar">Aseel (Kagar)</option>
+                        <option value="aseel-sindhi">Sindhi Heavy Aseel</option>
+                        <option value="kadaknath">Pure Kadaknath</option>
+                        <option value="country-desi">Country Desi</option>
+                        <option value="breeding-pairs">Breeding Units</option>
+                      </select>
+                    )}
+
+                    <button
+                      onClick={resetToDefault}
+                      className="p-2 rounded-xl border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 text-xs font-semibold cursor-pointer"
+                      title="Reset demo catalogue"
+                    >
+                      <RotateCcw className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+
                 </div>
+
+                {/* Primary Category View: BREED SHOWROOM FOLDERS */}
+                {roosterViewMode === 'categories' ? (
+                  <div className="space-y-4">
+                    {/* Intro Note */}
+                    <div className="bg-gradient-to-r from-amber-50 via-sky-50/50 to-white p-4 rounded-2xl border border-amber-200/60 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                      <div>
+                        <h3 className="text-sm font-black text-slate-900 flex items-center space-x-1.5">
+                          <Folder className="w-4 h-4 text-amber-600" />
+                          <span>Heritage Breed Showrooms & Direct Upload Workspace</span>
+                        </h3>
+                        <p className="text-xs text-slate-600 mt-0.5">
+                          Open any breed showroom folder to browse registered roosters, inspect videos, or click <strong>&quot;+ Upload to Breed&quot;</strong> to document new specimens.
+                        </p>
+                      </div>
+                      <span className="text-[11px] font-bold text-amber-900 bg-amber-100/80 px-2.5 py-1 rounded-lg self-start sm:self-auto border border-amber-300">
+                        {roosters.length} Total Birds Cataloged
+                      </span>
+                    </div>
+
+                    {/* Showroom Cards Grid */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
+                      {(Object.entries(ROOSTER_CATEGORIES_META) as [Exclude<RoosterCategory, 'all'>, BreedCategoryMeta][])
+                        .filter(([catKey, meta]) => {
+                          if (!searchFilter.trim()) return true;
+                          const q = searchFilter.toLowerCase();
+                          return meta.name.toLowerCase().includes(q) ||
+                            meta.shortName.toLowerCase().includes(q) ||
+                            meta.tagPrefix.toLowerCase().includes(q) ||
+                            catKey.toLowerCase().includes(q);
+                        })
+                        .map(([catKey, meta]) => {
+                          const birds = roosters.filter(r => r.category === catKey);
+                          const prices = birds.map(b => b.price).filter(Boolean);
+                          const minP = prices.length ? Math.min(...prices) : 0;
+                          const maxP = prices.length ? Math.max(...prices) : 0;
+                          const priceStr = prices.length === 0
+                            ? 'Awaiting First Specimen'
+                            : minP === maxP
+                            ? `₹${minP.toLocaleString('en-IN')}`
+                            : `₹${minP.toLocaleString('en-IN')} - ₹${maxP.toLocaleString('en-IN')}`;
+
+                          const videoCount = birds.filter(b => !!b.videoUrl).length;
+
+                          return (
+                            <div
+                              key={catKey}
+                              className="bg-white rounded-2xl border border-slate-200 hover:border-amber-400 hover:shadow-md transition-all duration-200 overflow-hidden flex flex-col justify-between group"
+                            >
+                              {/* Top Banner Accent */}
+                              <div className={`h-2.5 w-full bg-gradient-to-r ${meta.accentColor}`} />
+
+                              <div className="p-4 sm:p-5 space-y-3.5">
+                                {/* Header: Icon + Name + Series Badge */}
+                                <div className="flex items-start justify-between gap-2">
+                                  <div className="flex items-center space-x-3">
+                                    <span className="text-3xl p-2 rounded-xl bg-slate-50 border border-slate-100 group-hover:scale-110 transition shrink-0">
+                                      {meta.icon}
+                                    </span>
+                                    <div>
+                                      <h4 className="text-base font-black text-slate-900 leading-tight group-hover:text-amber-800 transition">
+                                        {meta.shortName}
+                                      </h4>
+                                      <span className="text-[10px] font-mono font-bold uppercase tracking-wider bg-slate-100 text-slate-700 px-2 py-0.5 rounded border border-slate-200 inline-block mt-0.5">
+                                        Series: {meta.tagPrefix}###
+                                      </span>
+                                    </div>
+                                  </div>
+
+                                  <span className={`text-[11px] font-mono font-extrabold px-2.5 py-1 rounded-lg border ${
+                                    birds.length > 0 
+                                      ? 'bg-amber-50 text-amber-950 border-amber-200' 
+                                      : 'bg-slate-100 text-slate-500 border-slate-200'
+                                  }`}>
+                                    {birds.length} {birds.length === 1 ? 'Bird' : 'Birds'}
+                                  </span>
+                                </div>
+
+                                {/* Breed Full Name & Tagline */}
+                                <div>
+                                  <p className="text-xs font-bold text-slate-700">{meta.name}</p>
+                                  <p className="text-[11px] text-amber-700 font-semibold">{meta.tagline}</p>
+                                  <p className="text-[11px] text-slate-500 line-clamp-2 mt-1 leading-relaxed">
+                                    {meta.description}
+                                  </p>
+                                </div>
+
+                                {/* Specimen Thumbnails Preview */}
+                                <div className="pt-2 border-t border-slate-100">
+                                  <div className="flex items-center justify-between mb-2">
+                                    <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                                      Living Stock Preview
+                                    </span>
+                                    <span className="text-[11px] font-mono font-black text-slate-900">
+                                      {priceStr}
+                                    </span>
+                                  </div>
+
+                                  {birds.length > 0 ? (
+                                    <div className="flex items-center space-x-2 overflow-hidden py-0.5">
+                                      {birds.slice(0, 4).map((b) => (
+                                        <div
+                                          key={b.id}
+                                          className="relative group/thumb cursor-pointer"
+                                          onClick={() => setSelectedCategoryFolder(catKey)}
+                                          title={`#${b.tagId} - ${b.name}`}
+                                        >
+                                          <img
+                                            src={b.images[0] || 'https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?auto=format&fit=crop&w=400&q=80'}
+                                            alt={b.name}
+                                            className="w-12 h-12 rounded-xl object-cover border border-slate-200 group-hover/thumb:border-amber-500 transition shadow-2xs"
+                                          />
+                                          {b.videoUrl && (
+                                            <span className="absolute -top-1 -right-1 bg-amber-500 text-stone-950 p-0.5 rounded-full text-[8px]" title="Video Available">
+                                              <Video className="w-2.5 h-2.5" />
+                                            </span>
+                                          )}
+                                        </div>
+                                      ))}
+                                      {birds.length > 4 && (
+                                        <div 
+                                          onClick={() => setSelectedCategoryFolder(catKey)}
+                                          className="w-12 h-12 rounded-xl bg-slate-100 hover:bg-amber-100 text-slate-700 hover:text-amber-950 font-mono font-bold text-xs flex items-center justify-center border border-slate-200 cursor-pointer transition"
+                                        >
+                                          +{birds.length - 4}
+                                        </div>
+                                      )}
+                                      {videoCount > 0 && (
+                                        <span className="text-[10px] text-amber-700 font-bold ml-auto flex items-center space-x-1">
+                                          <Video className="w-3 h-3" />
+                                          <span>{videoCount} Video{videoCount > 1 ? 's' : ''}</span>
+                                        </span>
+                                      )}
+                                    </div>
+                                  ) : (
+                                    <div className="bg-slate-50 border border-dashed border-slate-200 rounded-xl py-3 text-center">
+                                      <p className="text-[11px] font-semibold text-slate-400">
+                                        No birds registered yet in this category
+                                      </p>
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+
+                              {/* Card Action Footer */}
+                              <div className="p-3 bg-slate-50/70 border-t border-slate-100 grid grid-cols-2 gap-2">
+                                <button
+                                  type="button"
+                                  onClick={() => openAddRoosterForCategory(catKey)}
+                                  className="flex items-center justify-center space-x-1 bg-white hover:bg-amber-50 hover:border-amber-300 text-slate-800 hover:text-amber-950 border border-slate-200 font-bold py-2 rounded-xl text-xs transition active:scale-95 cursor-pointer shadow-2xs"
+                                >
+                                  <Plus className="w-3.5 h-3.5 text-amber-600" />
+                                  <span>+ Upload to Breed</span>
+                                </button>
+
+                                <button
+                                  type="button"
+                                  onClick={() => setSelectedCategoryFolder(catKey)}
+                                  className="flex items-center justify-center space-x-1 bg-stone-900 hover:bg-stone-800 text-white font-bold py-2 rounded-xl text-xs transition active:scale-95 cursor-pointer shadow-xs"
+                                >
+                                  <span>Open Showroom</span>
+                                  <ArrowRight className="w-3.5 h-3.5 text-amber-400" />
+                                </button>
+                              </div>
+
+                            </div>
+                          );
+                        })}
+                    </div>
+                  </div>
+                ) : filteredRoosters.length === 0 ? (
+                  <div className="bg-white rounded-2xl p-12 text-center border border-dashed border-slate-300">
+                    <p className="text-sm font-bold text-slate-700">No birds match this search filter.</p>
+                    <button
+                      onClick={() => { setSearchFilter(''); setCategoryFilter('all'); }}
+                      className="mt-2 text-xs text-amber-700 font-bold hover:underline cursor-pointer"
+                    >
+                      Clear all filters
+                    </button>
+                  </div>
+                ) : roosterViewMode === 'grid' ? (
+                  /* Card Grid View (All Birds) */
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
+                    {filteredRoosters.map((rooster) => (
+                      <div 
+                        key={rooster.id}
+                        className="bg-white rounded-2xl border border-slate-200 hover:border-amber-500/70 hover:shadow-md transition overflow-hidden flex flex-col justify-between"
+                      >
+                        <div>
+                          <div className="relative aspect-4/3 w-full bg-slate-900 overflow-hidden">
+                            <img 
+                              src={rooster.images[0] || 'https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?auto=format&fit=crop&w=800&q=80'} 
+                              alt={rooster.name}
+                              className="w-full h-full object-cover object-center"
+                            />
+                            <div className="absolute top-2 left-2 flex items-center space-x-1 font-mono text-[10px] font-bold bg-black/85 text-amber-400 px-2 py-0.5 rounded-md border border-amber-500/30">
+                              <span>TAG: {rooster.tagId}</span>
+                            </div>
+                            {rooster.videoUrl && (
+                              <div className="absolute top-2 right-2 p-1 rounded-full bg-black/75 text-amber-400" title="Video Available">
+                                <Video className="w-3.5 h-3.5" />
+                              </div>
+                            )}
+                            <div className="absolute bottom-2 left-2">
+                              <span className={`text-[10px] px-2 py-0.5 rounded-md ${getBadgeStyle(rooster.badge)}`}>
+                                {rooster.badge}
+                              </span>
+                            </div>
+                          </div>
+
+                          <div className="p-3 space-y-1.5">
+                            <h4 className="text-sm font-extrabold text-slate-950 truncate">
+                              {rooster.name}
+                            </h4>
+                            <p className="text-[11px] text-slate-500 font-medium truncate">
+                              {rooster.breed}
+                            </p>
+
+                            <div className="flex items-center justify-between pt-1">
+                              <div>
+                                <span className="text-xs text-slate-400 line-through mr-1.5">
+                                  ₹{(rooster.originalPrice || Math.round((rooster.price || 9500) * 1.25)).toLocaleString('en-IN')}
+                                </span>
+                                <span className="text-sm font-black text-slate-950">
+                                  ₹{(rooster.price || 9500).toLocaleString('en-IN')}
+                                </span>
+                              </div>
+                              <span className="text-[10px] text-slate-600 font-mono bg-slate-100 px-1.5 py-0.5 rounded">
+                                {rooster.weight} • {rooster.height}
+                              </span>
+                            </div>
+
+                            <div className="pt-1">
+                              <select
+                                value={rooster.badge}
+                                onChange={(e) => toggleBadge(rooster.id, e.target.value as RoosterBadge)}
+                                className="w-full text-[11px] font-bold py-1 px-2 rounded-lg bg-slate-50 border border-slate-200 text-slate-700"
+                              >
+                                <option value="Champion Line">👑 Champion Line</option>
+                                <option value="Farm Stud">⭐ Farm Stud</option>
+                                <option value="Heritage Pure">🌿 Heritage Pure</option>
+                                <option value="Breeding Flock">🌾 Breeding Flock</option>
+                                <option value="Young Star">✨ Young Star</option>
+                              </select>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="p-3 pt-0 border-t border-slate-100 grid grid-cols-2 gap-2 mt-2">
+                          <button
+                            type="button"
+                            onClick={() => handleEditClick(rooster)}
+                            className="flex items-center justify-center space-x-1 bg-slate-100 hover:bg-amber-100 hover:text-amber-950 text-slate-800 font-bold py-1.5 rounded-lg text-xs transition cursor-pointer"
+                          >
+                            <Edit3 className="w-3.5 h-3.5 text-amber-700" />
+                            <span>Edit</span>
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (confirm(`Delete rooster #${rooster.tagId} (${rooster.name}) from catalogue?`)) {
+                                deleteRooster(rooster.id);
+                              }
+                            }}
+                            className="flex items-center justify-center space-x-1 bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold py-1.5 rounded-lg text-xs transition cursor-pointer"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                            <span>Delete</span>
+                          </button>
+                        </div>
+
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  /* Table View (All Birds) */
+                  <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-xs">
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-left text-xs">
+                        <thead className="bg-slate-50/80 border-b border-slate-200 text-slate-500 font-bold uppercase tracking-wider text-[10px]">
+                          <tr>
+                            <th className="py-3 px-4">Rooster Specimen</th>
+                            <th className="py-3 px-4">Tag ID</th>
+                            <th className="py-3 px-4">Breed & Category</th>
+                            <th className="py-3 px-4">Weight / Age</th>
+                            <th className="py-3 px-4">Price</th>
+                            <th className="py-3 px-4">Exhibition Badge</th>
+                            <th className="py-3 px-4 text-right">Actions</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-100">
+                          {filteredRoosters.map((rooster) => (
+                            <tr key={rooster.id} className="hover:bg-slate-50/60 transition group">
+                              <td className="py-3 px-4">
+                                <div className="flex items-center space-x-3">
+                                  <img
+                                    src={rooster.images[0] || 'https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?auto=format&fit=crop&w=800&q=80'}
+                                    alt={rooster.name}
+                                    className="w-10 h-10 rounded-xl object-cover border border-slate-200 shrink-0 shadow-2xs"
+                                  />
+                                  <div>
+                                    <p className="font-extrabold text-slate-900 group-hover:text-amber-700 transition">
+                                      {rooster.name}
+                                    </p>
+                                    <p className="text-[10px] text-slate-400">
+                                      {rooster.combType || 'Pea Comb'}
+                                    </p>
+                                  </div>
+                                </div>
+                              </td>
+
+                              <td className="py-3 px-4 font-mono font-bold text-slate-700">
+                                <span className="bg-slate-100 px-2 py-0.5 rounded-md border border-slate-200">
+                                  {rooster.tagId}
+                                </span>
+                              </td>
+
+                              <td className="py-3 px-4">
+                                <p className="font-semibold text-slate-800">{rooster.breed}</p>
+                                <span className="text-[10px] text-amber-700 font-mono">
+                                  {rooster.category}
+                                </span>
+                              </td>
+
+                              <td className="py-3 px-4 font-medium text-slate-600">
+                                <p>{rooster.weight}</p>
+                                <p className="text-[10px] text-slate-400">{rooster.age}</p>
+                              </td>
+
+                              <td className="py-3 px-4 font-mono font-black text-slate-900">
+                                ₹{(rooster.price || 9500).toLocaleString('en-IN')}
+                              </td>
+
+                              <td className="py-3 px-4">
+                                <select
+                                  value={rooster.badge}
+                                  onChange={(e) => toggleBadge(rooster.id, e.target.value as RoosterBadge)}
+                                  className="text-[11px] font-bold py-1 px-2 rounded-lg bg-slate-50 border border-slate-200 text-slate-700"
+                                >
+                                  <option value="Champion Line">👑 Champion Line</option>
+                                  <option value="Farm Stud">⭐ Farm Stud</option>
+                                  <option value="Heritage Pure">🌿 Heritage Pure</option>
+                                  <option value="Breeding Flock">🌾 Breeding Flock</option>
+                                  <option value="Young Star">✨ Young Star</option>
+                                </select>
+                              </td>
+
+                              <td className="py-3 px-4 text-right">
+                                <div className="flex items-center justify-end space-x-1.5">
+                                  <button
+                                    type="button"
+                                    onClick={() => handleEditClick(rooster)}
+                                    className="p-1.5 rounded-lg text-slate-600 hover:text-amber-800 hover:bg-amber-50 transition cursor-pointer"
+                                    title="Edit bird"
+                                  >
+                                    <Edit3 className="w-4 h-4" />
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      if (confirm(`Delete #${rooster.tagId} (${rooster.name})?`)) {
+                                        deleteRooster(rooster.id);
+                                      }
+                                    }}
+                                    className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition cursor-pointer"
+                                    title="Delete bird"
+                                  >
+                                    <Trash2 className="w-4 h-4" />
+                                  </button>
+                                </div>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                )}
+
               </div>
             )}
 
@@ -2062,6 +2644,24 @@ export const AdminPanel: React.FC = () => {
               )}
             </div>
 
+            {/* Showroom Association Banner */}
+            <div className="bg-amber-50/80 border border-amber-200/80 rounded-xl p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+              <div className="flex items-center space-x-2.5">
+                <span className="text-2xl">{ROOSTER_CATEGORIES_META[formData.category as Exclude<RoosterCategory, 'all'>]?.icon || '🐓'}</span>
+                <div>
+                  <p className="text-xs font-black text-amber-950">
+                    Category Showroom: {ROOSTER_CATEGORIES_META[formData.category as Exclude<RoosterCategory, 'all'>]?.name || formData.category}
+                  </p>
+                  <p className="text-[11px] text-amber-800">
+                    Tag Series Prefix: <code className="font-mono font-bold bg-amber-100/70 px-1.5 py-0.5 rounded text-amber-950">{ROOSTER_CATEGORIES_META[formData.category as Exclude<RoosterCategory, 'all'>]?.tagPrefix}###</code> • {ROOSTER_CATEGORIES_META[formData.category as Exclude<RoosterCategory, 'all'>]?.tagline}
+                  </p>
+                </div>
+              </div>
+              <span className="text-[10px] font-bold uppercase tracking-wider bg-amber-200/80 text-amber-950 px-2.5 py-1 rounded-md self-start sm:self-auto border border-amber-300">
+                Showroom Linked
+              </span>
+            </div>
+
             {/* Section 1: Identification & Pricing */}
             <div className="space-y-3">
               <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center space-x-1.5">
@@ -2069,7 +2669,34 @@ export const AdminPanel: React.FC = () => {
                 <span>1. Identification & Valuation</span>
               </h4>
 
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Breed Category</label>
+                  <select
+                    value={formData.category}
+                    onChange={(e) => {
+                      const newCat = e.target.value as Exclude<RoosterCategory, 'all'>;
+                      const meta = ROOSTER_CATEGORIES_META[newCat];
+                      setFormData(prev => ({
+                        ...prev,
+                        category: newCat,
+                        breed: meta ? meta.name : prev.breed,
+                        tagId: prev.tagId && prev.tagId.includes('-') && meta
+                          ? `${meta.tagPrefix}${prev.tagId.split('-').slice(2).join('-') || Math.floor(100 + Math.random() * 900)}`
+                          : meta ? `${meta.tagPrefix}${Math.floor(100 + Math.random() * 900)}` : prev.tagId
+                      }));
+                    }}
+                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-900"
+                  >
+                    <option value="aseel-peela">🐓 Pure Aseel (Peela)</option>
+                    <option value="aseel-kagar">🦅 Aseel Kagar</option>
+                    <option value="aseel-sindhi">🦃 Sindhi Heavy Aseel</option>
+                    <option value="kadaknath">🖤 Pure Kadaknath</option>
+                    <option value="country-desi">🌾 Country Desi (Natu Kodi)</option>
+                    <option value="breeding-pairs">👑 Breeding Units</option>
+                  </select>
+                </div>
+
                 <div>
                   <label className="block text-xs font-bold text-slate-700 mb-1">Tag ID</label>
                   <input

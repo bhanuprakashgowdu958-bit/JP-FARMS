@@ -1,4 +1,4 @@
-import { Rooster, CustomerInquiry, RoosterOrder } from '@/types/rooster';
+import { Rooster, CustomerInquiry, RoosterOrder, RoosterCategory } from '@/types/rooster';
 
 export const FARM_LOCATION = {
   name: 'JP Farms Heritage Breeder Estate',
@@ -293,3 +293,85 @@ export const INITIAL_INQUIRIES: CustomerInquiry[] = [
     status: 'contacted',
   },
 ];
+
+export interface BreedCategoryMeta {
+  id: Exclude<RoosterCategory, 'all'>;
+  name: string;
+  shortName: string;
+  icon: string;
+  tagPrefix: string;
+  tagline: string;
+  description: string;
+  badgeColor: string;
+  accentColor: string;
+}
+
+export const ROOSTER_CATEGORIES_META: Record<Exclude<RoosterCategory, 'all'>, BreedCategoryMeta> = {
+  'aseel-peela': {
+    id: 'aseel-peela',
+    name: 'Pure Aseel (Peela)',
+    shortName: 'Peela Aseel',
+    icon: '🐓',
+    tagPrefix: 'JP-AS-',
+    tagline: 'Golden Plumage & Compact Pea Comb',
+    description: 'Direct pedigree championship lineage. Renowned for muscular upright stance, alert aggression, and deep golden-red feathers.',
+    badgeColor: 'bg-amber-100 text-amber-900 border-amber-300',
+    accentColor: 'from-amber-500 to-amber-600',
+  },
+  'aseel-kagar': {
+    id: 'aseel-kagar',
+    name: 'Aseel Kagar (Black & Green Sheen)',
+    shortName: 'Aseel Kagar',
+    icon: '🦅',
+    tagPrefix: 'JP-KG-',
+    tagline: 'Emerald Sheen Plumage & Heavy Bone Frame',
+    description: 'Majestic dark champion strain exhibiting iridescent bottle-green reflections, heavy bone density, and unmatched stamina.',
+    badgeColor: 'bg-emerald-100 text-emerald-900 border-emerald-300',
+    accentColor: 'from-emerald-600 to-teal-700',
+  },
+  'aseel-sindhi': {
+    id: 'aseel-sindhi',
+    name: 'Sindhi Heavy Aseel',
+    shortName: 'Sindhi Aseel',
+    icon: '🦃',
+    tagPrefix: 'JP-SN-',
+    tagline: 'Longneck Giant Frame & Broad Breast',
+    description: 'Heavyweight heritage stock featuring prominent standing height, thick shanks, cushion comb, and powerful territorial instincts.',
+    badgeColor: 'bg-sky-100 text-sky-900 border-sky-300',
+    accentColor: 'from-sky-500 to-blue-600',
+  },
+  'kadaknath': {
+    id: 'kadaknath',
+    name: 'Pure Kadaknath (Jhabua Line)',
+    shortName: 'Kadaknath',
+    icon: '🖤',
+    tagPrefix: 'JP-KN-',
+    tagline: 'Melanic Black Meat, Bones & Feathers',
+    description: '100% pure Madhya Pradesh Jhabua bloodline. Characterized by high protein, medicinal qualities, and pitch-black appearance.',
+    badgeColor: 'bg-slate-900 text-slate-100 border-slate-700',
+    accentColor: 'from-slate-800 to-slate-950',
+  },
+  'country-desi': {
+    id: 'country-desi',
+    name: 'Pure Indigenous Country (Natu Kodi)',
+    shortName: 'Natu Kodi',
+    icon: '🌾',
+    tagPrefix: 'JP-NK-',
+    tagline: 'Free-Range Hardy Desi Lineage',
+    description: 'Traditional South Indian free-range village roosters. Naturally immune, agile, and fed on farm grains and native insects.',
+    badgeColor: 'bg-lime-100 text-lime-900 border-lime-300',
+    accentColor: 'from-lime-600 to-emerald-700',
+  },
+  'breeding-pairs': {
+    id: 'breeding-pairs',
+    name: 'Lineage Breeding Trios & Pairs',
+    shortName: 'Breeding Units',
+    icon: '👑',
+    tagPrefix: 'JP-TR-',
+    tagline: '1 Champion Stud + 2 Matching Lineage Hens',
+    description: 'Complete foundational breeding units selected for genetic purity, egg fertility, and uniform heritage breed propagation.',
+    badgeColor: 'bg-purple-100 text-purple-900 border-purple-300',
+    accentColor: 'from-purple-600 to-indigo-700',
+  },
+};
+
