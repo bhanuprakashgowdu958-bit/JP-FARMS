@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { readFile, writeFile } from 'fs/promises';
 import path from 'path';
-import { isBhanuEmail } from '@/lib/authStore';
+import { verifyAdminToken } from '@/lib/serverSecurity';
 
 const DATA_FILE = path.join(process.cwd(), 'data', 'user_profiles.json');
 
@@ -64,7 +64,7 @@ export async function GET(req: NextRequest) {
     // Security Check: Requester can only read their own profile unless requester is Admin
     const authHeaderEmail = req.headers.get('x-user-email')?.toLowerCase()?.trim();
     const authHeaderUid = req.headers.get('x-user-uid')?.trim();
-    const isAdmin = isBhanuEmail(authHeaderEmail);
+    const isAdmin = verifyAdminToken(req);
 
     if (!isAdmin) {
       const matchesEmail = authHeaderEmail && targetEmail && authHeaderEmail === targetEmail;
@@ -107,7 +107,7 @@ export async function POST(req: NextRequest) {
     // Security Check: Requester can only update their own profile unless requester is Admin
     const authHeaderEmail = req.headers.get('x-user-email')?.toLowerCase()?.trim();
     const authHeaderUid = req.headers.get('x-user-uid')?.trim();
-    const isAdmin = isBhanuEmail(authHeaderEmail);
+    const isAdmin = verifyAdminToken(req);
 
     if (!isAdmin) {
       const matchesEmail = authHeaderEmail && email && authHeaderEmail === email;

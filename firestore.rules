@@ -1,0 +1,43 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper function: Check if authenticated user is the farm owner / admin
+    function isOwnerAdmin() {
+      return request.auth != null && (
+        request.auth.token.email == 'bhanuprakashgowdu958@gmail.com' ||
+        request.auth.token.email == 'bhanuprakashgowdu87@gmail.com' ||
+        request.auth.token.email.matches('bhanuprakashgowdu.*@gmail.com')
+      );
+    }
+
+    // 1. Roosters Showcase Collection (Public read, Owner-only write)
+    match /roosters/{roosterId} {
+      allow read: if true;
+      allow write: if isOwnerAdmin();
+    }
+
+    // 2. Farm Visit Inquiries (Public creation, Owner-only management)
+    match /inquiries/{inquiryId} {
+      allow create: if request.resource.data.customerName is string
+                    && request.resource.data.phoneNumber is string;
+      allow read, update, delete: if isOwnerAdmin();
+    }
+
+    // 3. User Profiles & Credentials (Strict customer privacy isolation)
+    match /users/{userId} {
+      allow read, write: if request.auth != null && (request.auth.uid == userId || isOwnerAdmin());
+    }
+
+    match /profiles_by_email/{emailDoc} {
+      allow read, write: if request.auth != null && (
+        request.auth.token.email.replace('[^a-zA-Z0-9]', '_') == emailDoc || isOwnerAdmin()
+      );
+    }
+
+    // 4. Default Deny for all other collections
+    match /{document=**} {
+      allow read, write: if isOwnerAdmin();
+    }
+  }
+}

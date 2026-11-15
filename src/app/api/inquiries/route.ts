@@ -3,13 +3,12 @@ import { readFile, writeFile } from 'fs/promises';
 import path from 'path';
 import { CustomerInquiry } from '@/types/rooster';
 import { INITIAL_INQUIRIES } from '@/lib/data';
-import { isBhanuEmail } from '@/lib/authStore';
+import { verifyAdminToken, checkRateLimit } from '@/lib/serverSecurity';
 
 const DATA_FILE = path.join(process.cwd(), 'data', 'inquiries.json');
 
 function isAuthorizedAdmin(req: NextRequest): boolean {
-  const adminEmail = req.headers.get('x-admin-email');
-  return Boolean(adminEmail && isBhanuEmail(adminEmail));
+  return verifyAdminToken(req);
 }
 
 function sanitizeText(val: unknown, maxLen = 300): string {
@@ -48,9 +47,17 @@ export async function GET(req: NextRequest) {
   }
 }
 
-// POST create a new inquiry / booking lead (Validated & sanitized)
+// POST create a new inquiry / booking lead (Validated, sanitized & rate-limited)
 export async function POST(req: NextRequest) {
   try {
+    const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
+    const rateCheck = checkRateLimit(`inquiry:${ip}`, 10, 10 * 60 * 1000);
+    if (!rateCheck.allowed) {
+      return NextResponse.json({ 
+        error: `Inquiry submission limit reached. Please wait ${rateCheck.retryAfterSec} seconds.` 
+      }, { status: 429 });
+    }
+
     const body = await req.json();
 
     const customerName = sanitizeText(body.customerName, 100);

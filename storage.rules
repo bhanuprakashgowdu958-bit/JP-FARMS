@@ -1,0 +1,35 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    function isOwnerAdmin() {
+      return request.auth != null && (
+        request.auth.token.email == 'bhanuprakashgowdu958@gmail.com' ||
+        request.auth.token.email == 'bhanuprakashgowdu87@gmail.com' ||
+        request.auth.token.email.matches('bhanuprakashgowdu.*@gmail.com')
+      );
+    }
+
+    // Public catalog media (images, videos)
+    match /rooster-photos/{allPaths=**} {
+      allow read: if true;
+      allow write: if isOwnerAdmin();
+    }
+
+    match /rooster-videos/{allPaths=**} {
+      allow read: if true;
+      allow write: if isOwnerAdmin();
+    }
+
+    // Customer profile photos
+    match /user-avatars/{userId}/{allPaths=**} {
+      allow read: if true;
+      allow write: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // Default deny
+    match /{allPaths=**} {
+      allow read, write: if isOwnerAdmin();
+    }
+  }
+}

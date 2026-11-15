@@ -113,7 +113,18 @@ export const AdminPanel: React.FC = () => {
       if (storedAuth === 'granted' || (user?.email && isBhanuEmail(user.email))) {
         setIsAuthenticated(true);
       }
-      setAuthChecking(false);
+
+      // Verify server session cookie
+      fetch('/api/admin-auth')
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.authenticated) {
+            setIsAuthenticated(true);
+            sessionStorage.setItem('jp_farms_admin_auth', 'granted');
+          }
+        })
+        .catch(() => {})
+        .finally(() => setAuthChecking(false));
 
       setCustomers(getRegisteredCustomers());
       const handleCustomersUpdate = () => {
@@ -148,15 +159,18 @@ export const AdminPanel: React.FC = () => {
       const res = await fetch('/api/admin-auth', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ pin: enteredPin, email: user?.email }),
+        body: JSON.stringify({ pin: enteredPin }),
       });
       const data = await res.json();
       if (res.ok && data.success) {
         sessionStorage.setItem('jp_farms_admin_auth', 'granted');
+        if (data.token) {
+          sessionStorage.setItem('jp_farms_admin_token', data.token);
+        }
         setIsAuthenticated(true);
         setAuthError('');
       } else {
-        setAuthError(data.error || 'Access Denied: Incorrect Master PIN. Authorized personnel only.');
+        setAuthError(data.error || 'Access Denied: Incorrect Master Passcode.');
         setEnteredPin('');
       }
     } catch {
@@ -167,8 +181,10 @@ export const AdminPanel: React.FC = () => {
   };
 
   const handleLogout = () => {
+    fetch('/api/admin-auth', { method: 'DELETE' }).catch(() => {});
     if (typeof window !== 'undefined') {
       sessionStorage.removeItem('jp_farms_admin_auth');
+      sessionStorage.removeItem('jp_farms_admin_token');
     }
     setIsAuthenticated(false);
     setEnteredPin('');
@@ -251,8 +267,14 @@ export const AdminPanel: React.FC = () => {
       } else {
         const uploadData = new FormData();
         uploadData.append('file', file);
+        const uploadHeaders: Record<string, string> = {};
+        const adminToken = typeof window !== 'undefined' ? sessionStorage.getItem('jp_farms_admin_token') : null;
+        if (adminToken) {
+          uploadHeaders['x-admin-token'] = adminToken;
+        }
         const res = await fetch('/api/upload', {
           method: 'POST',
+          headers: uploadHeaders,
           body: uploadData,
         });
         const data = await res.json();
@@ -541,7 +563,7 @@ export const AdminPanel: React.FC = () => {
             <div>
               <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5 flex items-center justify-between">
                 <span>Master Passcode</span>
-                <span className="text-[10px] text-amber-400 lowercase font-mono">default: 2026</span>
+                <span className="text-[10px] text-slate-500 font-mono">Confidential Owner PIN</span>
               </label>
               <div className="relative">
                 <KeyRound className="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2" />

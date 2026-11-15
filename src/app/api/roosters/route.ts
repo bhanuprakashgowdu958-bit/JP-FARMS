@@ -3,13 +3,12 @@ import { readFile, writeFile } from 'fs/promises';
 import path from 'path';
 import { Rooster } from '@/types/rooster';
 import { INITIAL_ROOSTERS } from '@/lib/data';
-import { isBhanuEmail } from '@/lib/authStore';
+import { verifyAdminToken } from '@/lib/serverSecurity';
 
 const DATA_FILE = path.join(process.cwd(), 'data', 'roosters.json');
 
 function isAuthorizedAdmin(req: NextRequest): boolean {
-  const adminEmail = req.headers.get('x-admin-email');
-  return Boolean(adminEmail && isBhanuEmail(adminEmail));
+  return verifyAdminToken(req);
 }
 
 async function getRoostersFromFile(): Promise<Rooster[]> {

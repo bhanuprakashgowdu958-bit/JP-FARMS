@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { writeFile, mkdir } from 'fs/promises';
 import path from 'path';
+import { verifyAdminToken } from '@/lib/serverSecurity';
 
 const ALLOWED_MIME_TYPES = new Set([
   'image/jpeg',
@@ -17,6 +18,11 @@ const MAX_FILE_SIZE = 25 * 1024 * 1024; // 25 MB limit
 
 export async function POST(req: NextRequest) {
   try {
+    // Security check: Only verified admin session can upload assets
+    if (!verifyAdminToken(req)) {
+      return NextResponse.json({ error: 'Unauthorized: Admin privileges required to upload media.' }, { status: 401 });
+    }
+
     const formData = await req.formData();
     const file = formData.get('file') as File | null;
 

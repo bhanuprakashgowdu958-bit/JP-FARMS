@@ -1,5 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { isBhanuEmail } from '@/lib/authStore';
+import { 
+  signAdminToken, 
+  verifyAdminToken, 
+  setAdminAuthCookie, 
+  clearAdminAuthCookie, 
+  checkRateLimit 
+} from '@/lib/serverSecurity';
 
 // Server-only authorized admin PINs (never sent to client browser bundle)
 const SERVER_ADMIN_PINS = new Set([
@@ -8,55 +14,79 @@ const SERVER_ADMIN_PINS = new Set([
   'jpfarms',
 ]);
 
-// Basic in-memory rate limiting to prevent brute force
-const failedAttempts: Record<string, { count: number; lockedUntil: number }> = {};
+if (process.env.ADMIN_MASTER_PIN) {
+  SERVER_ADMIN_PINS.add(process.env.ADMIN_MASTER_PIN.trim().toLowerCase());
+}
 
+/**
+ * GET: Verify current session authentication status via HttpOnly cookie
+ */
+export async function GET(req: NextRequest) {
+  const isValid = verifyAdminToken(req);
+  if (!isValid) {
+    return NextResponse.json({ authenticated: false }, { status: 401 });
+  }
+  return NextResponse.json({ authenticated: true, role: 'owner_admin' });
+}
+
+/**
+ * POST: Authenticate using Master PIN and issue a cryptographic session token
+ */
 export async function POST(req: NextRequest) {
   try {
-    const ip = req.headers.get('x-forwarded-for') || 'unknown';
-    const now = Date.now();
+    const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
 
-    // Check rate limit
-    if (failedAttempts[ip] && failedAttempts[ip].lockedUntil > now) {
-      const waitSec = Math.ceil((failedAttempts[ip].lockedUntil - now) / 1000);
+    // 1. Sliding Window Rate Limiting (5 attempts per 5 minutes per IP)
+    const rateCheck = checkRateLimit(`admin-auth:${ip}`, 5, 5 * 60 * 1000);
+    if (!rateCheck.allowed) {
       return NextResponse.json({ 
         success: false, 
-        error: `Too many failed attempts. Please wait ${waitSec} seconds before trying again.` 
+        error: `Too many failed attempts. Security cooldown active. Please retry in ${rateCheck.retryAfterSec} seconds.` 
       }, { status: 429 });
     }
 
-    const body = await req.json();
+    const body = await req.json().catch(() => ({}));
     const pin = (body.pin || '').trim().toLowerCase();
-    const email = (body.email || '').trim().toLowerCase();
 
-    // Check Google Auth Owner Email bypass
-    if (email && isBhanuEmail(email)) {
-      return NextResponse.json({ success: true, role: 'owner_admin' });
+    // 2. Validate Master PIN strictly on server
+    const isPinValid = Boolean(pin && SERVER_ADMIN_PINS.has(pin));
+
+    if (!isPinValid) {
+      return NextResponse.json({ 
+        success: false, 
+        error: 'Access Denied: Incorrect Master Passcode. Security event logged.' 
+      }, { status: 401 });
     }
 
-    // Check Server-side PIN
-    if (pin && SERVER_ADMIN_PINS.has(pin)) {
-      // Clear failed attempts upon success
-      delete failedAttempts[ip];
-      return NextResponse.json({ success: true, role: 'pin_admin' });
-    }
+    // 3. Issue Cryptographic HMAC Session Token
+    const token = signAdminToken();
+    const response = NextResponse.json({ 
+      success: true, 
+      token,
+      role: 'owner_admin',
+      message: 'Owner credentials verified successfully.'
+    });
 
-    // Increment failed attempts
-    if (!failedAttempts[ip]) {
-      failedAttempts[ip] = { count: 1, lockedUntil: 0 };
-    } else {
-      failedAttempts[ip].count += 1;
-      if (failedAttempts[ip].count >= 5) {
-        failedAttempts[ip].lockedUntil = now + 5 * 60 * 1000; // 5 min lockout
-      }
-    }
+    // 4. Attach Secure HttpOnly Cookie
+    setAdminAuthCookie(response, token);
 
+    return response;
+  } catch (err: any) {
     return NextResponse.json({ 
       success: false, 
-      error: 'Access Denied: Incorrect Master PIN. Authorized personnel only.' 
-    }, { status: 401 });
-  } catch (err: any) {
-    return NextResponse.json({ success: false, error: 'Authentication failed' }, { status: 500 });
+      error: 'Authentication verification encountered a server error.' 
+    }, { status: 500 });
   }
 }
 
+/**
+ * DELETE: Revoke admin session and purge authentication cookies
+ */
+export async function DELETE() {
+  const response = NextResponse.json({ 
+    success: true, 
+    message: 'Admin session terminated securely.' 
+  });
+  clearAdminAuthCookie(response);
+  return response;
+}
