@@ -542,6 +542,10 @@ export function useOrders() {
 
   const deleteOrder = (id: string) => {
     const current = getStoredOrders();
+    const target = current.find((o) => o.id === id);
+    if (target && (target.status === 'delivered' || target.status === 'pending_approval')) {
+      return;
+    }
     const updated = current.filter((o) => o.id !== id);
     saveStoredOrders(updated);
     setOrders(updated);

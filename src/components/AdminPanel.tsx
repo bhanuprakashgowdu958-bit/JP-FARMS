@@ -1588,18 +1588,20 @@ export const AdminPanel: React.FC = () => {
                             <span>Print Dispatch Slip</span>
                           </button>
 
-                          <button
-                            type="button"
-                            onClick={() => {
-                              if (confirm(`Permanently remove order #${order.id}?`)) {
-                                deleteOrder(order.id);
-                              }
-                            }}
-                            className="p-1.5 text-slate-400 hover:text-rose-600 rounded-lg"
-                            title="Delete order"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </button>
+                          {order.status !== 'delivered' && order.status !== 'pending_approval' && (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                if (confirm(`Permanently remove order #${order.id}?`)) {
+                                  deleteOrder(order.id);
+                                }
+                              }}
+                              className="p-1.5 text-slate-400 hover:text-rose-600 rounded-lg transition"
+                              title="Delete order"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          )}
                         </div>
 
                         {/* Status Transition Triggers */}
