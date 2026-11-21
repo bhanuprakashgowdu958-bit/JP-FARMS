@@ -6,6 +6,7 @@ import { useAuth } from '@/lib/authStore';
 import { Header } from '@/components/Header';
 import { ZomatoBannerCarousel } from '@/components/ZomatoBannerCarousel';
 import { RoosterCatalog } from '@/components/RoosterCatalog';
+import { RoosterTVSection } from '@/components/RoosterTVSection';
 import { FarmBioSecurity } from '@/components/FarmBioSecurity';
 import { DeliveryProcess } from '@/components/DeliveryProcess';
 import { Testimonials } from '@/components/Testimonials';
@@ -154,6 +155,16 @@ export default function HomePage() {
           onOpenVideo={handleOpenVideo}
           onInquire={handleInquire}
           onBuyNow={handleBuyNow}
+        />
+
+        {/* Rooster TV — 4K Unfiltered Movement Proof & Reels */}
+        <RoosterTVSection
+          roosters={roosters}
+          onOpenReels={(id) => {
+            setReelsInitialId(id);
+            setIsReelsOpen(true);
+          }}
+          onSelectRooster={(rooster) => setSelectedRooster(rooster)}
         />
 
         {/* Farm Bio-Security, Organic Diet & Vaccination Standards */}

@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Star, CheckCircle2, Quote, UserCheck } from 'lucide-react';
+import { Star, CheckCircle2, Quote, UserCheck, MapPin, Award } from 'lucide-react';
 import { useScrollReveal } from '@/hooks/useScrollReveal';
 
 const REVIEWS = [
@@ -43,6 +43,24 @@ export const Testimonials: React.FC = () => {
             <UserCheck className="w-3.5 h-3.5 text-amber-400" />
             <span>Visitor &amp; Breeder Experiences</span>
           </div>
+
+          {/* Google Maps Trust Badge */}
+          <div className="reveal flex items-center justify-center pt-1">
+            <div className="inline-flex items-center space-x-2.5 px-4 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-xs text-white">
+              <span className="flex items-center text-amber-400 font-black">
+                <Star className="w-3.5 h-3.5 fill-amber-400 mr-1" />
+                4.9 / 5.0
+              </span>
+              <span className="text-white/30">•</span>
+              <span className="text-amber-200/90 font-medium">120+ Verified Farm Visitors</span>
+              <span className="text-white/30">•</span>
+              <span className="inline-flex items-center text-emerald-400 font-semibold">
+                <MapPin className="w-3 h-3 mr-1" />
+                Google Verified
+              </span>
+            </div>
+          </div>
+
           <h2 className="reveal heading-serif text-3xl sm:text-4xl lg:text-5xl text-white">
             Words from the<br />
             <em className="text-amber-400">Avian Brotherhood</em>

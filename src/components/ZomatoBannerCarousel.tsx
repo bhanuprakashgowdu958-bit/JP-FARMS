@@ -22,6 +22,10 @@ interface BannerSlide {
   id: string;
   image: string;
   imageAlt: string;
+  badge: string;
+  title: string;
+  subtitle: string;
+  ctaText: string;
 }
 
 export const ZomatoBannerCarousel: React.FC<ZomatoBannerCarouselProps> = ({
@@ -40,26 +44,46 @@ export const ZomatoBannerCarousel: React.FC<ZomatoBannerCarouselProps> = ({
       id: 'commercial-grain-ad',
       image: '/banners/ad_rooster_golden_grains_wide.jpg',
       imageAlt: '3D Commercial Advertisement: Champion Rooster Feeding on Golden Grains at JP Farms',
+      badge: '100% Ayurvedic Conditioning',
+      title: 'Heritage Organic Pasture Raised',
+      subtitle: 'Zero steroids, antibiotics, or commercial broiler feed formulas',
+      ctaText: 'Explore Pure Strains →',
     },
     {
       id: 'winter-storybook',
       image: '/banners/winter_storybook_rooster_wide.jpg',
       imageAlt: 'Winter Storybook 3D Illustration: Magnificent Rooster on Snowy Fence at JP Farms',
+      badge: 'All-Weather Avian Stamina',
+      title: 'High Bone Density & Vitality',
+      subtitle: 'Bred for dominant stance, disease immunity, and breed fidelity',
+      ctaText: 'Browse Living Birds →',
     },
     {
       id: 'peela-aseel',
       image: '/banners/banner_rainbow_wings_crow.jpg',
       imageAlt: 'Royal Peela Aseel Rooster with Rainbow Wings Crowing at JP Farms',
+      badge: 'Ancient Deccan Bloodline',
+      title: 'Pure Royal Peela Aseel',
+      subtitle: 'Compact pea combs, upright alpha postures, and fiery plumage',
+      ctaText: 'View Peela Lineage →',
     },
     {
       id: 'alpha-staredown',
       image: '/banners/banner_alpha_warrior_staredown.jpg',
       imageAlt: 'Alpha Warrior Staredown: Purebred Champion Sire at JP Farms',
+      badge: 'Rooster TV 4K Evidence',
+      title: 'Unfiltered 4K Video Proof',
+      subtitle: 'Inspect unedited walking gait, comb anatomy & standing height',
+      ctaText: 'Watch 4K Reels ▶',
     },
     {
       id: 'farm-stream',
       image: '/banners/midday_4_farm_stream.jpg',
       imageAlt: 'JP Farms Green Pastures and Natural Stream Paddocks',
+      badge: 'Hoskote & Chittoor Sanctuary',
+      title: 'Walk the Open Pastures',
+      subtitle: '7 AM – 7 PM Daily estate tours with our master breeding team',
+      ctaText: 'Plan Estate Visit →',
     },
   ];
 
@@ -156,7 +180,27 @@ export const ZomatoBannerCarousel: React.FC<ZomatoBannerCarouselProps> = ({
                 className="w-full h-full object-cover object-[center_35%] filter brightness-[1.08] contrast-[1.05] saturate-[1.1] pointer-events-none select-none block"
               />
               {/* Minimal bottom vignette - just enough to show dots, no brightness loss */}
-              <div className="absolute inset-0 pointer-events-none bg-gradient-to-t from-black/20 via-transparent to-transparent" />
+              <div className="absolute inset-0 pointer-events-none bg-gradient-to-t from-black/50 via-transparent to-black/10" />
+
+              {/* Luxury Editorial Overlay Card — Non-intrusive bottom-left placement */}
+              <div className="absolute bottom-6 sm:bottom-8 left-4 sm:left-8 z-10 max-w-xs sm:max-w-md pointer-events-auto">
+                <div className="bg-black/45 backdrop-blur-md rounded-2xl p-3 sm:p-4 border border-white/15 shadow-xl text-left space-y-1 sm:space-y-1.5 transition-all duration-300">
+                  <span className="inline-block text-[9px] sm:text-[10px] font-mono font-bold uppercase tracking-widest px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-400/40">
+                    {banner.badge}
+                  </span>
+                  <h2 className="text-base sm:text-xl lg:text-2xl font-black text-white font-playfair tracking-tight leading-tight drop-shadow-sm">
+                    {banner.title}
+                  </h2>
+                  <p className="hidden sm:block text-[11px] text-white/80 leading-snug line-clamp-1">
+                    {banner.subtitle}
+                  </p>
+                  <div className="pt-0.5">
+                    <span className="inline-flex items-center space-x-1 text-[11px] sm:text-xs font-bold text-amber-300 hover:text-amber-200 transition">
+                      <span>{banner.ctaText}</span>
+                    </span>
+                  </div>
+                </div>
+              </div>
             </div>
           ))}
         </div>
@@ -212,7 +256,7 @@ export const ZomatoBannerCarousel: React.FC<ZomatoBannerCarouselProps> = ({
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-4">
         
-        <div className="flex items-center space-x-2.5 px-3 py-2 rounded-xl bg-white border border-sky-100 shadow-xs">
+        <div className="flex items-center space-x-2.5 px-3 py-2 rounded-xl bg-white border border-amber-100/80 shadow-2xs hover:border-amber-300 transition">
           <div className="w-7 h-7 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
             <Award className="w-4 h-4 text-amber-600" />
           </div>
@@ -222,7 +266,7 @@ export const ZomatoBannerCarousel: React.FC<ZomatoBannerCarouselProps> = ({
           </div>
         </div>
 
-        <div className="flex items-center space-x-2.5 px-3 py-2 rounded-xl bg-white border border-sky-100 shadow-xs">
+        <div className="flex items-center space-x-2.5 px-3 py-2 rounded-xl bg-white border border-amber-100/80 shadow-2xs hover:border-emerald-300 transition">
           <div className="w-7 h-7 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
             <MapPin className="w-4 h-4 text-emerald-600" />
           </div>
@@ -232,7 +276,7 @@ export const ZomatoBannerCarousel: React.FC<ZomatoBannerCarouselProps> = ({
           </div>
         </div>
 
-        <div className="flex items-center space-x-2.5 px-3 py-2 rounded-xl bg-white border border-sky-100 shadow-xs">
+        <div className="flex items-center space-x-2.5 px-3 py-2 rounded-xl bg-white border border-amber-100/80 shadow-2xs hover:border-sky-300 transition">
           <div className="w-7 h-7 rounded-lg bg-sky-50 text-sky-600 flex items-center justify-center shrink-0">
             <PlayCircle className="w-4 h-4 text-sky-600" />
           </div>
@@ -242,7 +286,7 @@ export const ZomatoBannerCarousel: React.FC<ZomatoBannerCarouselProps> = ({
           </div>
         </div>
 
-        <div className="flex items-center space-x-2.5 px-3 py-2 rounded-xl bg-white border border-sky-100 shadow-xs">
+        <div className="flex items-center space-x-2.5 px-3 py-2 rounded-xl bg-white border border-amber-100/80 shadow-2xs hover:border-purple-300 transition">
           <div className="w-7 h-7 rounded-lg bg-purple-50 text-purple-600 flex items-center justify-center shrink-0">
             <ShieldCheck className="w-4 h-4 text-purple-600" />
           </div>

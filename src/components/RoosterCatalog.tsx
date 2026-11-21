@@ -15,7 +15,10 @@ import {
   ArrowRight,
   ArrowLeft,
   ShieldCheck,
-  Video
+  Video,
+  Crown,
+  Sun,
+  HeartHandshake
 } from 'lucide-react';
 import { Rooster, RoosterCategory, RoosterBadge } from '@/types/rooster';
 import { RoosterCard } from './RoosterCard';
@@ -41,6 +44,16 @@ const CATEGORY_ITEMS: { label: string; value: RoosterCategory; icon: string }[] 
   { label: 'Breeding Units', value: 'breeding-pairs', icon: '👑' },
 ];
 
+const CATEGORY_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
+  all: Sparkles,
+  'aseel-peela': Crown,
+  'aseel-kagar': ShieldCheck,
+  'aseel-sindhi': Award,
+  kadaknath: Feather,
+  'country-desi': Sun,
+  'breeding-pairs': HeartHandshake,
+};
+
 const BADGES: { label: string; value: 'all' | RoosterBadge }[] = [
   { label: 'All Strains', value: 'all' },
   { label: '👑 Champion Line', value: 'Champion Line' },
@@ -57,7 +70,7 @@ export const RoosterCatalog: React.FC<RoosterCatalogProps> = ({
   onInquire,
   onBuyNow,
 }) => {
-  const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const [selectedCategory, setSelectedCategory] = useState<RoosterCategory>('all');
   const [selectedBadge, setSelectedBadge] = useState<'all' | RoosterBadge>('all');
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [sortBy, setSortBy] = useState<'featured' | 'price-low' | 'price-high' | 'weight' | 'height' | 'newest'>('featured');
@@ -208,6 +221,7 @@ export const RoosterCatalog: React.FC<RoosterCatalogProps> = ({
                 const count = categoryCounts[cat.value] || 0;
                 const isSelected = selectedCategory === cat.value;
                 const meta = cat.value !== 'all' ? ROOSTER_CATEGORIES_META[cat.value as Exclude<RoosterCategory, 'all'>] : null;
+                const IconComponent = CATEGORY_ICONS[cat.value] || Sparkles;
 
                 return (
                   <button
@@ -219,12 +233,10 @@ export const RoosterCatalog: React.FC<RoosterCatalogProps> = ({
                     {/* Circle Avatar */}
                     <div className={`relative w-14 h-14 sm:w-16 sm:h-16 rounded-full flex items-center justify-center transition-all duration-200 ${
                       isSelected
-                        ? 'ring-3 ring-amber-500 ring-offset-2 bg-gradient-to-br from-amber-500 to-amber-600 shadow-md scale-105'
-                        : 'bg-slate-100 group-hover:bg-slate-200/80 border border-slate-200 group-hover:scale-105'
+                        ? 'ring-3 ring-amber-500 ring-offset-2 bg-gradient-to-br from-amber-500 to-amber-600 shadow-md scale-105 text-stone-950'
+                        : 'bg-stone-50 group-hover:bg-amber-50 border border-stone-200 group-hover:border-amber-300 group-hover:scale-105 text-stone-700 group-hover:text-amber-800'
                     }`}>
-                      <span className={`text-2xl sm:text-3xl transition ${isSelected ? 'scale-110' : ''}`}>
-                        {cat.icon}
-                      </span>
+                      <IconComponent className={`w-6 h-6 sm:w-7 sm:h-7 transition ${isSelected ? 'scale-110 text-stone-950' : 'text-stone-700 group-hover:text-amber-700'}`} />
 
                       {/* Live Count Pill */}
                       <span className={`absolute -top-1 -right-1 text-[10px] font-mono font-bold px-1.5 py-0.2 rounded-full border ${
@@ -406,7 +418,14 @@ export const RoosterCatalog: React.FC<RoosterCatalogProps> = ({
                 </div>
 
                 <div className="flex items-center space-x-3 pt-1">
-                  <span className="text-4xl sm:text-5xl">{activeCategoryMeta.icon}</span>
+                  {(() => {
+                    const ShowroomIcon = CATEGORY_ICONS[selectedCategory] || Crown;
+                    return (
+                      <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-amber-400 shrink-0 shadow-inner">
+                        <ShowroomIcon className="w-6 h-6 sm:w-7 sm:h-7" />
+                      </div>
+                    );
+                  })()}
                   <div>
                     <h3 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
                       {activeCategoryMeta.name}
@@ -475,9 +494,14 @@ export const RoosterCatalog: React.FC<RoosterCatalogProps> = ({
                   {/* Category Shelf Header */}
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b-2 border-slate-100">
                     <div className="flex items-center space-x-3">
-                      <span className="text-2xl p-2 rounded-xl bg-slate-50 border border-slate-200">
-                        {meta.icon}
-                      </span>
+                      {(() => {
+                        const ShelfIcon = CATEGORY_ICONS[catKey] || Crown;
+                        return (
+                          <div className="w-10 h-10 rounded-xl bg-amber-50 border border-amber-200 flex items-center justify-center text-amber-700 shrink-0">
+                            <ShelfIcon className="w-5 h-5" />
+                          </div>
+                        );
+                      })()}
                       <div>
                         <div className="flex items-center space-x-2">
                           <h3 className="text-lg sm:text-xl font-black text-slate-900 tracking-tight">
