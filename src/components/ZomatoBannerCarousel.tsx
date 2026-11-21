@@ -42,7 +42,7 @@ export const ZomatoBannerCarousel: React.FC<ZomatoBannerCarouselProps> = ({
   const BANNERS: BannerSlide[] = [
     {
       id: 'commercial-grain-ad',
-      image: '/banners/ad_rooster_golden_grains_wide.jpg',
+      image: 'https://res.cloudinary.com/drcftm7m/image/upload/f_auto,q_auto/v1795289205/jp-farms/banners/ad_rooster_golden_grains_wide.jpg',
       imageAlt: '3D Commercial Advertisement: Champion Rooster Feeding on Golden Grains at JP Farms',
       badge: '100% Ayurvedic Conditioning',
       title: 'Heritage Organic Pasture Raised',
@@ -51,7 +51,7 @@ export const ZomatoBannerCarousel: React.FC<ZomatoBannerCarouselProps> = ({
     },
     {
       id: 'winter-storybook',
-      image: '/banners/winter_storybook_rooster_wide.jpg',
+      image: 'https://res.cloudinary.com/drcftm7m/image/upload/f_auto,q_auto/v1795289208/jp-farms/banners/winter_storybook_rooster_wide.jpg',
       imageAlt: 'Winter Storybook 3D Illustration: Magnificent Rooster on Snowy Fence at JP Farms',
       badge: 'All-Weather Avian Stamina',
       title: 'High Bone Density & Vitality',
@@ -60,7 +60,7 @@ export const ZomatoBannerCarousel: React.FC<ZomatoBannerCarouselProps> = ({
     },
     {
       id: 'peela-aseel',
-      image: '/banners/banner_rainbow_wings_crow.jpg',
+      image: 'https://res.cloudinary.com/drcftm7m/image/upload/f_auto,q_auto/v1795289211/jp-farms/banners/banner_rainbow_wings_crow.jpg',
       imageAlt: 'Royal Peela Aseel Rooster with Rainbow Wings Crowing at JP Farms',
       badge: 'Ancient Deccan Bloodline',
       title: 'Pure Royal Peela Aseel',
@@ -69,7 +69,7 @@ export const ZomatoBannerCarousel: React.FC<ZomatoBannerCarouselProps> = ({
     },
     {
       id: 'alpha-staredown',
-      image: '/banners/banner_alpha_warrior_staredown.jpg',
+      image: 'https://res.cloudinary.com/drcftm7m/image/upload/f_auto,q_auto/v1795289213/jp-farms/banners/banner_alpha_warrior_staredown.jpg',
       imageAlt: 'Alpha Warrior Staredown: Purebred Champion Sire at JP Farms',
       badge: 'Rooster TV 4K Evidence',
       title: 'Unfiltered 4K Video Proof',
@@ -78,7 +78,7 @@ export const ZomatoBannerCarousel: React.FC<ZomatoBannerCarouselProps> = ({
     },
     {
       id: 'farm-stream',
-      image: '/banners/midday_4_farm_stream.jpg',
+      image: 'https://res.cloudinary.com/drcftm7m/image/upload/f_auto,q_auto/v1795289215/jp-farms/banners/midday_4_farm_stream.jpg',
       imageAlt: 'JP Farms Green Pastures and Natural Stream Paddocks',
       badge: 'Hoskote & Chittoor Sanctuary',
       title: 'Walk the Open Pastures',

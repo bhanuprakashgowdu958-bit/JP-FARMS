@@ -15,7 +15,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "JP Farms - Pure Desi Roosters & Heritage Bloodlines",
     description: "Explore elite verified heritage roosters with unfiltered HD walking videos, biological pedigree traits, and farm visitation guide.",
-    images: ["/banners/banner_rainbow_wings_crow.jpg"],
+    images: ["https://res.cloudinary.com/drcftm7m/image/upload/f_auto,q_auto/v1795289211/jp-farms/banners/banner_rainbow_wings_crow.jpg"],
   },
 };
 

@@ -1,7 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { writeFile, mkdir } from 'fs/promises';
 import path from 'path';
+import { v2 as cloudinary } from 'cloudinary';
 import { verifyAdminToken } from '@/lib/serverSecurity';
+
+// Configure Cloudinary from environment variables
+cloudinary.config({
+  cloud_name: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || 'drcftm7m',
+  api_key: process.env.CLOUDINARY_API_KEY || '354734745383935',
+  api_secret: process.env.CLOUDINARY_API_SECRET || 'GzN7HoDD21d9GJMG4m71T8pmacg',
+  secure: true,
+});
 
 const ALLOWED_MIME_TYPES = new Set([
   'image/jpeg',
@@ -59,20 +68,45 @@ export async function POST(req: NextRequest) {
     const sanitizedBase = path.basename(file.name, ext).replace(/[^a-zA-Z0-9_-]/g, '_').slice(0, 40);
     const filename = `${Date.now()}_${Math.random().toString(36).substring(2, 8)}_${sanitizedBase}${ext}`;
     
-    const uploadDir = path.join(process.cwd(), 'public', 'uploads');
-    await mkdir(uploadDir, { recursive: true });
+    // Upload directly to Cloudinary CDN
+    try {
+      const base64Data = buffer.toString('base64');
+      const dataUri = `data:${file.type};base64,${base64Data}`;
+      const isVideo = file.type.startsWith('video/');
 
-    const filePath = path.join(uploadDir, filename);
-    await writeFile(filePath, buffer);
+      const uploadResult = await cloudinary.uploader.upload(dataUri, {
+        folder: 'jp-farms/roosters',
+        public_id: `${Date.now()}_${sanitizedBase}`,
+        resource_type: isVideo ? 'video' : 'image',
+        overwrite: true,
+      });
 
-    const publicUrl = `/uploads/${filename}`;
-    return NextResponse.json({ 
-      success: true, 
-      url: publicUrl,
-      filename,
-      size: file.size,
-      type: file.type
-    });
+      return NextResponse.json({ 
+        success: true, 
+        url: uploadResult.secure_url,
+        publicId: uploadResult.public_id,
+        filename,
+        size: file.size,
+        type: file.type
+      });
+    } catch (cloudErr: any) {
+      console.warn('Cloudinary upload fallback to local storage:', cloudErr.message);
+      
+      const uploadDir = path.join(process.cwd(), 'public', 'uploads');
+      await mkdir(uploadDir, { recursive: true });
+
+      const filePath = path.join(uploadDir, filename);
+      await writeFile(filePath, buffer);
+
+      const publicUrl = `/uploads/${filename}`;
+      return NextResponse.json({ 
+        success: true, 
+        url: publicUrl,
+        filename,
+        size: file.size,
+        type: file.type
+      });
+    }
   } catch (err: any) {
     console.error('File upload error:', err);
     return NextResponse.json({ error: 'Failed to upload file', details: err.message }, { status: 500 });

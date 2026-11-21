@@ -43,7 +43,7 @@ export default function SignUpPage() {
       {/* Full-bleed Atmospheric Background — Centered cinematic roosters with atmospheric smoke */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
         <img
-          src="/banners/signup_roosters_battle.jpg"
+          src="https://res.cloudinary.com/drcftm7m/image/upload/f_auto,q_auto/v1795289222/jp-farms/banners/signup_roosters_battle.jpg"
           alt="JP Farms Heritage Roosters"
           className="absolute inset-0 w-full h-full object-cover object-center scale-100 hover:scale-105 transition-transform duration-[3000ms]"
         />

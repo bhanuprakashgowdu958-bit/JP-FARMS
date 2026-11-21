@@ -9,6 +9,9 @@
 *.md
 docs/
 
+# Heavy local banners (now hosted directly on Cloudinary CDN)
+public/banners/
+
 # Local scripts & batch files
 scripts/
 *.bat
