@@ -1,0 +1,22 @@
+# Vercel Deployment Ignore
+# Exclude files not needed for the production web build to reduce deployment upload size
+
+# Git & GitHub
+.git
+.github
+
+# Documentation & Markdown
+*.md
+docs/
+
+# Local scripts & batch files
+scripts/
+*.bat
+
+# Firebase rule configs (handled via Firebase CLI, not Vercel)
+firestore.rules
+storage.rules
+
+# Temporary & cache
+*.tsbuildinfo
+*.log
