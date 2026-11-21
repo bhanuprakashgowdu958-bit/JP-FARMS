@@ -21,6 +21,7 @@ import { Rooster, RoosterCategory, RoosterBadge } from '@/types/rooster';
 import { RoosterCard } from './RoosterCard';
 import { ROOSTER_CATEGORIES_META, BreedCategoryMeta } from '@/lib/data';
 import { useScrollReveal } from '@/hooks/useScrollReveal';
+import { RoosterCatalogSkeleton } from './RoosterCatalogSkeleton';
 
 interface RoosterCatalogProps {
   roosters: Rooster[];
@@ -61,6 +62,8 @@ export const RoosterCatalog: React.FC<RoosterCatalogProps> = ({
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [sortBy, setSortBy] = useState<'featured' | 'price-low' | 'price-high' | 'weight' | 'height' | 'newest'>('featured');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [maxPriceFilter, setMaxPriceFilter] = useState<number>(50000);
+  const [showPriceFilter, setShowPriceFilter] = useState<boolean>(false);
 
   const categoryCounts = useMemo(() => {
     const counts: Record<string, number> = { all: roosters.length };
@@ -80,6 +83,11 @@ export const RoosterCatalog: React.FC<RoosterCatalogProps> = ({
 
         // Badge filter
         if (selectedBadge !== 'all' && r.badge !== selectedBadge) {
+          return false;
+        }
+
+        // Max price filter
+        if (r.price && r.price > maxPriceFilter) {
           return false;
         }
 
@@ -266,9 +274,69 @@ export const RoosterCatalog: React.FC<RoosterCatalogProps> = ({
             )}
           </div>
 
-          {/* Sort Selector */}
-          <div className="flex items-center space-x-2 shrink-0 self-end sm:self-auto">
-            <span className="text-xs font-bold text-slate-400 hidden sm:inline">Sort:</span>
+          {/* Price Range & View Mode Toolbar Actions */}
+          <div className="flex flex-wrap items-center gap-2 shrink-0 self-end sm:self-auto">
+            {/* Price Filter Button */}
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => setShowPriceFilter(!showPriceFilter)}
+                className={`flex items-center space-x-1.5 px-3 py-2 rounded-xl text-xs font-bold border transition cursor-pointer ${
+                  maxPriceFilter < 50000
+                    ? 'bg-amber-500 text-stone-950 border-amber-500 shadow-xs'
+                    : 'bg-slate-50 hover:bg-slate-100 text-slate-700 border-slate-200'
+                }`}
+                title="Filter by Budget Limit"
+              >
+                <Filter className="w-3.5 h-3.5" />
+                <span>{maxPriceFilter < 50000 ? `≤ ₹${maxPriceFilter.toLocaleString('en-IN')}` : 'Budget'}</span>
+              </button>
+
+              {/* Price Filter Dropdown Modal / Popover */}
+              {showPriceFilter && (
+                <div className="absolute right-0 top-full mt-2 w-64 bg-white rounded-2xl border border-slate-200 shadow-xl p-4 z-40 space-y-3">
+                  <div className="flex items-center justify-between text-xs font-bold text-slate-900">
+                    <span>Budget Limit</span>
+                    <span className="text-amber-700 font-black">₹{maxPriceFilter.toLocaleString('en-IN')}</span>
+                  </div>
+                  <input
+                    type="range"
+                    min={5000}
+                    max={50000}
+                    step={1000}
+                    value={maxPriceFilter}
+                    onChange={(e) => setMaxPriceFilter(Number(e.target.value))}
+                    className="w-full accent-amber-500 cursor-pointer"
+                  />
+                  <div className="flex justify-between text-[10px] text-slate-400 font-mono">
+                    <span>₹5,000</span>
+                    <span>₹25,000</span>
+                    <span>₹50,000+</span>
+                  </div>
+                  <div className="pt-2 border-t border-slate-100 flex items-center justify-between">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setMaxPriceFilter(50000);
+                        setShowPriceFilter(false);
+                      }}
+                      className="text-[11px] text-slate-500 hover:text-slate-900 font-medium cursor-pointer"
+                    >
+                      Reset
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setShowPriceFilter(false)}
+                      className="bg-stone-900 text-white text-[11px] font-bold px-3 py-1 rounded-lg hover:bg-stone-800 transition cursor-pointer"
+                    >
+                      Apply
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Sort Selector */}
             <div className="relative flex items-center">
               <SlidersHorizontal className="w-3.5 h-3.5 text-slate-400 absolute left-3 pointer-events-none" />
               <select
@@ -283,6 +351,34 @@ export const RoosterCatalog: React.FC<RoosterCatalogProps> = ({
                 <option value="height">Tallest Height</option>
                 <option value="newest">Newly Added</option>
               </select>
+            </div>
+
+            {/* Grid / List View Toggle */}
+            <div className="hidden sm:flex items-center bg-slate-100 p-0.5 rounded-xl border border-slate-200">
+              <button
+                type="button"
+                onClick={() => setViewMode('grid')}
+                className={`p-1.5 rounded-lg transition cursor-pointer ${
+                  viewMode === 'grid'
+                    ? 'bg-white text-slate-900 shadow-xs'
+                    : 'text-slate-400 hover:text-slate-700'
+                }`}
+                title="Grid View"
+              >
+                <LayoutGrid className="w-4 h-4" />
+              </button>
+              <button
+                type="button"
+                onClick={() => setViewMode('list')}
+                className={`p-1.5 rounded-lg transition cursor-pointer ${
+                  viewMode === 'list'
+                    ? 'bg-white text-slate-900 shadow-xs'
+                    : 'text-slate-400 hover:text-slate-700'
+                }`}
+                title="Detailed List View"
+              >
+                <List className="w-4 h-4" />
+              </button>
             </div>
           </div>
         </div>
@@ -344,26 +440,31 @@ export const RoosterCatalog: React.FC<RoosterCatalogProps> = ({
         {/* Results Counter & Active Filters Reset */}
         <div className="flex items-center justify-between mb-6 text-xs text-stone-500">
           <p>
-            Showing <strong className="text-stone-900">{filteredRoosters.length}</strong> {filteredRoosters.length === 1 ? 'bird' : 'birds'}
+            Showing <strong className="text-stone-900">{filteredRoosters.length}</strong> {filteredRoosters.length === 1 ? 'specimen' : 'specimens'}
             {selectedCategory !== 'all' && ` in ${activeCategoryMeta?.name || selectedCategory}`}
             {searchQuery && ` matching "${searchQuery}"`}
+            {maxPriceFilter < 50000 && ` under ₹${maxPriceFilter.toLocaleString('en-IN')}`}
           </p>
-          {(selectedCategory !== 'all' || searchQuery) && (
+          {(selectedCategory !== 'all' || searchQuery || maxPriceFilter < 50000 || selectedBadge !== 'all') && (
             <button
               onClick={() => {
                 setSelectedCategory('all');
+                setSelectedBadge('all');
                 setSearchQuery('');
+                setMaxPriceFilter(50000);
               }}
               className="flex items-center space-x-1 text-amber-700 hover:text-amber-900 font-semibold cursor-pointer"
             >
               <RotateCcw className="w-3 h-3" />
-              <span>Reset Filters</span>
+              <span>Reset All Filters</span>
             </button>
           )}
         </div>
 
-        {/* Rooster Grid / Category Shelves View */}
-        {filteredRoosters.length > 0 ? (
+        {/* Rooster Grid / Category Shelves View / Loading Skeleton */}
+        {roosters.length === 0 ? (
+          <RoosterCatalogSkeleton viewMode={viewMode} count={8} />
+        ) : filteredRoosters.length > 0 ? (
           selectedCategory === 'all' && !searchQuery.trim() ? (
             /* ===============================================================
                CATEGORY-WISE HERITAGE SHELVES (When browsing All Breeds)
@@ -495,6 +596,7 @@ export const RoosterCatalog: React.FC<RoosterCatalogProps> = ({
                 setSelectedCategory('all');
                 setSelectedBadge('all');
                 setSearchQuery('');
+                setMaxPriceFilter(50000);
               }}
               className="bg-stone-900 text-white text-xs font-semibold px-4 py-2.5 rounded-xl hover:bg-stone-800 transition cursor-pointer"
             >

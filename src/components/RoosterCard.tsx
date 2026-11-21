@@ -10,7 +10,8 @@ import {
   ShoppingCart, 
   Check, 
   Star,
-  Plus
+  Plus,
+  Share2
 } from 'lucide-react';
 import { Rooster } from '@/types/rooster';
 import { FARM_INFO } from '@/lib/data';
@@ -40,8 +41,40 @@ export const RoosterCard: React.FC<RoosterCardProps> = ({
   });
 
   const [justAdded, setJustAdded] = React.useState(false);
+  const [copiedShare, setCopiedShare] = React.useState(false);
   const { addToCart, isInCart, openCart } = useCart();
   const inCart = isInCart(rooster.id);
+
+  const price = rooster.price || 9500;
+  const originalPrice = rooster.originalPrice || Math.round(price * 1.25);
+  const discountPercent = Math.round(((originalPrice - price) / originalPrice) * 100);
+  const rating = rooster.rating || 4.9;
+  const reviewsCount = rooster.reviewsCount || 34;
+
+  const handleShare = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const shareUrl = typeof window !== 'undefined' ? `${window.location.origin}/#rooster-${rooster.id}` : '';
+    const shareData = {
+      title: `JP Farms — ${rooster.name} (${rooster.breed})`,
+      text: `Take a look at purebred rooster #${rooster.tagId} (${rooster.name}) at JP Farms! Price: ₹${price.toLocaleString('en-IN')}`,
+      url: shareUrl,
+    };
+
+    if (typeof navigator !== 'undefined' && navigator.share) {
+      try {
+        await navigator.share(shareData);
+        return;
+      } catch {
+        // Cancelled or unsupported
+      }
+    }
+
+    if (typeof navigator !== 'undefined' && navigator.clipboard) {
+      await navigator.clipboard.writeText(shareUrl || window.location.href);
+      setCopiedShare(true);
+      setTimeout(() => setCopiedShare(false), 2200);
+    }
+  };
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -49,12 +82,6 @@ export const RoosterCard: React.FC<RoosterCardProps> = ({
     setJustAdded(true);
     setTimeout(() => setJustAdded(false), 2200);
   };
-
-  const price = rooster.price || 9500;
-  const originalPrice = rooster.originalPrice || Math.round(price * 1.25);
-  const discountPercent = Math.round(((originalPrice - price) / originalPrice) * 100);
-  const rating = rooster.rating || 4.9;
-  const reviewsCount = rooster.reviewsCount || 34;
 
   const getBadgeStyle = (badge: Rooster['badge']) => {
     switch (badge) {
@@ -114,20 +141,42 @@ export const RoosterCard: React.FC<RoosterCardProps> = ({
               <Star className="w-2.5 h-2.5 text-emerald-600 fill-emerald-600" />
             </div>
 
-            {/* Video Play Button Pill (if video available) */}
-            {rooster.videoUrl && (
+            {/* Copied Feedback Toast */}
+            {copiedShare && (
+              <div className="absolute inset-x-2 top-2 z-30 flex justify-center pointer-events-none">
+                <span className="bg-emerald-600 text-white text-[11px] font-bold px-3 py-1 rounded-full shadow-md animate-bounce">
+                  ✓ Link Copied!
+                </span>
+              </div>
+            )}
+
+            {/* Bottom-right Action Pill Strip: Video + Share */}
+            <div className="absolute bottom-2 right-2 flex items-center space-x-1.5 z-20">
+              {rooster.videoUrl && (
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onOpenVideo ? onOpenVideo(rooster) : onSelect(rooster);
+                  }}
+                  className="bg-stone-950/80 hover:bg-amber-600 text-white p-1.5 rounded-full backdrop-blur-md transition active:scale-90 cursor-pointer shadow-xs"
+                  title="Watch 4K Video"
+                  aria-label="Watch Video"
+                >
+                  <PlayCircle className="w-3.5 h-3.5 text-amber-400" />
+                </button>
+              )}
+
               <button
                 type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onOpenVideo ? onOpenVideo(rooster) : onSelect(rooster);
-                }}
-                className="absolute bottom-2 right-2 bg-stone-950/80 hover:bg-amber-600 text-white p-1 rounded-full backdrop-blur-md transition cursor-pointer"
-                title="Watch Video"
+                onClick={handleShare}
+                className="bg-stone-950/80 hover:bg-amber-600 text-white p-1.5 rounded-full backdrop-blur-md transition active:scale-90 cursor-pointer shadow-xs"
+                title="Share Specimen"
+                aria-label="Share Specimen"
               >
-                <PlayCircle className="w-4 h-4 text-amber-400" />
+                <Share2 className="w-3.5 h-3.5 text-amber-400" />
               </button>
-            )}
+            </div>
           </div>
 
           {/* Card Body Information */}
@@ -252,6 +301,17 @@ export const RoosterCard: React.FC<RoosterCardProps> = ({
             <span>Watch Video</span>
           </button>
         )}
+
+        {/* Share Button (List View) */}
+        <button
+          type="button"
+          onClick={handleShare}
+          className="absolute bottom-3 right-3 flex items-center space-x-1.5 bg-black/75 hover:bg-amber-600 backdrop-blur-md text-white px-3 py-1 rounded-full text-xs font-semibold border border-white/20 transition active:scale-95 cursor-pointer"
+          title="Share Specimen"
+        >
+          <Share2 className="w-3.5 h-3.5 text-amber-400" />
+          <span>Share</span>
+        </button>
 
         {/* Breed Category Pill */}
         <div className="absolute bottom-3 right-3">

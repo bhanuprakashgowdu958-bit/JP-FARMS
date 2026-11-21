@@ -5,7 +5,9 @@ import {
   Award, 
   MapPin, 
   PlayCircle, 
-  ShieldCheck 
+  ShieldCheck,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react';
 import { Rooster } from '@/types/rooster';
 
@@ -136,7 +138,7 @@ export const ZomatoBannerCarousel: React.FC<ZomatoBannerCarouselProps> = ({
         onClick={handleBannerClick}
       >
         
-        {/* Hardware-Accelerated Sliding Track (Slides horizontally every 10s smoothly) */}
+        {/* Hardware-Accelerated Sliding Track (Slides horizontally every 10s smoothly, exactly 100% per slide) */}
         <div 
           className="flex w-full h-full transition-transform duration-700 ease-in-out will-change-transform"
           style={{ transform: `translateX(-${currentIndex * 100}%)` }}
@@ -144,20 +146,45 @@ export const ZomatoBannerCarousel: React.FC<ZomatoBannerCarouselProps> = ({
           {BANNERS.map((banner, index) => (
             <div 
               key={banner.id}
-              className="w-full h-full shrink-0 relative select-none"
+              className="w-full min-w-full max-w-full flex-[0_0_100%] h-full shrink-0 relative select-none overflow-hidden"
             >
               <img
                 src={banner.image}
                 alt={banner.imageAlt}
                 loading={index === 0 ? "eager" : "lazy"}
                 decoding="async"
-                className="w-full h-full object-cover object-[center_35%] filter brightness-[1.08] contrast-[1.05] saturate-[1.1] pointer-events-none select-none"
+                className="w-full h-full object-cover object-[center_35%] filter brightness-[1.08] contrast-[1.05] saturate-[1.1] pointer-events-none select-none block"
               />
               {/* Minimal bottom vignette - just enough to show dots, no brightness loss */}
               <div className="absolute inset-0 pointer-events-none bg-gradient-to-t from-black/20 via-transparent to-transparent" />
             </div>
           ))}
         </div>
+
+        {/* Desktop Prev / Next Glassmorphism Arrows (appear smoothly on hover) */}
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            handlePrev();
+          }}
+          className="hidden sm:flex absolute left-4 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-black/40 hover:bg-black/70 text-white backdrop-blur-md border border-white/20 items-center justify-center transition-all opacity-0 group-hover:opacity-100 hover:scale-105 active:scale-95 cursor-pointer shadow-md"
+          aria-label="Previous Slide"
+        >
+          <ChevronLeft className="w-5 h-5 text-white" />
+        </button>
+
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            handleNext();
+          }}
+          className="hidden sm:flex absolute right-4 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-black/40 hover:bg-black/70 text-white backdrop-blur-md border border-white/20 items-center justify-center transition-all opacity-0 group-hover:opacity-100 hover:scale-105 active:scale-95 cursor-pointer shadow-md"
+          aria-label="Next Slide"
+        >
+          <ChevronRight className="w-5 h-5 text-white" />
+        </button>
 
         {/* Carousel Slide Dots Indicator */}
         <div className="absolute bottom-3 sm:bottom-4 left-1/2 -translate-x-1/2 z-20 flex items-center space-x-2 bg-black/40 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/10 pointer-events-auto">
