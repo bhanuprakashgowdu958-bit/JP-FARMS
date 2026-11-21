@@ -2,31 +2,34 @@
 
 import React from 'react';
 import { ShieldCheck, Heart, Sparkles, Activity, CheckCircle2, Leaf, Sun, Award } from 'lucide-react';
+import { useScrollReveal } from '@/hooks/useScrollReveal';
 
 export const FarmBioSecurity: React.FC = () => {
+  const sectionRef = useScrollReveal() as React.RefObject<HTMLElement>;
   return (
-    <section id="biosecurity" className="py-16 sm:py-24 bg-gradient-to-b from-sky-50/60 via-white to-sky-50/40 text-slate-800 border-b border-sky-100">
+    <section ref={sectionRef} id="biosecurity" className="py-16 sm:py-24 bg-gradient-to-b from-[#faf8f4] via-white to-[#faf8f4] text-slate-800 border-b border-amber-100/60">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Header */}
-        <div className="text-center max-w-3xl mx-auto mb-16 space-y-3">
-          <div className="inline-flex items-center space-x-1.5 text-xs font-bold uppercase tracking-wider text-sky-800 bg-sky-100 border border-sky-200 px-3 py-1 rounded-full">
-            <ShieldCheck className="w-4 h-4 text-sky-600" />
+        <div className="text-center max-w-3xl mx-auto mb-16 space-y-4">
+          <div className="reveal reveal-scale inline-flex items-center space-x-1.5 text-xs font-bold uppercase tracking-wider text-emerald-800 bg-emerald-50 border border-emerald-200 px-3 py-1 rounded-full">
+            <ShieldCheck className="w-4 h-4 text-emerald-600" />
             <span>Farm Standards & Health Guarantee</span>
           </div>
-          <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
-            How JP Farms Raises Champion Roosters
+          <h2 className="reveal heading-serif text-3xl sm:text-4xl lg:text-5xl text-slate-900">
+            Raised the <em className="text-emerald-700">Traditional Way,</em><br />
+            Certified the Modern Way
           </h2>
-          <p className="text-slate-600 text-sm sm:text-base leading-relaxed">
+          <p className="reveal text-slate-600 text-sm sm:text-base leading-relaxed">
             Our birds are never raised in cramped battery cages. They run on sprawling open grassy yards, soak natural morning sunlight, and thrive on high-energy Ayurvedic and nutrient-dense traditional diets.
           </p>
         </div>
 
-        {/* 4 Pillars Grid (Light Sky Blue Card Elegance) */}
+        {/* 4 Pillars Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           
           {/* Pillar 1 */}
-          <div className="bg-white border border-sky-100 rounded-2xl p-6 space-y-4 hover:border-sky-300 hover:shadow-md transition group">
+          <div className="reveal reveal-delay-1 bg-white border border-amber-100 rounded-2xl p-6 space-y-4 hover:border-emerald-300 hover:shadow-md transition group">
             <div className="w-12 h-12 rounded-xl bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-600 group-hover:scale-110 transition">
               <Leaf className="w-6 h-6" />
             </div>

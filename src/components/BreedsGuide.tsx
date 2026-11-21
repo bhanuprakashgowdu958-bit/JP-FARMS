@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { Award, Feather, ShieldCheck, HeartHandshake, Sparkles, ArrowRight } from 'lucide-react';
+import { useScrollReveal } from '@/hooks/useScrollReveal';
 
 const BREEDS_INFO = [
   {
@@ -47,20 +48,22 @@ const BREEDS_INFO = [
 ];
 
 export const BreedsGuide: React.FC = () => {
+  const sectionRef = useScrollReveal() as React.RefObject<HTMLElement>;
   return (
-    <section id="breeds" className="py-16 sm:py-24 bg-white border-b border-sky-100">
+    <section ref={sectionRef} id="breeds" className="py-16 sm:py-24 bg-[#faf8f4] border-b border-amber-100/60">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Header */}
-        <div className="text-center max-w-3xl mx-auto mb-16 space-y-3">
-          <div className="inline-flex items-center space-x-1.5 text-xs font-bold uppercase tracking-wider text-sky-800 bg-sky-100 border border-sky-200 px-3 py-1 rounded-full">
-            <Award className="w-3.5 h-3.5 text-sky-600" />
+        <div className="text-center max-w-3xl mx-auto mb-16 space-y-4">
+          <div className="reveal reveal-scale inline-flex items-center space-x-1.5 text-xs font-bold uppercase tracking-wider text-amber-800 bg-amber-50 border border-amber-200 px-3 py-1 rounded-full">
+            <Award className="w-3.5 h-3.5 text-amber-600" />
             <span>Preserving Indian Avian Heritage</span>
           </div>
-          <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
-            Our Pure Heritage Breeds
+          <h2 className="reveal heading-serif text-3xl sm:text-4xl lg:text-5xl text-slate-900">
+            Four Bloodlines,<br />
+            <em className="text-amber-700">One Ancient Legacy</em>
           </h2>
-          <p className="text-slate-600 text-sm sm:text-base leading-relaxed">
+          <p className="reveal text-slate-600 text-sm sm:text-base leading-relaxed max-w-xl mx-auto">
             At <strong>JP Farms</strong>, we do not cross-breed commercial broilers. We maintain pure genetic lines of indigenous Indian gamefowl and country roosters, carefully selecting for bone density, disease immunity, temperament, and plumage fidelity.
           </p>
         </div>

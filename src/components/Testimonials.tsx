@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { Star, CheckCircle2, Quote, UserCheck } from 'lucide-react';
+import { useScrollReveal } from '@/hooks/useScrollReveal';
 
 const REVIEWS = [
   {
@@ -31,20 +32,22 @@ const REVIEWS = [
 ];
 
 export const Testimonials: React.FC = () => {
+  const sectionRef = useScrollReveal() as React.RefObject<HTMLElement>;
   return (
-    <section id="reviews" className="py-16 sm:py-24 bg-gradient-to-b from-sky-50/50 via-white to-sky-50/30 border-b border-sky-100">
+    <section ref={sectionRef} id="reviews" className="py-16 sm:py-24 bg-[#1c1410] border-b border-amber-900/30">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        
+
         {/* Header */}
-        <div className="text-center max-w-2xl mx-auto mb-16 space-y-3">
-          <div className="inline-flex items-center space-x-1.5 text-xs font-bold uppercase tracking-wider text-sky-800 bg-sky-100 border border-sky-200 px-3 py-1 rounded-full">
-            <UserCheck className="w-3.5 h-3.5 text-sky-600" />
-            <span>Visitor & Breeder Experiences</span>
+        <div className="text-center max-w-2xl mx-auto mb-16 space-y-4">
+          <div className="reveal reveal-scale inline-flex items-center space-x-1.5 text-xs font-bold uppercase tracking-wider text-amber-300 bg-amber-900/40 border border-amber-700/50 px-3 py-1 rounded-full">
+            <UserCheck className="w-3.5 h-3.5 text-amber-400" />
+            <span>Visitor &amp; Breeder Experiences</span>
           </div>
-          <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
-            Recognized by Avian Breeders Nationwide
+          <h2 className="reveal heading-serif text-3xl sm:text-4xl lg:text-5xl text-white">
+            Words from the<br />
+            <em className="text-amber-400">Avian Brotherhood</em>
           </h2>
-          <p className="text-slate-600 text-sm sm:text-base">
+          <p className="reveal text-amber-200/70 text-sm sm:text-base">
             Visited by poultry conservationists, avian veterinarians, and desi rooster enthusiasts from across India.
           </p>
         </div>
@@ -54,34 +57,34 @@ export const Testimonials: React.FC = () => {
           {REVIEWS.map((review, idx) => (
             <div
               key={idx}
-              className="bg-white rounded-2xl p-6 border border-sky-100 shadow-sm flex flex-col justify-between space-y-4 hover:border-sky-300 hover:shadow-md transition"
+              className={`reveal reveal-delay-${idx + 1} relative bg-white/5 backdrop-blur-sm rounded-2xl p-6 border border-white/10 flex flex-col justify-between space-y-4 hover:border-amber-500/40 transition`}
             >
-              <div className="space-y-3">
+              {/* Giant quote watermark */}
+              <div className="absolute top-4 right-5 text-[80px] leading-none text-amber-500/10 font-serif select-none pointer-events-none">&ldquo;</div>
+
+              <div className="space-y-3 relative">
                 {/* Star rating */}
-                <div className="flex items-center space-x-1 text-amber-500">
+                <div className="flex items-center space-x-1">
                   {[...Array(review.rating)].map((_, i) => (
                     <Star key={i} className="w-4 h-4 fill-amber-400 text-amber-400" />
                   ))}
                 </div>
-
-                <Quote className="w-8 h-8 text-sky-200" />
-
-                <p className="text-xs sm:text-sm text-slate-700 leading-relaxed italic">
+                <p className="text-sm text-white/80 leading-relaxed italic">
                   &ldquo;{review.text}&rdquo;
                 </p>
               </div>
 
-              <div className="pt-4 border-t border-sky-50">
+              <div className="pt-4 border-t border-white/10">
                 <div className="flex items-center justify-between">
                   <div>
-                    <h4 className="font-bold text-sm text-slate-900">{review.name}</h4>
-                    <p className="text-xs text-slate-500">{review.location}</p>
+                    <h4 className="font-bold text-sm text-white">{review.name}</h4>
+                    <p className="text-xs text-amber-200/60">{review.location}</p>
                   </div>
                   <span title="Verified Visitor">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                    <CheckCircle2 className="w-4 h-4 text-emerald-400" />
                   </span>
                 </div>
-                <div className="mt-2 text-[11px] font-semibold text-sky-800 bg-sky-100/70 px-2 py-0.5 rounded inline-block">
+                <div className="mt-2 text-[11px] font-semibold text-amber-400 bg-amber-900/40 border border-amber-700/40 px-2 py-0.5 rounded inline-block">
                   {review.strainObserved}
                 </div>
               </div>

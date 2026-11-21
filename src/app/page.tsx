@@ -23,7 +23,9 @@ import { MobileBottomNav } from '@/components/MobileBottomNav';
 import { useRoosters } from '@/lib/roosterStore';
 import { useCart } from '@/lib/cartStore';
 import { Rooster } from '@/types/rooster';
-import { ArrowRight } from 'lucide-react';
+import { StatsCounter } from '@/components/StatsCounter';
+import { FloatingWhatsApp } from '@/components/FloatingWhatsApp';
+import { ScrollProgressBar } from '@/components/ScrollProgressBar';
 import { FARM_INFO } from '@/lib/data';
 import { generateWhatsAppLink } from '@/lib/utils';
 
@@ -143,6 +145,9 @@ export default function HomePage() {
           onSelectRooster={(rooster) => setSelectedRooster(rooster)}
         />
 
+        {/* Animated Heritage Stats Counter */}
+        <StatsCounter />
+
         {/* Heritage Rooster Living Gallery */}
         <RoosterCatalog
           roosters={roosters}
@@ -242,6 +247,12 @@ export default function HomePage() {
         title="Update Your Mobile Number"
         subtitle="Please provide your 10-digit mobile number for live animal transit tracking & order dispatch updates."
       />
+
+      {/* Floating WhatsApp CTA */}
+      <FloatingWhatsApp />
+
+      {/* Scroll Progress Bar */}
+      <ScrollProgressBar />
 
     </div>
   );

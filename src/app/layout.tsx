@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Inter } from "next/font/google";
+import { Inter, Playfair_Display } from "next/font/google";
 import "./globals.css";
 
 const inter = Inter({
@@ -8,11 +8,19 @@ const inter = Inter({
   variable: "--font-inter",
 });
 
+const playfair = Playfair_Display({
+  subsets: ["latin"],
+  display: "swap",
+  variable: "--font-playfair",
+  weight: ["400", "500", "600", "700", "800", "900"],
+  style: ["normal", "italic"],
+});
+
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   maximumScale: 5,
-  themeColor: "#0f172a",
+  themeColor: "#1c1410",
 };
 
 export const metadata: Metadata = {
@@ -22,7 +30,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "JP Farms - Pure Desi Roosters & Heritage Bloodlines",
     description: "Explore elite verified heritage roosters with unfiltered HD walking videos, biological pedigree traits, and farm visitation guide.",
-    images: ["https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?auto=format&fit=crop&w=1200&q=80"],
+    images: ["/banners/banner_rainbow_wings_crow.jpg"],
   },
 };
 
@@ -32,8 +40,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`scroll-smooth ${inter.variable}`}>
-      <body className={`${inter.className} antialiased text-slate-800 bg-[#f4f9fd] selection:bg-sky-500 selection:text-white font-sans`}>
+    <html lang="en" className={`scroll-smooth ${inter.variable} ${playfair.variable}`}>
+      <body className={`${inter.className} antialiased text-slate-800 bg-[#faf8f4] selection:bg-amber-500 selection:text-white font-sans`}>
         {children}
       </body>
     </html>
