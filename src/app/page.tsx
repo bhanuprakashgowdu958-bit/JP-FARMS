@@ -6,7 +6,6 @@ import { useAuth } from '@/lib/authStore';
 import { Header } from '@/components/Header';
 import { ZomatoBannerCarousel } from '@/components/ZomatoBannerCarousel';
 import { RoosterCatalog } from '@/components/RoosterCatalog';
-import { BreedsGuide } from '@/components/BreedsGuide';
 import { FarmBioSecurity } from '@/components/FarmBioSecurity';
 import { DeliveryProcess } from '@/components/DeliveryProcess';
 import { Testimonials } from '@/components/Testimonials';
@@ -156,9 +155,6 @@ export default function HomePage() {
           onInquire={handleInquire}
           onBuyNow={handleBuyNow}
         />
-
-        {/* Heritage Breeds Educational Guide */}
-        <BreedsGuide />
 
         {/* Farm Bio-Security, Organic Diet & Vaccination Standards */}
         <FarmBioSecurity />

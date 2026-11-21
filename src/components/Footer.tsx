@@ -78,7 +78,6 @@ export const Footer: React.FC = () => {
             <ul className="text-xs space-y-2.5 text-slate-400">
               {[
                 { href: '#showcase', label: 'Rooster Living Gallery' },
-                { href: '#breeds', label: 'Heritage Breed Guide' },
                 { href: '#biosecurity', label: 'Natural Diet & Care Standards' },
                 { href: '#visit-guide', label: 'Farm Visitation & Route Guide' },
                 { href: '#reviews', label: 'Breeder & Visitor Reviews' },
@@ -150,7 +149,7 @@ export const Footer: React.FC = () => {
           <div className="flex items-center space-x-4">
             <a href="#showcase" className="hover:text-amber-400 transition">Showcase</a>
             <span className="text-white/20">•</span>
-            <a href="#breeds" className="hover:text-amber-400 transition">Breeds</a>
+            <a href="#biosecurity" className="hover:text-amber-400 transition">Bio-Security</a>
             <span className="text-white/20">•</span>
             <a href="#visit-guide" className="hover:text-amber-400 transition">Plan Visit</a>
           </div>
