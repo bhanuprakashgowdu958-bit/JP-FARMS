@@ -1,20 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Inter, Playfair_Display } from "next/font/google";
 import "./globals.css";
-
-const inter = Inter({
-  subsets: ["latin"],
-  display: "swap",
-  variable: "--font-inter",
-});
-
-const playfair = Playfair_Display({
-  subsets: ["latin"],
-  display: "swap",
-  variable: "--font-playfair",
-  weight: ["400", "500", "600", "700", "800", "900"],
-  style: ["normal", "italic"],
-});
 
 export const viewport: Viewport = {
   width: "device-width",
@@ -40,8 +25,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`scroll-smooth ${inter.variable} ${playfair.variable}`}>
-      <body className={`${inter.className} antialiased text-slate-800 bg-[#faf8f4] selection:bg-amber-500 selection:text-white font-sans`}>
+    <html lang="en" className="scroll-smooth">
+      <body className="antialiased text-slate-800 bg-[#faf8f4] selection:bg-amber-500 selection:text-white font-sans">
         {children}
       </body>
     </html>

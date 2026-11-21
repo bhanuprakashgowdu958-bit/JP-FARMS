@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -26,17 +27,17 @@ html {
 body {
   color: #1c1410;
   background: #faf8f4;
-  font-family: var(--font-inter), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   overflow-x: hidden;
   max-width: 100vw;
 }
 
 /* Playfair Display — luxury headline font */
 .font-playfair {
-  font-family: var(--font-playfair), 'Georgia', serif;
+  font-family: 'Playfair Display', Georgia, serif;
 }
 .font-playfair-italic {
-  font-family: var(--font-playfair), 'Georgia', serif;
+  font-family: 'Playfair Display', Georgia, serif;
   font-style: italic;
 }
 
@@ -312,7 +313,7 @@ body {
 
 /* Centered serif heading (for breeds, testimonials) */
 .heading-serif {
-  font-family: var(--font-playfair), Georgia, serif;
+  font-family: 'Playfair Display', Georgia, serif;
   font-style: italic;
   font-weight: 800;
   letter-spacing: -0.02em;

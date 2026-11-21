@@ -20,6 +20,7 @@ import {
 import { Rooster, RoosterCategory, RoosterBadge } from '@/types/rooster';
 import { RoosterCard } from './RoosterCard';
 import { ROOSTER_CATEGORIES_META, BreedCategoryMeta } from '@/lib/data';
+import { useScrollReveal } from '@/hooks/useScrollReveal';
 
 interface RoosterCatalogProps {
   roosters: Rooster[];
@@ -148,30 +149,32 @@ export const RoosterCatalog: React.FC<RoosterCatalogProps> = ({
     ? ROOSTER_CATEGORIES_META[selectedCategory as Exclude<RoosterCategory, 'all'>] 
     : null;
 
+  const sectionRef = useScrollReveal() as React.RefObject<HTMLElement>;
+
   return (
-    <section id="showcase" className="py-16 sm:py-20 bg-gradient-to-b from-white via-sky-50/30 to-white border-b border-sky-100">
+    <section ref={sectionRef} id="showcase" className="py-16 sm:py-20 bg-[#faf8f4] border-b border-amber-100/60 overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Section Header */}
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
           <div>
-            <div className="inline-flex items-center space-x-1.5 text-xs font-bold uppercase tracking-wider text-sky-800 bg-sky-100/80 px-3 py-1 rounded-full mb-2">
-              <Award className="w-3.5 h-3.5 text-sky-600" />
+            <div className="reveal reveal-scale inline-flex items-center space-x-1.5 text-xs font-bold uppercase tracking-wider text-amber-900 bg-amber-100/80 border border-amber-200 px-3.5 py-1 rounded-full mb-3">
+              <Award className="w-3.5 h-3.5 text-amber-700" />
               <span>Living Farm Heritage Gallery</span>
             </div>
-            <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
-              Farm Studs & Purebred Rooster Showcase
+            <h2 className="reveal heading-serif text-3xl sm:text-4xl lg:text-5xl text-slate-900 tracking-tight">
+              Living Studs &amp; <em className="text-amber-700">Purebred Gallery</em>
             </h2>
-            <p className="text-slate-600 text-sm mt-1 max-w-2xl">
+            <p className="reveal text-slate-600 text-sm mt-1 max-w-2xl leading-relaxed">
               Explore pure indigenous bloodlines maintained at JP Farms. Browse category-wise heritage lineages, biological traits, comb anatomy, weight, and HD video documentation.
             </p>
           </div>
 
           {/* Quick Stats Badge */}
-          <div className="flex items-center space-x-2 text-xs font-semibold bg-white border border-sky-200 px-4 py-2.5 rounded-2xl shadow-xs self-start md:self-auto">
+          <div className="reveal flex items-center space-x-2 text-xs font-semibold bg-white border border-amber-200/80 px-4 py-2.5 rounded-2xl shadow-xs self-start md:self-auto">
             <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
             <span className="text-slate-800">
-              <strong className="text-sky-700">{roosters.length} Registered Birds</strong> in {Object.keys(ROOSTER_CATEGORIES_META).length} Breeds
+              <strong className="text-amber-700">{roosters.length} Registered Birds</strong> in {Object.keys(ROOSTER_CATEGORIES_META).length} Breeds
             </span>
           </div>
         </div>

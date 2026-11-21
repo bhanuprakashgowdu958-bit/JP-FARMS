@@ -46,6 +46,7 @@ export const Header: React.FC<HeaderProps> = ({
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
   const { cartCount, openCart } = useCart();
   const { orders } = useOrders();
   const { user, signOut } = useAuth();
@@ -81,6 +82,13 @@ export const Header: React.FC<HeaderProps> = ({
   useEffect(() => {
     setMounted(true);
     return () => setMounted(false);
+  }, []);
+
+  // Scroll-aware header shrink
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 60);
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
   // Sync orders with notifications
@@ -150,17 +158,19 @@ export const Header: React.FC<HeaderProps> = ({
   });
 
   return (
-    <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-sky-100 text-slate-800 shadow-xs">
+    <header className={`sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b text-slate-800 shadow-xs transition-all duration-300 ${scrolled ? 'border-amber-100 shadow-md' : 'border-sky-100'}`}>
       {/* Top Banner: Farm Heritage & Helpline */}
-      <div className="bg-sky-50/90 border-b border-sky-100/80 text-[11px] sm:text-xs px-3 sm:px-4 py-1 sm:py-1.5 text-sky-950">
+      <div className={`border-b text-[11px] sm:text-xs px-3 sm:px-4 transition-all duration-300 ${scrolled ? 'py-0.5 bg-amber-950/90 border-amber-900/40 text-amber-200' : 'py-1 sm:py-1.5 bg-sky-50/90 border-sky-100/80 text-sky-950'}`}>
         <div className="w-full px-1 sm:px-3 lg:px-6 flex items-center justify-between gap-2">
           <div className="flex items-center space-x-2 truncate">
             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shrink-0"></span>
-            <span className="text-sky-800 font-semibold truncate">
-              {birdsCount} Champion Strains Documented
+            <span className="font-bold truncate text-emerald-700 sm:text-emerald-800">
+              Open Today • Visitors Welcome (7 AM – 7 PM)
             </span>
-            <span className="hidden md:inline text-sky-300">•</span>
-            <span className="hidden md:inline text-sky-700">Pure Indian Gamefowl & Desi Avian Conservation</span>
+            <span className="hidden md:inline text-amber-300">•</span>
+            <span className="hidden md:inline font-semibold">
+              {birdsCount} Champion Strains Documented • Est. 2016
+            </span>
           </div>
           <div className="flex items-center space-x-1 shrink-0">
             <a 
@@ -178,22 +188,22 @@ export const Header: React.FC<HeaderProps> = ({
       {/* Main Navigation Bar Container — Full width to eliminate left/right gap */}
       <div className="w-full px-3 sm:px-6 lg:px-8">
         
-        {/* 1. Desktop Navigation Bar (h-20, hidden on mobile) */}
-        <div className="hidden sm:flex items-center justify-between h-20">
+        {/* 1. Desktop Navigation Bar (h-20 or h-16 on scroll, hidden on mobile) */}
+        <div className={`hidden sm:flex items-center justify-between transition-all duration-300 ${scrolled ? 'h-16' : 'h-20'}`}>
           
           {/* Logo (Desktop) */}
           <Link href="/" className="flex items-center space-x-3 group shrink-0">
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-amber-500 to-amber-600 p-0.5 shadow-md shadow-amber-500/20 group-hover:scale-105 transition duration-200 shrink-0">
+            <div className={`rounded-xl bg-gradient-to-br from-amber-500 to-amber-600 p-0.5 shadow-md shadow-amber-500/20 group-hover:scale-105 transition-all duration-300 shrink-0 ${scrolled ? 'w-10 h-10' : 'w-12 h-12'}`}>
               <div className="w-full h-full bg-stone-900 rounded-[10px] overflow-hidden flex items-center justify-center">
                 <img src="/logo-square.png" alt="JP Farms Logo" className="w-full h-full object-cover" />
               </div>
             </div>
             <div className="shrink-0">
               <div className="flex items-center space-x-2 whitespace-nowrap">
-                <span className="font-extrabold text-2xl tracking-tight text-slate-900 group-hover:text-sky-700 transition whitespace-nowrap">
+                <span className={`font-extrabold tracking-tight text-slate-900 group-hover:text-amber-700 transition whitespace-nowrap font-playfair ${scrolled ? 'text-xl' : 'text-2xl'}`}>
                   JP FARMS
                 </span>
-                <span className="text-[10px] uppercase font-bold tracking-widest px-1.5 py-0.5 rounded bg-sky-100 text-sky-800 border border-sky-200 whitespace-nowrap">
+                <span className="text-[10px] uppercase font-bold tracking-widest px-1.5 py-0.5 rounded bg-amber-50 text-amber-800 border border-amber-200 whitespace-nowrap">
                   Est. 2016
                 </span>
               </div>
@@ -264,7 +274,7 @@ export const Header: React.FC<HeaderProps> = ({
         </div>
 
         {/* 2. Mobile Navigation Bar (Amazon / Flipkart Style: Menu + Logo on Left, Actions on Right) */}
-        <div className="flex sm:hidden items-center justify-between h-16">
+        <div className={`flex sm:hidden items-center justify-between transition-all duration-300 ${scrolled ? 'h-13 py-1' : 'h-16'}`}>
           
           {/* Left: Hamburger Menu + Logo Brand */}
           <div className="flex items-center space-x-2.5 min-w-0">
@@ -286,12 +296,12 @@ export const Header: React.FC<HeaderProps> = ({
 
             {/* Mobile Brand Logo */}
             <Link href="/" className="flex items-center space-x-2 group min-w-0">
-              <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-amber-500 to-amber-600 p-0.5 shadow-sm shadow-amber-500/20 shrink-0">
+              <div className={`rounded-xl bg-gradient-to-br from-amber-500 to-amber-600 p-0.5 shadow-sm shadow-amber-500/20 shrink-0 transition-all duration-300 ${scrolled ? 'w-7 h-7' : 'w-8 h-8'}`}>
                 <div className="w-full h-full bg-stone-900 rounded-[7px] overflow-hidden flex items-center justify-center">
                   <img src="/logo-square.png" alt="JP Farms Logo" className="w-full h-full object-cover" />
                 </div>
               </div>
-              <span className="font-black text-lg tracking-tight text-slate-900 truncate">
+              <span className="font-black text-lg tracking-tight text-slate-900 truncate font-playfair">
                 JP FARMS
               </span>
             </Link>

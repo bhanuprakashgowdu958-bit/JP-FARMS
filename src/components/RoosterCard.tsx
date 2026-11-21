@@ -59,15 +59,15 @@ export const RoosterCard: React.FC<RoosterCardProps> = ({
   const getBadgeStyle = (badge: Rooster['badge']) => {
     switch (badge) {
       case 'Champion Line':
-        return 'bg-gradient-to-r from-amber-500 to-amber-600 text-stone-950 font-black shadow-xs border border-amber-300';
+        return 'badge-holographic font-black shadow-sm border border-amber-300';
       case 'Farm Stud':
-        return 'bg-stone-900 text-amber-400 font-bold border border-amber-500/40 shadow-xs';
+        return 'bg-[#1c1410] text-amber-300 font-bold border border-amber-500/40 shadow-xs';
       case 'Heritage Pure':
-        return 'bg-emerald-600 text-white font-bold shadow-xs';
+        return 'bg-emerald-700 text-white font-bold shadow-xs';
       case 'Breeding Flock':
-        return 'bg-blue-600 text-white font-bold shadow-xs';
+        return 'bg-amber-800 text-amber-100 font-bold shadow-xs';
       case 'Young Star':
-        return 'bg-purple-600 text-white font-bold shadow-xs';
+        return 'bg-purple-700 text-white font-bold shadow-xs';
       default:
         return 'bg-stone-800 text-stone-200';
     }
